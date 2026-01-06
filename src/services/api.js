@@ -135,9 +135,19 @@ export const newsAPI = {
   },
 
   create: async (newsData) => {
+    // Format date to YYYY-MM-DD if provided
+    let formattedDate = newsData.date || new Date().toISOString().split('T')[0];
+    if (formattedDate && formattedDate.includes('/')) {
+      // Convert DD/MM/YYYY to YYYY-MM-DD if needed
+      const parts = formattedDate.split('/');
+      if (parts.length === 3) {
+        formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+    }
+
     const payload = {
       form_method: 'save',
-      date: newsData.date || new Date().toISOString().split('T')[0],
+      date: formattedDate,
       title: newsData.title || '',
       description: newsData.description || '',
       content: newsData.content || '',
@@ -165,14 +175,23 @@ export const newsAPI = {
   },
 
   update: async (id, newsData) => {
+    // Format date to YYYY-MM-DD if provided
+    let formattedDate = newsData.date || new Date().toISOString().split('T')[0];
+    if (formattedDate && formattedDate.includes('/')) {
+      // Convert DD/MM/YYYY to YYYY-MM-DD if needed
+      const parts = formattedDate.split('/');
+      if (parts.length === 3) {
+        formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+    }
+
     const payload = {
       form_method: 'update',
       id: typeof id === 'string' ? parseInt(id, 10) : id,
-      date: newsData.date || new Date().toISOString().split('T')[0],
+      date: formattedDate,
       title: newsData.title || '',
       description: newsData.description || '',
       content: newsData.content || '',
-      image: null, // Default to null for updates
     };
     
     // Add image if provided (convert file to base64 data URL)

@@ -9,6 +9,7 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
     title: '',
     tagline: '',
     content: '',
+    preference: '',
     image: null
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -23,6 +24,7 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
         title: editHero.title || '',
         tagline: editHero.tagline || '',
         content: editHero.content || '',
+        preference: editHero.preference || '',
         image: null // Don't preload image file
       });
       // Set image preview if hero has image URL
@@ -93,10 +95,16 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
       return;
     }
 
+    // Convert preference to number if provided
+    const heroDataToSave = {
+      ...formData,
+      preference: formData.preference ? parseInt(formData.preference, 10) : null
+    };
+
     // Image is optional for both new and updates
     // Call onSave with form data and edit hero ID if editing
     if (onSave) {
-      onSave(formData, editHero?.id);
+      onSave(heroDataToSave, editHero?.id || editHero?.uuid);
     }
 
     // Reset form only if not editing
@@ -107,6 +115,7 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
         title: '',
         tagline: '',
         content: '',
+        preference: '',
         image: null
       });
       setImagePreview(null);
@@ -212,6 +221,22 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
               placeholder="Enter hero content"
               rows="4"
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="add-hero-preference" className="form-label">
+              Preference
+            </label>
+            <input
+              type="number"
+              id="add-hero-preference"
+              name="preference"
+              className="form-input"
+              value={formData.preference}
+              onChange={handleInputChange}
+              placeholder="Enter preference (e.g., 1)"
+              min="0"
             />
           </div>
 

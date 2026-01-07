@@ -7,7 +7,6 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
     date: '',
     title: '',
     description: '',
-    content: '',
     image: null
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -20,7 +19,6 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
         date: editNews.date || editNews.created_at ? new Date(editNews.date || editNews.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         title: editNews.title || '',
         description: editNews.description || '',
-        content: editNews.content || '',
         image: null // Don't preload image file
       });
       // Set image preview if news has image URL
@@ -92,7 +90,7 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!formData.date || !formData.title || !formData.description || !formData.content) {
+    if (!formData.date || !formData.title || !formData.description) {
       setError('Please fill in all required fields');
       return;
     }
@@ -114,7 +112,6 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
         date: new Date().toISOString().split('T')[0],
         title: '',
         description: '',
-        content: '',
         image: null
       });
       setImagePreview(null);
@@ -185,23 +182,7 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
               value={formData.description}
               onChange={handleInputChange}
               placeholder="Enter news description"
-              rows="3"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="add-news-content" className="form-label">
-              Content <span className="required">*</span>
-            </label>
-            <textarea
-              id="add-news-content"
-              name="content"
-              className="form-textarea"
-              value={formData.content}
-              onChange={handleInputChange}
-              placeholder="Enter news content"
-              rows="8"
+              rows="5"
               required
             />
           </div>

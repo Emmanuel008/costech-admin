@@ -150,7 +150,6 @@ export const newsAPI = {
       date: formattedDate,
       title: newsData.title || '',
       description: newsData.description || '',
-      content: newsData.content || '',
     };
     
     // Add image if provided (convert file to base64 data URL)
@@ -191,7 +190,6 @@ export const newsAPI = {
       date: formattedDate,
       title: newsData.title || '',
       description: newsData.description || '',
-      content: newsData.content || '',
     };
     
     // Add image if provided (convert file to base64 data URL)
@@ -314,10 +312,10 @@ export const heroesAPI = {
     return response.data;
   },
 
-  getById: async (id) => {
+  getById: async (uuid) => {
     const response = await api.get('/api/hero/ilist');
     const heroesList = response.data.returnData?.list_of_item || [];
-    const hero = heroesList.find(h => h.id === id);
+    const hero = heroesList.find(h => h.uuid === uuid);
     return hero ? { status: 'OK', returnData: hero } : { status: 'ERROR', errorMessage: 'Hero not found' };
   },
 
@@ -329,6 +327,7 @@ export const heroesAPI = {
       title: heroData.title || '',
       tagline: heroData.tagline || '',
       content: heroData.content || '',
+      preference: heroData.preference || null,
     };
     
     // Add image if provided (convert file to base64 data URL)
@@ -354,15 +353,16 @@ export const heroesAPI = {
     return response.data;
   },
 
-  update: async (id, heroData) => {
+  update: async (uuid, heroData) => {
     const payload = {
       form_method: 'update',
-      id: typeof id === 'string' ? parseInt(id, 10) : id,
+      uuid: uuid || '',
       name: heroData.name || '',
       description: heroData.description || '',
       title: heroData.title || '',
       tagline: heroData.tagline || '',
       content: heroData.content || '',
+      preference: heroData.preference || null,
       image: null, // Default to null for updates
     };
     
@@ -389,10 +389,10 @@ export const heroesAPI = {
     return response.data;
   },
 
-  delete: async (id) => {
+  delete: async (uuid) => {
     const payload = {
       form_method: 'delete',
-      id: typeof id === 'string' ? parseInt(id, 10) : id,
+      id: uuid || '',
     };
 
     const response = await api.post('/api/hero/iformAction', payload);

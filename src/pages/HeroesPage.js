@@ -46,8 +46,8 @@ export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDele
                   </tr>
                 </thead>
                 <tbody>
-                  {heroes.map((item) => (
-                    <tr key={item.id}>
+                  {heroes.map((item, index) => (
+                    <tr key={item.uuid || item.id || `hero-row-${index}`}>
                       <td className="table-image-cell">
                         {item.image ? (
                           <div className="table-image">
@@ -82,7 +82,7 @@ export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDele
                           {onDelete && (
                             <button
                               className="delete-button"
-                              onClick={() => onDelete(item.id)}
+                              onClick={() => onDelete(item.uuid || item.id)}
                               title="Delete hero"
                             >
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">

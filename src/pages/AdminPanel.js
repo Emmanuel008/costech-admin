@@ -229,16 +229,24 @@ export function AdminPanel({ onLogout }) {
       const response = await heroesAPI.getAll();
       if (response.status === 'OK' && response.returnData?.list_of_item) {
         // Map API response to heroes format
-        const mappedHeroes = response.returnData.list_of_item.map(hero => ({
-          id: hero.id?.toString() || Date.now().toString(),
-          name: hero.title || '',
-          description: hero.content || '',
-          title: hero.title || '',
-          tagline: hero.tagline || '',
-          content: hero.content || '',
-          image: hero.image || null,
-          createdAt: hero.created_at || hero.createdAt || new Date().toISOString(),
-        }));
+        // Use a single timestamp outside the map to ensure uniqueness
+        const baseTimestamp = Date.now();
+        const mappedHeroes = response.returnData.list_of_item.map((hero, index) => {
+          // Use UUID as primary identifier, fallback to generated unique ID
+          const uniqueId = hero.uuid || `hero-${baseTimestamp}-${index}`;
+          return {
+            id: uniqueId,
+            uuid: hero.uuid || null,
+            name: hero.name || hero.title || '',
+            description: hero.description || hero.content || '',
+            title: hero.title || '',
+            tagline: hero.tagline || '',
+            content: hero.content || '',
+            preference: hero.preference || null,
+            image: hero.image || null,
+            createdAt: hero.created_at || hero.createdAt || new Date().toISOString(),
+          };
+        });
         setHeroes(mappedHeroes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       }
     } catch (err) {
@@ -663,22 +671,36 @@ export function AdminPanel({ onLogout }) {
   };
 
   const handleDeleteHero = async (id) => {
-    const hero = heroes.find(h => h.id === id);
-    const heroName = hero?.name || hero?.title || 'this hero';
-    showDeleteConfirmation(id, heroName, 'hero', async () => {
-    try {
-      const response = await heroesAPI.delete(id);
-      if (response.status === 'OK') {
-        await fetchHeroes();
-        alert('Hero deleted successfully!');
-      } else {
-        alert(response.errorMessage || 'Failed to delete hero');
-      }
-    } catch (err) {
-      console.error('Error deleting hero:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete hero. Please try again.';
-      alert(errorMessage);
+    // Find hero by id or uuid (id could be either)
+    const hero = heroes.find(h => h.id === id || h.uuid === id);
+    if (!hero) {
+      alert('Hero not found');
+      return;
     }
+    
+    const heroName = hero.name || hero.title || 'this hero';
+    // Use the id value (which contains the UUID) for deletion
+    const heroId = hero.id;
+    
+    if (!heroId) {
+      alert('Cannot delete hero: ID not found');
+      return;
+    }
+    
+    showDeleteConfirmation(heroId, heroName, 'hero', async () => {
+      try {
+        const response = await heroesAPI.delete(heroId);
+        if (response.status === 'OK') {
+          await fetchHeroes();
+          alert('Hero deleted successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to delete hero');
+        }
+      } catch (err) {
+        console.error('Error deleting hero:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete hero. Please try again.';
+        alert(errorMessage);
+      }
     });
   };
 
@@ -687,8 +709,11 @@ export function AdminPanel({ onLogout }) {
       let response;
       
       if (heroId) {
+        // Find hero to get uuid
+        const hero = heroes.find(h => h.id === heroId || h.uuid === heroId);
+        const heroUuid = hero?.uuid || heroId;
         // Update existing hero
-        response = await heroesAPI.update(heroId, heroData);
+        response = await heroesAPI.update(heroUuid, heroData);
       } else {
         // Create new hero
         response = await heroesAPI.create(heroData);

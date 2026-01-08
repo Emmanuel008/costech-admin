@@ -22,6 +22,10 @@ import { ExhibitionPage } from './ExhibitionPage';
 import { OngoingProjectPage } from './OngoingProjectPage';
 import { AreaOfPartnershipPage } from './AreaOfPartnershipPage';
 import { FellowshipGrantsPage } from './FellowshipGrantsPage';
+import { PressReleasePage } from './PressReleasePage';
+import { StatementPage } from './StatementPage';
+import { CostechVideoPage } from './CostechVideoPage';
+import { CommunityEngagementPage } from './CommunityEngagementPage';
 import { AddSectionModal } from '../components/AddSectionModal';
 import { AddNewsModal } from '../components/AddNewsModal';
 import { AddPartnerModal } from '../components/AddPartnerModal';
@@ -44,11 +48,23 @@ import { AddExhibitionModal } from '../components/AddExhibitionModal';
 import { AddOngoingProjectModal } from '../components/AddOngoingProjectModal';
 import { AddAreaOfPartnershipModal } from '../components/AddAreaOfPartnershipModal';
 import { AddFellowshipGrantModal } from '../components/AddFellowshipGrantModal';
+import { AddPressReleaseModal } from '../components/AddPressReleaseModal';
+import { AddStatementModal } from '../components/AddStatementModal';
+import { AddCostechVideoModal } from '../components/AddCostechVideoModal';
+import { AddCommunityEngagementModal } from '../components/AddCommunityEngagementModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
-import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI } from '../services/api';
+import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI } from '../services/api';
 
 export function AdminPanel({ onLogout }) {
   const [activeNav, setActiveNav] = useState('dashboard');
+  const [openDropdowns, setOpenDropdowns] = useState({
+    homepage: false,
+    publication: false,
+    program: false,
+    events: false,
+    mediaCentre: false,
+    about: false
+  });
   const [sections, setSections] = useState([]);
   const [news, setNews] = useState([]);
   const [partners, setPartners] = useState([]);
@@ -71,6 +87,10 @@ export function AdminPanel({ onLogout }) {
   const [ongoingProjects, setOngoingProjects] = useState([]);
   const [areasOfPartnership, setAreasOfPartnership] = useState([]);
   const [fellowshipGrants, setFellowshipGrants] = useState([]);
+  const [pressReleases, setPressReleases] = useState([]);
+  const [statements, setStatements] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [communityEngagements, setCommunityEngagements] = useState([]);
   const [showAddSectionForm, setShowAddSectionForm] = useState(false);
   const [showAddNewsForm, setShowAddNewsForm] = useState(false);
   const [showAddPartnerForm, setShowAddPartnerForm] = useState(false);
@@ -93,6 +113,10 @@ export function AdminPanel({ onLogout }) {
   const [showAddOngoingProjectForm, setShowAddOngoingProjectForm] = useState(false);
   const [showAddAreaOfPartnershipForm, setShowAddAreaOfPartnershipForm] = useState(false);
   const [showAddFellowshipGrantForm, setShowAddFellowshipGrantForm] = useState(false);
+  const [showAddPressReleaseForm, setShowAddPressReleaseForm] = useState(false);
+  const [showAddStatementForm, setShowAddStatementForm] = useState(false);
+  const [showAddVideoForm, setShowAddVideoForm] = useState(false);
+  const [showAddCommunityEngagementForm, setShowAddCommunityEngagementForm] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
   const [editingPartner, setEditingPartner] = useState(null);
@@ -115,6 +139,10 @@ export function AdminPanel({ onLogout }) {
   const [editingOngoingProject, setEditingOngoingProject] = useState(null);
   const [editingAreaOfPartnership, setEditingAreaOfPartnership] = useState(null);
   const [editingFellowshipGrant, setEditingFellowshipGrant] = useState(null);
+  const [editingPressRelease, setEditingPressRelease] = useState(null);
+  const [editingStatement, setEditingStatement] = useState(null);
+  const [editingVideo, setEditingVideo] = useState(null);
+  const [editingCommunityEngagement, setEditingCommunityEngagement] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, id: null, name: '', type: '', onConfirm: null });
 
   // Fetch sections, news, partners, heroes, positions, and team members on component mount
@@ -139,7 +167,30 @@ export function AdminPanel({ onLogout }) {
     fetchOngoingProjects();
     fetchAreasOfPartnership();
     fetchFellowshipGrants();
+    fetchPressReleases();
+    fetchStatements();
+    fetchVideos();
+    fetchCommunityEngagements();
   }, []);
+
+  // Auto-open dropdowns when their items are active
+  useEffect(() => {
+    const homepageItems = ['heroes', 'news', 'partners'];
+    const publicationItems = ['books', 'magazine', 'reports', 'policies', 'guideline-documents', 'strategic-plan', 'acts-and-legal', 'financial-report'];
+    const programItems = ['ongoing-project', 'area-of-partnership'];
+    const eventsItems = ['exhibition', 'conference', 'community-engagement'];
+    const mediaCentreItems = ['press-release', 'statement', 'costech-video'];
+    const aboutItems = ['positions', 'management-team', 'commission-members'];
+
+    setOpenDropdowns(prev => ({
+      homepage: homepageItems.includes(activeNav) ? true : prev.homepage,
+      publication: publicationItems.includes(activeNav) ? true : prev.publication,
+      program: programItems.includes(activeNav) ? true : prev.program,
+      events: eventsItems.includes(activeNav) ? true : prev.events,
+      mediaCentre: mediaCentreItems.includes(activeNav) ? true : prev.mediaCentre,
+      about: aboutItems.includes(activeNav) ? true : prev.about
+    }));
+  }, [activeNav]);
 
   const fetchSections = async () => {
     try {
@@ -353,7 +404,7 @@ export function AdminPanel({ onLogout }) {
 
   const handleSectionClick = (e) => {
     e.preventDefault();
-    setActiveNav('section');
+    setActiveNav('SECTION');
   };
 
   const handleNewsClick = (e) => {
@@ -399,6 +450,13 @@ export function AdminPanel({ onLogout }) {
   const handleFinancialReportClick = (e) => {
     e.preventDefault();
     setActiveNav('financial-report');
+  };
+
+  const toggleDropdown = (dropdown) => {
+    setOpenDropdowns(prev => ({
+      ...prev,
+      [dropdown]: !prev[dropdown]
+    }));
   };
 
   const handleNavClick = (nav) => {
@@ -2012,6 +2070,327 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
+  const fetchPressReleases = async () => {
+    try {
+      const response = await pressReleaseAPI.getAll();
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        const mappedPressReleases = response.returnData.list_of_item.map(pr => ({
+          id: pr.id?.toString() || Date.now().toString(),
+          title: pr.title || '',
+          description: pr.description || '',
+          image: pr.image || null
+        }));
+        setPressReleases(mappedPressReleases);
+      }
+    } catch (err) {
+      console.error('Error fetching press releases:', err);
+    }
+  };
+
+  const handlePressReleaseClick = (e) => {
+    e.preventDefault();
+    setActiveNav('press-release');
+  };
+
+  const handleAddPressReleaseClick = () => {
+    setEditingPressRelease(null);
+    setShowAddPressReleaseForm(true);
+  };
+
+  const handleEditPressRelease = (pressRelease) => {
+    setEditingPressRelease(pressRelease);
+    setShowAddPressReleaseForm(true);
+  };
+
+  const handleDeletePressRelease = async (id) => {
+    const pressRelease = pressReleases.find(pr => pr.id === id);
+    const pressReleaseName = pressRelease?.title || 'this press release';
+    showDeleteConfirmation(id, pressReleaseName, 'press release', async () => {
+      try {
+        const response = await pressReleaseAPI.delete(id);
+        if (response.status === 'OK') {
+          await fetchPressReleases();
+          alert('Press Release deleted successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to delete press release');
+        }
+      } catch (err) {
+        console.error('Error deleting press release:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete press release. Please try again.';
+        alert(errorMessage);
+      }
+    });
+  };
+
+  const handleSavePressRelease = async (pressReleaseData, pressReleaseId = null) => {
+    try {
+      let response;
+      
+      if (pressReleaseId) {
+        // Update existing press release
+        response = await pressReleaseAPI.update(pressReleaseId, pressReleaseData);
+      } else {
+        // Create new press release
+        response = await pressReleaseAPI.create(pressReleaseData);
+      }
+      
+      if (response.status === 'OK') {
+        // Refresh press releases list from API
+        await fetchPressReleases();
+        setShowAddPressReleaseForm(false);
+        setEditingPressRelease(null);
+        alert(pressReleaseId ? 'Press Release updated successfully!' : 'Press Release saved successfully!');
+      } else {
+        alert(response.errorMessage || (pressReleaseId ? 'Failed to update press release' : 'Failed to save press release'));
+      }
+    } catch (err) {
+      console.error('Error saving press release:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || (pressReleaseId ? 'Failed to update press release. Please try again.' : 'Failed to save press release. Please try again.');
+      alert(errorMessage);
+    }
+  };
+
+  const fetchStatements = async () => {
+    try {
+      const response = await statementAPI.getAll();
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        const mappedStatements = response.returnData.list_of_item.map(s => ({
+          id: s.id?.toString() || Date.now().toString(),
+          title: s.title || '',
+          description: s.description || '',
+          image: s.image || null
+        }));
+        setStatements(mappedStatements);
+      }
+    } catch (err) {
+      console.error('Error fetching statements:', err);
+    }
+  };
+
+  const handleStatementClick = (e) => {
+    e.preventDefault();
+    setActiveNav('statement');
+  };
+
+  const handleAddStatementClick = () => {
+    setEditingStatement(null);
+    setShowAddStatementForm(true);
+  };
+
+  const handleEditStatement = (statement) => {
+    setEditingStatement(statement);
+    setShowAddStatementForm(true);
+  };
+
+  const handleDeleteStatement = async (id) => {
+    const statement = statements.find(s => s.id === id);
+    const statementName = statement?.title || 'this statement';
+    showDeleteConfirmation(id, statementName, 'statement', async () => {
+      try {
+        const response = await statementAPI.delete(id);
+        if (response.status === 'OK') {
+          await fetchStatements();
+          alert('Statement deleted successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to delete statement');
+        }
+      } catch (err) {
+        console.error('Error deleting statement:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete statement. Please try again.';
+        alert(errorMessage);
+      }
+    });
+  };
+
+  const handleSaveStatement = async (statementData, statementId = null) => {
+    try {
+      let response;
+      
+      if (statementId) {
+        // Update existing statement
+        response = await statementAPI.update(statementId, statementData);
+      } else {
+        // Create new statement
+        response = await statementAPI.create(statementData);
+      }
+      
+      if (response.status === 'OK') {
+        // Refresh statements list from API
+        await fetchStatements();
+        setShowAddStatementForm(false);
+        setEditingStatement(null);
+        alert(statementId ? 'Statement updated successfully!' : 'Statement saved successfully!');
+      } else {
+        alert(response.errorMessage || (statementId ? 'Failed to update statement' : 'Failed to save statement'));
+      }
+    } catch (err) {
+      console.error('Error saving statement:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || (statementId ? 'Failed to update statement. Please try again.' : 'Failed to save statement. Please try again.');
+      alert(errorMessage);
+    }
+  };
+
+  const fetchVideos = async () => {
+    try {
+      const response = await costechVideoAPI.getAll();
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        const mappedVideos = response.returnData.list_of_item.map(v => ({
+          id: v.id?.toString() || Date.now().toString(),
+          title: v.title || '',
+          description: v.description || '',
+          video_link: v.video_link || null
+        }));
+        setVideos(mappedVideos);
+      }
+    } catch (err) {
+      console.error('Error fetching videos:', err);
+    }
+  };
+
+  const handleVideoClick = (e) => {
+    e.preventDefault();
+    setActiveNav('costech-video');
+  };
+
+  const handleAddVideoClick = () => {
+    setEditingVideo(null);
+    setShowAddVideoForm(true);
+  };
+
+  const handleEditVideo = (video) => {
+    setEditingVideo(video);
+    setShowAddVideoForm(true);
+  };
+
+  const handleDeleteVideo = async (id) => {
+    const video = videos.find(v => v.id === id);
+    const videoName = video?.title || 'this video';
+    showDeleteConfirmation(id, videoName, 'video', async () => {
+      try {
+        const response = await costechVideoAPI.delete(id);
+        if (response.status === 'OK') {
+          await fetchVideos();
+          alert('Video deleted successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to delete video');
+        }
+      } catch (err) {
+        console.error('Error deleting video:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete video. Please try again.';
+        alert(errorMessage);
+      }
+    });
+  };
+
+  const handleSaveVideo = async (videoData, videoId = null) => {
+    try {
+      let response;
+      
+      if (videoId) {
+        // Update existing video
+        response = await costechVideoAPI.update(videoId, videoData);
+      } else {
+        // Create new video
+        response = await costechVideoAPI.create(videoData);
+      }
+      
+      if (response.status === 'OK') {
+        // Refresh videos list from API
+        await fetchVideos();
+        setShowAddVideoForm(false);
+        setEditingVideo(null);
+        alert(videoId ? 'Video updated successfully!' : 'Video saved successfully!');
+      } else {
+        alert(response.errorMessage || (videoId ? 'Failed to update video' : 'Failed to save video'));
+      }
+    } catch (err) {
+      console.error('Error saving video:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || (videoId ? 'Failed to update video. Please try again.' : 'Failed to save video. Please try again.');
+      alert(errorMessage);
+    }
+  };
+
+  const fetchCommunityEngagements = async () => {
+    try {
+      const response = await communityEngagementAPI.getAll();
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        const mappedEngagements = response.returnData.list_of_item.map(e => ({
+          id: e.id?.toString() || Date.now().toString(),
+          title: e.title || '',
+          description: e.description || '',
+          date: e.date || e.created_at || new Date().toISOString().split('T')[0],
+          image: e.image || null
+        }));
+        setCommunityEngagements(mappedEngagements);
+      }
+    } catch (err) {
+      console.error('Error fetching community engagements:', err);
+    }
+  };
+
+  const handleCommunityEngagementClick = (e) => {
+    e.preventDefault();
+    setActiveNav('community-engagement');
+  };
+
+  const handleAddCommunityEngagementClick = () => {
+    setEditingCommunityEngagement(null);
+    setShowAddCommunityEngagementForm(true);
+  };
+
+  const handleEditCommunityEngagement = (engagement) => {
+    setEditingCommunityEngagement(engagement);
+    setShowAddCommunityEngagementForm(true);
+  };
+
+  const handleDeleteCommunityEngagement = async (id) => {
+    const engagement = communityEngagements.find(e => e.id === id);
+    const engagementName = engagement?.title || 'this community engagement';
+    showDeleteConfirmation(id, engagementName, 'community engagement', async () => {
+      try {
+        const response = await communityEngagementAPI.delete(id);
+        if (response.status === 'OK') {
+          await fetchCommunityEngagements();
+          alert('Community Engagement deleted successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to delete community engagement');
+        }
+      } catch (err) {
+        console.error('Error deleting community engagement:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete community engagement. Please try again.';
+        alert(errorMessage);
+      }
+    });
+  };
+
+  const handleSaveCommunityEngagement = async (engagementData, engagementId = null) => {
+    try {
+      let response;
+      
+      if (engagementId) {
+        // Update existing engagement
+        response = await communityEngagementAPI.update(engagementId, engagementData);
+      } else {
+        // Create new engagement
+        response = await communityEngagementAPI.create(engagementData);
+      }
+      
+      if (response.status === 'OK') {
+        // Refresh engagements list from API
+        await fetchCommunityEngagements();
+        setShowAddCommunityEngagementForm(false);
+        setEditingCommunityEngagement(null);
+        alert(engagementId ? 'Community Engagement updated successfully!' : 'Community Engagement saved successfully!');
+      } else {
+        alert(response.errorMessage || (engagementId ? 'Failed to update community engagement' : 'Failed to save community engagement'));
+      }
+    } catch (err) {
+      console.error('Error saving community engagement:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || (engagementId ? 'Failed to update community engagement. Please try again.' : 'Failed to save community engagement. Please try again.');
+      alert(errorMessage);
+    }
+  };
+
   return (
     <div className="admin-panel">
       {/* Sidebar */}
@@ -2034,21 +2413,49 @@ export function AdminPanel({ onLogout }) {
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            <span>Dashboard</span>
+            <span>DASHBOARD</span>
           </a>
           <a 
             href="#section" 
-            className={`nav-item ${activeNav === 'section' ? 'active' : ''}`}
+            className={`nav-item ${activeNav === 'SECTION' ? 'active' : ''}`}
             onClick={handleSectionClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span>Section</span>
+            <span>SECTION</span>
+          </a>
+          
+          {/* HOMEPAGE Dropdown */}
+          <div className="nav-dropdown">
+            <div 
+              className={`nav-dropdown-header ${openDropdowns.homepage ? 'open' : ''} ${['heroes', 'news', 'partners'].includes(activeNav) ? 'active' : ''}`}
+              onClick={() => toggleDropdown('homepage')}
+            >
+              <div className="nav-dropdown-title">
+                <svg className="nav-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>HOMEPAGE</span>
+              </div>
+              <svg className="nav-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div className={`nav-dropdown-menu ${openDropdowns.homepage ? 'open' : ''}`}>
+              <a 
+                href="#heroes" 
+                className={`nav-dropdown-item ${activeNav === 'heroes' ? 'active' : ''}`}
+                onClick={handleHeroesClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                <span>Heroes</span>
           </a>
           <a 
             href="#news" 
-            className={`nav-item ${activeNav === 'news' ? 'active' : ''}`}
+                className={`nav-dropdown-item ${activeNav === 'news' ? 'active' : ''}`}
             onClick={handleNewsClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2058,7 +2465,7 @@ export function AdminPanel({ onLogout }) {
           </a>
           <a 
             href="#partners" 
-            className={`nav-item ${activeNav === 'partners' ? 'active' : ''}`}
+                className={`nav-dropdown-item ${activeNav === 'partners' ? 'active' : ''}`}
             onClick={handlePartnersClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2066,19 +2473,29 @@ export function AdminPanel({ onLogout }) {
             </svg>
             <span>Partners</span>
           </a>
-          <a 
-            href="#heroes" 
-            className={`nav-item ${activeNav === 'heroes' ? 'active' : ''}`}
-            onClick={handleHeroesClick}
-          >
-            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </div>
+          </div>
+          
+          {/* ABOUT MENU Dropdown */}
+          <div className="nav-dropdown">
+            <div 
+              className={`nav-dropdown-header ${openDropdowns.about ? 'open' : ''} ${['positions', 'management-team', 'commission-members'].includes(activeNav) ? 'active' : ''}`}
+              onClick={() => toggleDropdown('about')}
+            >
+              <div className="nav-dropdown-title">
+                <svg className="nav-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>Heroes</span>
-          </a>
+                <span>ABOUT MENU</span>
+              </div>
+              <svg className="nav-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div className={`nav-dropdown-menu ${openDropdowns.about ? 'open' : ''}`}>
           <a 
             href="#positions" 
-            className={`nav-item ${activeNav === 'positions' ? 'active' : ''}`}
+                className={`nav-dropdown-item ${activeNav === 'positions' ? 'active' : ''}`}
             onClick={handlePositionsClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2088,7 +2505,7 @@ export function AdminPanel({ onLogout }) {
           </a>
           <a 
             href="#management-team" 
-            className={`nav-item ${activeNav === 'management-team' ? 'active' : ''}`}
+                className={`nav-dropdown-item ${activeNav === 'management-team' ? 'active' : ''}`}
             onClick={handleManagementTeamClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2098,7 +2515,7 @@ export function AdminPanel({ onLogout }) {
           </a>
           <a 
             href="#commission-members" 
-            className={`nav-item ${activeNav === 'commission-members' ? 'active' : ''}`}
+                className={`nav-dropdown-item ${activeNav === 'commission-members' ? 'active' : ''}`}
             onClick={handleCommissionMembersClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2106,6 +2523,8 @@ export function AdminPanel({ onLogout }) {
             </svg>
             <span>Commission Members</span>
           </a>
+            </div>
+          </div>
           <a 
             href="#innovation-space" 
             className={`nav-item ${activeNav === 'innovation-space' ? 'active' : ''}`}
@@ -2114,7 +2533,7 @@ export function AdminPanel({ onLogout }) {
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            <span>Innovation Space</span>
+            <span>INNOVATION SPACE</span>
           </a>
           <a 
             href="#online-service" 
@@ -2124,21 +2543,39 @@ export function AdminPanel({ onLogout }) {
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
             </svg>
-            <span>Online Service</span>
+            <span>ONLINE SERVICES</span>
           </a>
-          <a 
-            href="#financial-report" 
-            className={`nav-item ${activeNav === 'financial-report' ? 'active' : ''}`}
-            onClick={handleFinancialReportClick}
+          
+          {/* PUBLICATION Dropdown */}
+          <div className="nav-dropdown">
+            <div 
+              className={`nav-dropdown-header ${openDropdowns.publication ? 'open' : ''} ${['books', 'magazine', 'reports', 'policies', 'guideline-documents', 'strategic-plan', 'acts-and-legal', 'financial-report'].includes(activeNav) ? 'active' : ''}`}
+              onClick={() => toggleDropdown('publication')}
+            >
+              <div className="nav-dropdown-title">
+                <svg className="nav-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span>PUBLICATION</span>
+              </div>
+              <svg className="nav-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div className={`nav-dropdown-menu ${openDropdowns.publication ? 'open' : ''}`}>
+              <a 
+                href="#books" 
+                className={`nav-dropdown-item ${activeNav === 'books' ? 'active' : ''}`}
+                onClick={handleBookClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
-            <span>Financial Report</span>
+                <span>Books</span>
           </a>
           <a 
             href="#magazine" 
-            className={`nav-item ${activeNav === 'magazine' ? 'active' : ''}`}
+                className={`nav-dropdown-item ${activeNav === 'magazine' ? 'active' : ''}`}
             onClick={handleMagazineClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2147,18 +2584,8 @@ export function AdminPanel({ onLogout }) {
             <span>Magazine</span>
           </a>
           <a 
-            href="#books" 
-            className={`nav-item ${activeNav === 'books' ? 'active' : ''}`}
-            onClick={handleBookClick}
-          >
-            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            <span>Books</span>
-          </a>
-          <a 
             href="#reports" 
-            className={`nav-item ${activeNav === 'reports' ? 'active' : ''}`}
+                className={`nav-dropdown-item ${activeNav === 'reports' ? 'active' : ''}`}
             onClick={handleReportClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2167,28 +2594,28 @@ export function AdminPanel({ onLogout }) {
             <span>Reports</span>
           </a>
           <a 
-            href="#acts-and-legal" 
-            className={`nav-item ${activeNav === 'acts-and-legal' ? 'active' : ''}`}
-            onClick={handleActsAndLegalClick}
+                href="#policies" 
+                className={`nav-dropdown-item ${activeNav === 'policies' ? 'active' : ''}`}
+                onClick={handlePolicyClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span>Acts and Legal</span>
+                <span>Policies</span>
           </a>
           <a 
-            href="#policies" 
-            className={`nav-item ${activeNav === 'policies' ? 'active' : ''}`}
-            onClick={handlePolicyClick}
+                href="#guideline-documents"
+                className={`nav-dropdown-item ${activeNav === 'guideline-documents' ? 'active' : ''}`}
+                onClick={handleGuidelineDocumentClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span>Policies</span>
+                <span>Guideline Documents</span>
           </a>
           <a 
             href="#strategic-plan" 
-            className={`nav-item ${activeNav === 'strategic-plan' ? 'active' : ''}`}
+                className={`nav-dropdown-item ${activeNav === 'strategic-plan' ? 'active' : ''}`}
             onClick={handleStrategicPlanClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2197,28 +2624,88 @@ export function AdminPanel({ onLogout }) {
             <span>Strategic Plan</span>
           </a>
           <a
-            href="#guideline-documents"
-            className={`nav-item ${activeNav === 'guideline-documents' ? 'active' : ''}`}
-            onClick={handleGuidelineDocumentClick}
+                href="#acts-and-legal" 
+                className={`nav-dropdown-item ${activeNav === 'acts-and-legal' ? 'active' : ''}`}
+                onClick={handleActsAndLegalClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>Acts and Legal</span>
+              </a>
+              <a 
+                href="#financial-report" 
+                className={`nav-dropdown-item ${activeNav === 'financial-report' ? 'active' : ''}`}
+                onClick={handleFinancialReportClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span>Guideline Documents</span>
-          </a>
-          <a
-            href="#conference"
-            className={`nav-item ${activeNav === 'conference' ? 'active' : ''}`}
-            onClick={handleConferenceClick}
+                <span>Financial Report</span>
+              </a>
+            </div>
+          </div>
+          
+          {/* PROGRAM Dropdown */}
+          <div className="nav-dropdown">
+            <div 
+              className={`nav-dropdown-header ${openDropdowns.program ? 'open' : ''} ${['ongoing-project', 'area-of-partnership'].includes(activeNav) ? 'active' : ''}`}
+              onClick={() => toggleDropdown('program')}
+            >
+              <div className="nav-dropdown-title">
+                <svg className="nav-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                <span>PROGRAM</span>
+              </div>
+              <svg className="nav-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div className={`nav-dropdown-menu ${openDropdowns.program ? 'open' : ''}`}>
+              <a
+                href="#ongoing-project"
+                className={`nav-dropdown-item ${activeNav === 'ongoing-project' ? 'active' : ''}`}
+                onClick={handleOngoingProjectClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
             </svg>
-            <span>Conference</span>
-          </a>
+                <span>Ongoing Project</span>
+              </a>
+              <a
+                href="#area-of-partnership"
+                className={`nav-dropdown-item ${activeNav === 'area-of-partnership' ? 'active' : ''}`}
+                onClick={handleAreaOfPartnershipClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>Area of Partnership</span>
+              </a>
+            </div>
+          </div>
+          
+          {/* EVENTS Dropdown */}
+          <div className="nav-dropdown">
+            <div 
+              className={`nav-dropdown-header ${openDropdowns.events ? 'open' : ''} ${['exhibition', 'conference', 'community-engagement'].includes(activeNav) ? 'active' : ''}`}
+              onClick={() => toggleDropdown('events')}
+            >
+              <div className="nav-dropdown-title">
+                <svg className="nav-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>EVENTS</span>
+              </div>
+              <svg className="nav-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div className={`nav-dropdown-menu ${openDropdowns.events ? 'open' : ''}`}>
           <a
             href="#exhibition"
-            className={`nav-item ${activeNav === 'exhibition' ? 'active' : ''}`}
+                className={`nav-dropdown-item ${activeNav === 'exhibition' ? 'active' : ''}`}
             onClick={handleExhibitionClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2227,25 +2714,27 @@ export function AdminPanel({ onLogout }) {
             <span>Exhibition</span>
           </a>
           <a
-            href="#ongoing-project"
-            className={`nav-item ${activeNav === 'ongoing-project' ? 'active' : ''}`}
-            onClick={handleOngoingProjectClick}
+                href="#conference"
+                className={`nav-dropdown-item ${activeNav === 'conference' ? 'active' : ''}`}
+                onClick={handleConferenceClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <span>Ongoing Project</span>
+                <span>Conference</span>
           </a>
           <a
-            href="#area-of-partnership"
-            className={`nav-item ${activeNav === 'area-of-partnership' ? 'active' : ''}`}
-            onClick={handleAreaOfPartnershipClick}
+                href="#community-engagement" 
+                className={`nav-dropdown-item ${activeNav === 'community-engagement' ? 'active' : ''}`}
+                onClick={handleCommunityEngagementClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span>Area of Partnership</span>
+                <span>Community Engagement</span>
           </a>
+            </div>
+          </div>
           <a 
             href="#fellowship-grants" 
             className={`nav-item ${activeNav === 'fellowship-grants' ? 'active' : ''}`}
@@ -2254,45 +2743,63 @@ export function AdminPanel({ onLogout }) {
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>Fellowship Grants</span>
+            <span>FELLOWSHIP GRANTS</span>
           </a>
-          <a 
-            href="#users" 
-            className={`nav-item ${activeNav === 'users' ? 'active' : ''}`}
-            onClick={(e) => { e.preventDefault(); handleNavClick('users'); }}
+          {/* MEDIA CENTRE Dropdown */}
+          <div className="nav-dropdown">
+            <div 
+              className={`nav-dropdown-header ${openDropdowns.mediaCentre ? 'open' : ''} ${['press-release', 'statement', 'costech-video'].includes(activeNav) ? 'active' : ''}`}
+              onClick={() => toggleDropdown('mediaCentre')}
+            >
+              <div className="nav-dropdown-title">
+                <svg className="nav-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+                <span>MEDIA CENTRE</span>
+              </div>
+              <svg className="nav-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div className={`nav-dropdown-menu ${openDropdowns.mediaCentre ? 'open' : ''}`}>
+              <a 
+                href="#press-release" 
+                className={`nav-dropdown-item ${activeNav === 'press-release' ? 'active' : ''}`}
+                onClick={handlePressReleaseClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 4a2 2 0 002 2m0 0a2 2 0 002-2m-2 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            <span>Users</span>
+                <span>Press Release</span>
           </a>
           <a 
-            href="#settings" 
-            className={`nav-item ${activeNav === 'settings' ? 'active' : ''}`}
-            onClick={(e) => { e.preventDefault(); handleNavClick('settings'); }}
+                href="#statement" 
+                className={`nav-dropdown-item ${activeNav === 'statement' ? 'active' : ''}`}
+                onClick={handleStatementClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 01-6 0 3 3 0 1118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span>Settings</span>
+                <span>Statements</span>
           </a>
           <a 
-            href="#reports" 
-            className={`nav-item ${activeNav === 'reports' ? 'active' : ''}`}
-            onClick={(e) => { e.preventDefault(); handleNavClick('reports'); }}
+                href="#costech-video" 
+                className={`nav-dropdown-item ${activeNav === 'costech-video' ? 'active' : ''}`}
+                onClick={handleVideoClick}
           >
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
-            <span>Reports</span>
+                <span>Costech Videos</span>
           </a>
+            </div>
+          </div>
         </nav>
       </aside>
 
       {/* Main Content */}
       <div className="admin-main">
-        {activeNav === 'section' ? (
+        {activeNav === 'SECTION' ? (
           <SectionPage 
             onBack={handleBackToDashboard}
             onSave={handleSaveSection}
@@ -2490,6 +2997,42 @@ export function AdminPanel({ onLogout }) {
             onAddGrantClick={handleAddFellowshipGrantClick}
             onDelete={handleDeleteFellowshipGrant}
             onEdit={handleEditFellowshipGrant}
+          />
+        ) : activeNav === 'press-release' ? (
+          <PressReleasePage 
+            onBack={handleBackToDashboard}
+            onSave={handleSavePressRelease}
+            pressReleases={pressReleases}
+            onAddPressReleaseClick={handleAddPressReleaseClick}
+            onDelete={handleDeletePressRelease}
+            onEdit={handleEditPressRelease}
+          />
+        ) : activeNav === 'statement' ? (
+          <StatementPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveStatement}
+            statements={statements}
+            onAddStatementClick={handleAddStatementClick}
+            onDelete={handleDeleteStatement}
+            onEdit={handleEditStatement}
+          />
+        ) : activeNav === 'costech-video' ? (
+          <CostechVideoPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveVideo}
+            videos={videos}
+            onAddVideoClick={handleAddVideoClick}
+            onDelete={handleDeleteVideo}
+            onEdit={handleEditVideo}
+          />
+        ) : activeNav === 'community-engagement' ? (
+          <CommunityEngagementPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveCommunityEngagement}
+            engagements={communityEngagements}
+            onAddEngagementClick={handleAddCommunityEngagementClick}
+            onDelete={handleDeleteCommunityEngagement}
+            onEdit={handleEditCommunityEngagement}
           />
         ) : (
           <>
@@ -2845,6 +3388,46 @@ export function AdminPanel({ onLogout }) {
           }}
           onSave={handleSaveFellowshipGrant}
           editGrant={editingFellowshipGrant}
+        />
+      )}
+      {showAddPressReleaseForm && (
+        <AddPressReleaseModal
+          onClose={() => {
+            setShowAddPressReleaseForm(false);
+            setEditingPressRelease(null);
+          }}
+          onSave={handleSavePressRelease}
+          editPressRelease={editingPressRelease}
+        />
+      )}
+      {showAddStatementForm && (
+        <AddStatementModal
+          onClose={() => {
+            setShowAddStatementForm(false);
+            setEditingStatement(null);
+          }}
+          onSave={handleSaveStatement}
+          editStatement={editingStatement}
+        />
+      )}
+      {showAddVideoForm && (
+        <AddCostechVideoModal
+          onClose={() => {
+            setShowAddVideoForm(false);
+            setEditingVideo(null);
+          }}
+          onSave={handleSaveVideo}
+          editVideo={editingVideo}
+        />
+      )}
+      {showAddCommunityEngagementForm && (
+        <AddCommunityEngagementModal
+          onClose={() => {
+            setShowAddCommunityEngagementForm(false);
+            setEditingCommunityEngagement(null);
+          }}
+          onSave={handleSaveCommunityEngagement}
+          editEngagement={editingCommunityEngagement}
         />
       )}
       {deleteConfirmation.show && (

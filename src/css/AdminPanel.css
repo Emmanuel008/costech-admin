@@ -74,6 +74,119 @@
   stroke-width: 2;
 }
 
+.nav-category {
+  padding: 16px 20px 8px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 8px;
+}
+
+.nav-category:first-child {
+  margin-top: 0;
+}
+
+.nav-dropdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  user-select: none;
+}
+
+.nav-dropdown-header:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.nav-dropdown-header.active {
+  background-color: rgba(185, 124, 7, 0.2);
+  color: #fbbf24;
+}
+
+.nav-dropdown-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.nav-dropdown-icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  transition: transform 0.2s ease;
+}
+
+.nav-dropdown-header.open .nav-dropdown-icon {
+  transform: rotate(90deg);
+}
+
+.nav-dropdown-arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.nav-dropdown-header.open .nav-dropdown-arrow {
+  transform: rotate(90deg);
+}
+
+.nav-dropdown-menu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.nav-dropdown-menu.open {
+  max-height: 1000px;
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px 10px 48px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.nav-dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-left-color: rgba(185, 124, 7, 0.5);
+}
+
+.nav-dropdown-item.active {
+  background-color: rgba(185, 124, 7, 0.2);
+  color: #fbbf24;
+  border-left-color: #b97c07;
+}
+
+.nav-dropdown-item .nav-icon {
+  width: 18px;
+  height: 18px;
+}
+
 /* Main Content Area */
 .admin-main {
   flex: 1;

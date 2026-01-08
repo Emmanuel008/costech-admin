@@ -11,6 +11,7 @@ import { InnovationSpacePage } from './InnovationSpacePage';
 import { OnlineServicePage } from './OnlineServicePage';
 import { FinancialReportPage } from './FinancialReportPage';
 import { MagazinePage } from './MagazinePage';
+import { NewsletterPage } from './NewsletterPage';
 import { BooksPage } from './BooksPage';
 import { ReportsPage } from './ReportsPage';
 import { ActsAndLegalPage } from './ActsAndLegalPage';
@@ -37,6 +38,7 @@ import { AddInnovationSpaceModal } from '../components/AddInnovationSpaceModal';
 import { AddOnlineServiceModal } from '../components/AddOnlineServiceModal';
 import { AddFinancialReportModal } from '../components/AddFinancialReportModal';
 import { AddMagazineModal } from '../components/AddMagazineModal';
+import { AddNewsletterModal } from '../components/AddNewsletterModal';
 import { AddBookModal } from '../components/AddBookModal';
 import { AddReportModal } from '../components/AddReportModal';
 import { AddActsAndLegalModal } from '../components/AddActsAndLegalModal';
@@ -53,7 +55,7 @@ import { AddStatementModal } from '../components/AddStatementModal';
 import { AddCostechVideoModal } from '../components/AddCostechVideoModal';
 import { AddCommunityEngagementModal } from '../components/AddCommunityEngagementModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
-import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI } from '../services/api';
+import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, newsletterAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI } from '../services/api';
 
 export function AdminPanel({ onLogout }) {
   const [activeNav, setActiveNav] = useState('dashboard');
@@ -76,6 +78,7 @@ export function AdminPanel({ onLogout }) {
   const [onlineServices, setOnlineServices] = useState([]);
   const [financialReports, setFinancialReports] = useState([]);
   const [magazines, setMagazines] = useState([]);
+  const [newsletters, setNewsletters] = useState([]);
   const [books, setBooks] = useState([]);
   const [reports, setReports] = useState([]);
   const [actsAndLegal, setActsAndLegal] = useState([]);
@@ -102,6 +105,7 @@ export function AdminPanel({ onLogout }) {
   const [showAddOnlineServiceForm, setShowAddOnlineServiceForm] = useState(false);
   const [showAddFinancialReportForm, setShowAddFinancialReportForm] = useState(false);
   const [showAddMagazineForm, setShowAddMagazineForm] = useState(false);
+  const [showAddNewsletterForm, setShowAddNewsletterForm] = useState(false);
   const [showAddBookForm, setShowAddBookForm] = useState(false);
   const [showAddReportForm, setShowAddReportForm] = useState(false);
   const [showAddActsAndLegalForm, setShowAddActsAndLegalForm] = useState(false);
@@ -128,6 +132,7 @@ export function AdminPanel({ onLogout }) {
   const [editingOnlineService, setEditingOnlineService] = useState(null);
   const [editingFinancialReport, setEditingFinancialReport] = useState(null);
   const [editingMagazine, setEditingMagazine] = useState(null);
+  const [editingNewsletter, setEditingNewsletter] = useState(null);
   const [editingBook, setEditingBook] = useState(null);
   const [editingReport, setEditingReport] = useState(null);
   const [editingActsAndLegal, setEditingActsAndLegal] = useState(null);
@@ -156,6 +161,7 @@ export function AdminPanel({ onLogout }) {
     fetchOnlineServices();
     fetchFinancialReports();
     fetchMagazines();
+    fetchNewsletters();
     fetchBooks();
     fetchReports();
     fetchActsAndLegal();
@@ -179,7 +185,7 @@ export function AdminPanel({ onLogout }) {
     const publicationItems = ['books', 'magazine', 'reports', 'policies', 'guideline-documents', 'strategic-plan', 'acts-and-legal', 'financial-report'];
     const programItems = ['ongoing-project', 'area-of-partnership'];
     const eventsItems = ['exhibition', 'conference', 'community-engagement'];
-    const mediaCentreItems = ['press-release', 'statement', 'costech-video'];
+    const mediaCentreItems = ['press-release', 'statement', 'costech-video', 'newsletter'];
     const aboutItems = ['positions', 'management-team', 'commission-members'];
 
     setOpenDropdowns(prev => ({
@@ -1243,6 +1249,81 @@ export function AdminPanel({ onLogout }) {
     } catch (err) {
       console.error('Error saving magazine:', err);
       const errorMessage = err.response?.data?.errorMessage || err.message || (magazineId ? 'Failed to update magazine. Please try again.' : 'Failed to save magazine. Please try again.');
+      alert(errorMessage);
+    }
+  };
+
+  const fetchNewsletters = async () => {
+    try {
+      const response = await newsletterAPI.getAll();
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        // Map API response to newsletters format
+        const mappedNewsletters = response.returnData.list_of_item.map(newsletter => ({
+          id: newsletter.id?.toString() || Date.now().toString(),
+          title: newsletter.title || '',
+          date: newsletter.date || '',
+          document: newsletter.document || null,
+          createdAt: newsletter.created_at || newsletter.createdAt || new Date().toISOString(),
+        }));
+        setNewsletters(mappedNewsletters);
+      }
+    } catch (err) {
+      console.error('Error fetching newsletters:', err);
+    }
+  };
+
+  const handleNewsletterClick = (e) => {
+    e.preventDefault();
+    setActiveNav('newsletter');
+  };
+
+  const handleAddNewsletterClick = () => {
+    setEditingNewsletter(null);
+    setShowAddNewsletterForm(true);
+  };
+
+  const handleEditNewsletter = (newsletter) => {
+    setEditingNewsletter(newsletter);
+    setShowAddNewsletterForm(true);
+  };
+
+  const handleDeleteNewsletter = async (id) => {
+    const newsletter = newsletters.find(n => n.id === id);
+    const newsletterName = newsletter?.title || 'this newsletter';
+    showDeleteConfirmation(id, newsletterName, 'newsletter', async () => {
+      try {
+        const response = await newsletterAPI.delete(id);
+        if (response.status === 'OK') {
+          await fetchNewsletters();
+          alert('Newsletter deleted successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to delete newsletter');
+        }
+      } catch (err) {
+        console.error('Error deleting newsletter:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete newsletter. Please try again.';
+        alert(errorMessage);
+      }
+    });
+  };
+
+  const handleSaveNewsletter = async (newsletterData, newsletterId) => {
+    try {
+      const response = newsletterId 
+        ? await newsletterAPI.update(newsletterId, newsletterData)
+        : await newsletterAPI.create(newsletterData);
+
+      if (response.status === 'OK') {
+        await fetchNewsletters();
+        setShowAddNewsletterForm(false);
+        setEditingNewsletter(null);
+        alert(newsletterId ? 'Newsletter updated successfully!' : 'Newsletter saved successfully!');
+      } else {
+        alert(response.errorMessage || (newsletterId ? 'Failed to update newsletter' : 'Failed to save newsletter'));
+      }
+    } catch (err) {
+      console.error('Error saving newsletter:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || (newsletterId ? 'Failed to update newsletter. Please try again.' : 'Failed to save newsletter. Please try again.');
       alert(errorMessage);
     }
   };
@@ -2748,7 +2829,7 @@ export function AdminPanel({ onLogout }) {
           {/* MEDIA CENTRE Dropdown */}
           <div className="nav-dropdown">
             <div 
-              className={`nav-dropdown-header ${openDropdowns.mediaCentre ? 'open' : ''} ${['press-release', 'statement', 'costech-video'].includes(activeNav) ? 'active' : ''}`}
+              className={`nav-dropdown-header ${openDropdowns.mediaCentre ? 'open' : ''} ${['press-release', 'statement', 'costech-video', 'newsletter'].includes(activeNav) ? 'active' : ''}`}
               onClick={() => toggleDropdown('mediaCentre')}
             >
               <div className="nav-dropdown-title">
@@ -2791,6 +2872,16 @@ export function AdminPanel({ onLogout }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
                 <span>Costech Videos</span>
+          </a>
+          <a 
+            href="#newsletter" 
+            className={`nav-dropdown-item ${activeNav === 'newsletter' ? 'active' : ''}`}
+            onClick={handleNewsletterClick}
+          >
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span>Newsletter</span>
           </a>
             </div>
           </div>
@@ -2898,6 +2989,15 @@ export function AdminPanel({ onLogout }) {
             onAddMagazineClick={handleAddMagazineClick}
             onDelete={handleDeleteMagazine}
             onEdit={handleEditMagazine}
+          />
+        ) : activeNav === 'newsletter' ? (
+          <NewsletterPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveNewsletter}
+            newsletters={newsletters}
+            onAddNewsletterClick={handleAddNewsletterClick}
+            onDelete={handleDeleteNewsletter}
+            onEdit={handleEditNewsletter}
           />
         ) : activeNav === 'books' ? (
           <BooksPage 
@@ -3278,6 +3378,16 @@ export function AdminPanel({ onLogout }) {
           }}
           onSave={handleSaveMagazine}
           editMagazine={editingMagazine}
+        />
+      )}
+      {showAddNewsletterForm && (
+        <AddNewsletterModal
+          onClose={() => {
+            setShowAddNewsletterForm(false);
+            setEditingNewsletter(null);
+          }}
+          onSave={handleSaveNewsletter}
+          editNewsletter={editingNewsletter}
         />
       )}
       {showAddBookForm && (

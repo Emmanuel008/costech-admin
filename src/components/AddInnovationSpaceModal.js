@@ -83,13 +83,6 @@ export function AddInnovationSpaceModal({ onClose, onSave, editSpace = null }) {
       return;
     }
 
-    const maxSize = 2 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setError('Image size must be less than 2MB');
-      e.target.value = '';
-      return;
-    }
-
     setError('');
     
     try {
@@ -493,7 +486,7 @@ export function AddInnovationSpaceModal({ onClose, onSave, editSpace = null }) {
             <div className="form-group">
               <label htmlFor="add-space-image" className="form-label">
                 Image
-                <span className="form-hint">(Max 2MB, will be compressed automatically)</span>
+                <span className="form-hint">(Will be compressed automatically)</span>
               </label>
               <div className="image-upload-container">
                 <input

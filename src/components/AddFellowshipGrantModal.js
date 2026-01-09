@@ -5,6 +5,7 @@ export function AddFellowshipGrantModal({ onClose, onSave, editGrant = null }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    link: '',
     status: 'OPEN'
   });
   const [error, setError] = useState('');
@@ -15,6 +16,7 @@ export function AddFellowshipGrantModal({ onClose, onSave, editGrant = null }) {
       setFormData({
         title: editGrant.title || '',
         description: editGrant.description || '',
+        link: editGrant.link || '',
         status: editGrant.status || 'OPEN'
       });
     }
@@ -31,7 +33,7 @@ export function AddFellowshipGrantModal({ onClose, onSave, editGrant = null }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.description) {
+    if (!formData.title || !formData.description || !formData.link) {
       setError('Please fill in all required fields');
       return;
     }
@@ -48,6 +50,7 @@ export function AddFellowshipGrantModal({ onClose, onSave, editGrant = null }) {
       setFormData({
         title: '',
         description: '',
+        link: '',
         status: 'OPEN'
       });
       setError('');
@@ -97,6 +100,22 @@ export function AddFellowshipGrantModal({ onClose, onSave, editGrant = null }) {
               onChange={handleInputChange}
               placeholder="Enter fellowship grant description"
               rows="5"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="add-grant-link" className="form-label">
+              Link <span className="required">*</span>
+            </label>
+            <input
+              type="url"
+              id="add-grant-link"
+              name="link"
+              className="form-input"
+              value={formData.link}
+              onChange={handleInputChange}
+              placeholder="https://example.com"
               required
             />
           </div>

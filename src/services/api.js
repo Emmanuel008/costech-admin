@@ -1409,6 +1409,7 @@ export const fellowshipGrantsAPI = {
       form_method: 'save',
       title: grantData.title || '',
       description: grantData.description || '',
+      link: grantData.link || '',
       status: grantData.status || 'OPEN',
     };
 
@@ -1422,6 +1423,7 @@ export const fellowshipGrantsAPI = {
       id: typeof id === 'string' ? parseInt(id, 10) : id,
       title: grantData.title || '',
       description: grantData.description || '',
+      link: grantData.link || '',
       status: grantData.status || 'OPEN',
     };
 
@@ -1793,6 +1795,8 @@ export const newsletterAPI = {
       title: newsletterData.title || '',
       date: newsletterData.date || '',
       document: newsletterData.document || '',
+      description: '',
+      image: '',
     };
 
     const response = await api.post('/api/newsLetter/iformAction', payload);
@@ -1806,6 +1810,8 @@ export const newsletterAPI = {
       title: newsletterData.title || '',
       date: newsletterData.date || '',
       document: newsletterData.document || null,
+      description: '',
+      image: '',
     };
 
     const response = await api.post('/api/newsLetter/iformAction', payload);

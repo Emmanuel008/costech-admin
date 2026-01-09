@@ -23,14 +23,6 @@ export function SectionForm({ onClose, onSave }) {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file size (5MB = 5 * 1024 * 1024 bytes)
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-    if (file.size > maxSize) {
-      setError('Image size must be less than 5MB');
-      e.target.value = ''; // Clear the input
-      return;
-    }
-
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('Please upload an image file');
@@ -165,7 +157,7 @@ export function SectionForm({ onClose, onSave }) {
           <div className="form-group">
             <label htmlFor="image" className="form-label">
               Image <span className="required">*</span>
-              <span className="form-hint">(Max 5MB)</span>
+              <span className="form-hint"></span>
             </label>
             <div className="image-upload-container">
               <input

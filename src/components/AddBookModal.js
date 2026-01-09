@@ -44,14 +44,6 @@ export function AddBookModal({ onClose, onSave, editBook = null }) {
       return;
     }
 
-    // Validate file size (10MB = 10 * 1024 * 1024 bytes)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-    if (file.size > maxSize) {
-      setError('File size must be less than 10MB');
-      e.target.value = '';
-      return;
-    }
-
     setError('');
     
     try {
@@ -171,7 +163,7 @@ export function AddBookModal({ onClose, onSave, editBook = null }) {
           <div className="form-group">
             <label htmlFor="add-book-document" className="form-label">
               Document (PDF) <span className="required">*</span>
-              <span className="form-hint">(Max 10MB, PDF only)</span>
+              <span className="form-hint">(PDF only)</span>
             </label>
             <div className="document-upload-container">
               <input

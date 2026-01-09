@@ -1319,11 +1319,19 @@ export function AdminPanel({ onLogout }) {
         setEditingNewsletter(null);
         alert(newsletterId ? 'Newsletter updated successfully!' : 'Newsletter saved successfully!');
       } else {
-        alert(response.errorMessage || (newsletterId ? 'Failed to update newsletter' : 'Failed to save newsletter'));
+        // Handle array or string error messages
+        const errorMsg = Array.isArray(response.errorMessage) 
+          ? response.errorMessage.join(', ') 
+          : response.errorMessage || (newsletterId ? 'Failed to update newsletter' : 'Failed to save newsletter');
+        alert(errorMsg);
       }
     } catch (err) {
       console.error('Error saving newsletter:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (newsletterId ? 'Failed to update newsletter. Please try again.' : 'Failed to save newsletter. Please try again.');
+      // Handle array or string error messages from backend
+      const backendError = err.response?.data?.errorMessage;
+      const errorMessage = Array.isArray(backendError)
+        ? backendError.join(', ')
+        : backendError || err.message || (newsletterId ? 'Failed to update newsletter. Please try again.' : 'Failed to save newsletter. Please try again.');
       alert(errorMessage);
     }
   };
@@ -2085,6 +2093,7 @@ export function AdminPanel({ onLogout }) {
           id: grant.id,
           title: grant.title || '',
           description: grant.description || '',
+          link: grant.link || '',
           status: grant.status || 'OPEN',
           image: grant.image || null
         }));
@@ -2142,11 +2151,19 @@ export function AdminPanel({ onLogout }) {
         setEditingFellowshipGrant(null);
         alert(grantId ? 'Fellowship Grant updated successfully!' : 'Fellowship Grant saved successfully!');
       } else {
-        alert(response.errorMessage || (grantId ? 'Failed to update fellowship grant' : 'Failed to save fellowship grant'));
+        // Handle array or string error messages
+        const errorMsg = Array.isArray(response.errorMessage) 
+          ? response.errorMessage.join(', ') 
+          : response.errorMessage || (grantId ? 'Failed to update fellowship grant' : 'Failed to save fellowship grant');
+        alert(errorMsg);
       }
     } catch (err) {
       console.error('Error saving fellowship grant:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (grantId ? 'Failed to update fellowship grant. Please try again.' : 'Failed to save fellowship grant. Please try again.');
+      // Handle array or string error messages from backend
+      const backendError = err.response?.data?.errorMessage;
+      const errorMessage = Array.isArray(backendError)
+        ? backendError.join(', ')
+        : backendError || err.message || (grantId ? 'Failed to update fellowship grant. Please try again.' : 'Failed to save fellowship grant. Please try again.');
       alert(errorMessage);
     }
   };

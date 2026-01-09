@@ -44,14 +44,6 @@ export function AddNewsletterModal({ onClose, onSave, editNewsletter = null }) {
       return;
     }
 
-    // Validate file size (1MB = 1 * 1024 * 1024 bytes)
-    const maxSize = 1 * 1024 * 1024; // 1MB in bytes
-    if (file.size > maxSize) {
-      setError('File size must be less than 1MB');
-      e.target.value = '';
-      return;
-    }
-
     setError('');
     
     try {
@@ -171,7 +163,7 @@ export function AddNewsletterModal({ onClose, onSave, editNewsletter = null }) {
           <div className="form-group">
             <label htmlFor="add-newsletter-document" className="form-label">
               Document (PDF) <span className="required">*</span>
-              <span className="form-hint">(Max 1MB, PDF only)</span>
+              <span className="form-hint">(PDF only)</span>
             </label>
             <div className="document-upload-container">
               <input

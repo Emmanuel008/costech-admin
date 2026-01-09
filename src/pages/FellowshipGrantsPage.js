@@ -40,6 +40,7 @@ export function FellowshipGrantsPage({ onBack, onSave, fellowshipGrants = [], on
                   <tr>
                     <th>Title</th>
                     <th>Description</th>
+                    <th>Link</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -54,6 +55,18 @@ export function FellowshipGrantsPage({ onBack, onSave, fellowshipGrants = [], on
                         <div className="description-text">
                           {grant.description || 'No description'}
                         </div>
+                      </td>
+                      <td className="table-link-cell">
+                        {grant.link ? (
+                          <a href={grant.link} target="_blank" rel="noopener noreferrer" className="link-text">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            View Link
+                          </a>
+                        ) : (
+                          <span className="no-link">No Link</span>
+                        )}
                       </td>
                       <td className="table-status-cell">
                         <span className={`status-badge ${grant.status?.toLowerCase() || 'open'}`}>

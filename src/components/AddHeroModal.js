@@ -53,21 +53,11 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
       return;
     }
 
-    // Validate file size (2MB = 2 * 1024 * 1024 bytes)
-    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
-    if (file.size > maxSize) {
-      setError('Image size must be less than 2MB');
-      e.target.value = '';
-      return;
-    }
-
     setError('');
     
     try {
       // Compress the image before storing
-      // Target 1.5MB to account for base64 encoding overhead (~33%)
-      // This ensures the final payload stays under 2MB server limit
-      const compressedFile = await compressImage(file, 1920, 1080, 0.8, 1500);
+      const compressedFile = await compressImage(file, 1920, 1080, 0.8);
       
       setFormData(prev => ({
         ...prev,
@@ -243,7 +233,7 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
           <div className="form-group">
             <label htmlFor="add-hero-image" className="form-label">
               Image
-              <span className="form-hint">(Max 2MB, will be compressed automatically)</span>
+              <span className="form-hint">(Will be compressed automatically)</span>
             </label>
             <div className="image-upload-container">
               <input

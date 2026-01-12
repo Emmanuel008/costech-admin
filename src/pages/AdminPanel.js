@@ -27,6 +27,8 @@ import { PressReleasePage } from './PressReleasePage';
 import { StatementPage } from './StatementPage';
 import { CostechVideoPage } from './CostechVideoPage';
 import { CommunityEngagementPage } from './CommunityEngagementPage';
+import { HerinInstitutionPage } from './HerinInstitutionPage';
+import { DirectoratePage } from './DirectoratePage';
 import { AddSectionModal } from '../components/AddSectionModal';
 import { AddNewsModal } from '../components/AddNewsModal';
 import { AddPartnerModal } from '../components/AddPartnerModal';
@@ -54,8 +56,10 @@ import { AddPressReleaseModal } from '../components/AddPressReleaseModal';
 import { AddStatementModal } from '../components/AddStatementModal';
 import { AddCostechVideoModal } from '../components/AddCostechVideoModal';
 import { AddCommunityEngagementModal } from '../components/AddCommunityEngagementModal';
+import { AddHerinInstitutionModal } from '../components/AddHerinInstitutionModal';
+import { AddDirectorateModal } from '../components/AddDirectorateModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
-import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, newsletterAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI } from '../services/api';
+import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, newsletterAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI, herinInstitutionAPI, directorateAPI } from '../services/api';
 
 export function AdminPanel({ onLogout }) {
   const [activeNav, setActiveNav] = useState('dashboard');
@@ -65,7 +69,8 @@ export function AdminPanel({ onLogout }) {
     program: false,
     events: false,
     mediaCentre: false,
-    about: false
+    about: false,
+    herin: false
   });
   const [sections, setSections] = useState([]);
   const [news, setNews] = useState([]);
@@ -94,6 +99,8 @@ export function AdminPanel({ onLogout }) {
   const [statements, setStatements] = useState([]);
   const [videos, setVideos] = useState([]);
   const [communityEngagements, setCommunityEngagements] = useState([]);
+  const [herinInstitutions, setHerinInstitutions] = useState([]);
+  const [directorates, setDirectorates] = useState([]);
   const [showAddSectionForm, setShowAddSectionForm] = useState(false);
   const [showAddNewsForm, setShowAddNewsForm] = useState(false);
   const [showAddPartnerForm, setShowAddPartnerForm] = useState(false);
@@ -121,6 +128,8 @@ export function AdminPanel({ onLogout }) {
   const [showAddStatementForm, setShowAddStatementForm] = useState(false);
   const [showAddVideoForm, setShowAddVideoForm] = useState(false);
   const [showAddCommunityEngagementForm, setShowAddCommunityEngagementForm] = useState(false);
+  const [showAddHerinInstitutionForm, setShowAddHerinInstitutionForm] = useState(false);
+  const [showAddDirectorateForm, setShowAddDirectorateForm] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
   const [editingPartner, setEditingPartner] = useState(null);
@@ -148,6 +157,8 @@ export function AdminPanel({ onLogout }) {
   const [editingStatement, setEditingStatement] = useState(null);
   const [editingVideo, setEditingVideo] = useState(null);
   const [editingCommunityEngagement, setEditingCommunityEngagement] = useState(null);
+  const [editingHerinInstitution, setEditingHerinInstitution] = useState(null);
+  const [editingDirectorate, setEditingDirectorate] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, id: null, name: '', type: '', onConfirm: null });
 
   // Fetch sections, news, partners, heroes, positions, and team members on component mount
@@ -177,6 +188,8 @@ export function AdminPanel({ onLogout }) {
     fetchStatements();
     fetchVideos();
     fetchCommunityEngagements();
+    fetchHerinInstitutions();
+    fetchDirectorates();
   }, []);
 
   // Auto-open dropdowns when their items are active
@@ -187,6 +200,7 @@ export function AdminPanel({ onLogout }) {
     const eventsItems = ['exhibition', 'conference', 'community-engagement'];
     const mediaCentreItems = ['press-release', 'statement', 'costech-video', 'newsletter'];
     const aboutItems = ['positions', 'management-team', 'commission-members'];
+    const herinItems = ['herin-institution'];
 
     setOpenDropdowns(prev => ({
       homepage: homepageItems.includes(activeNav) ? true : prev.homepage,
@@ -194,7 +208,8 @@ export function AdminPanel({ onLogout }) {
       program: programItems.includes(activeNav) ? true : prev.program,
       events: eventsItems.includes(activeNav) ? true : prev.events,
       mediaCentre: mediaCentreItems.includes(activeNav) ? true : prev.mediaCentre,
-      about: aboutItems.includes(activeNav) ? true : prev.about
+      about: aboutItems.includes(activeNav) ? true : prev.about,
+      herin: herinItems.includes(activeNav) ? true : prev.herin
     }));
   }, [activeNav]);
 
@@ -489,6 +504,7 @@ export function AdminPanel({ onLogout }) {
     setShowAddOngoingProjectForm(false);
     setShowAddAreaOfPartnershipForm(false);
     setShowAddFellowshipGrantForm(false);
+    setShowAddHerinInstitutionForm(false);
   };
 
   const handleBackToDashboard = () => {
@@ -514,6 +530,10 @@ export function AdminPanel({ onLogout }) {
     setShowAddOngoingProjectForm(false);
     setShowAddAreaOfPartnershipForm(false);
     setShowAddFellowshipGrantForm(false);
+    setShowAddHerinInstitutionForm(false);
+    setShowAddDirectorateForm(false);
+    setEditingHerinInstitution(null);
+    setEditingDirectorate(null);
   };
 
   const handleAddSectionClick = () => {
@@ -636,6 +656,9 @@ export function AdminPanel({ onLogout }) {
     setEditingOngoingProject(null);
     setEditingAreaOfPartnership(null);
     setEditingFellowshipGrant(null);
+    setEditingHerinInstitution(null);
+    setEditingDirectorate(null);
+    setShowAddDirectorateForm(false);
   };
 
   const handleDeleteNews = async (id) => {
@@ -2489,6 +2512,226 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
+  const fetchHerinInstitutions = async () => {
+    try {
+      const response = await herinInstitutionAPI.getAll();
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        const mappedInstitutions = response.returnData.list_of_item.map(i => ({
+          id: i.id?.toString() || Date.now().toString(),
+          name: i.institution_name || i.name || '',
+          institution_name: i.institution_name || i.name || '',
+          description: i.description || '',
+          operation_area: i.operation_area || '',
+          region: i.region || '',
+          category: i.category || '',
+          createdAt: i.created_at || i.createdAt || new Date().toISOString(),
+        }));
+        setHerinInstitutions(mappedInstitutions);
+      }
+    } catch (err) {
+      console.error('Error fetching HERIN institutions:', err);
+    }
+  };
+
+  const handleHerinInstitutionClick = (e) => {
+    e.preventDefault();
+    setActiveNav('herin-institution');
+  };
+
+  const handleAddHerinInstitutionClick = () => {
+    setEditingHerinInstitution(null);
+    setShowAddHerinInstitutionForm(true);
+  };
+
+  const handleEditHerinInstitution = (institution) => {
+    setEditingHerinInstitution(institution);
+    setShowAddHerinInstitutionForm(true);
+  };
+
+  const handleDeleteHerinInstitution = async (id) => {
+    const institution = herinInstitutions.find(i => i.id === id);
+    const institutionName = institution?.name || 'this institution';
+    showDeleteConfirmation(id, institutionName, 'HERIN institution', async () => {
+      try {
+        const response = await herinInstitutionAPI.delete(id);
+        if (response.status === 'OK') {
+          await fetchHerinInstitutions();
+          alert('HERIN Institution deleted successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to delete HERIN institution');
+        }
+      } catch (err) {
+        console.error('Error deleting HERIN institution:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete HERIN institution. Please try again.';
+        alert(errorMessage);
+      }
+    });
+  };
+
+  const handleSaveHerinInstitution = async (institutionData, institutionId = null) => {
+    try {
+      let response;
+      
+      if (institutionId) {
+        response = await herinInstitutionAPI.update(institutionId, institutionData);
+      } else {
+        response = await herinInstitutionAPI.create(institutionData);
+      }
+      
+      if (response.status === 'OK') {
+        await fetchHerinInstitutions();
+        setShowAddHerinInstitutionForm(false);
+        setEditingHerinInstitution(null);
+        alert(institutionId ? 'HERIN Institution updated successfully!' : 'HERIN Institution saved successfully!');
+      } else {
+        const errorMsg = Array.isArray(response.errorMessage) 
+          ? response.errorMessage.join(', ') 
+          : response.errorMessage || (institutionId ? 'Failed to update HERIN institution' : 'Failed to save HERIN institution');
+        alert(errorMsg);
+      }
+    } catch (err) {
+      console.error('Error saving HERIN institution:', err);
+      const backendError = err.response?.data?.errorMessage;
+      const errorMessage = Array.isArray(backendError)
+        ? backendError.join(', ')
+        : backendError || err.message || (institutionId ? 'Failed to update HERIN institution. Please try again.' : 'Failed to save HERIN institution. Please try again.');
+      alert(errorMessage);
+    }
+  };
+
+  // Directorate handlers
+  const fetchDirectorates = async () => {
+    try {
+      const response = await directorateAPI.getAll();
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        const mappedDirectorates = response.returnData.list_of_item.map(d => {
+          // Parse service_offered - could be JSON string or array
+          let serviceOffered = [];
+          if (d.service_offered) {
+            if (typeof d.service_offered === 'string') {
+              try {
+                serviceOffered = JSON.parse(d.service_offered);
+              } catch (e) {
+                console.error('Error parsing service_offered:', e);
+                serviceOffered = [];
+              }
+            } else if (Array.isArray(d.service_offered)) {
+              serviceOffered = d.service_offered;
+            }
+          }
+
+          // Parse downloads - could be JSON string, object, or array
+          // Backend returns it as JSON string, can be single object or array
+          let downloads = [];
+          if (d.downloads) {
+            if (typeof d.downloads === 'string') {
+              try {
+                const parsed = JSON.parse(d.downloads);
+                // Backend can return single object like {"name": "...", "document": "..."}
+                // or array of objects, always convert to array for consistency
+                if (Array.isArray(parsed)) {
+                  downloads = parsed;
+                } else if (parsed && typeof parsed === 'object') {
+                  // Single object, convert to array
+                  downloads = [parsed];
+                }
+              } catch (e) {
+                console.error('Error parsing downloads:', e);
+                downloads = [];
+              }
+            } else if (Array.isArray(d.downloads)) {
+              downloads = d.downloads;
+            } else if (typeof d.downloads === 'object' && d.downloads !== null) {
+              // Single object, convert to array
+              downloads = [d.downloads];
+            }
+          }
+
+          return {
+            id: d.id?.toString() || Date.now().toString(),
+            name: d.name || '',
+            message_from_director: d.message_from_director || '',
+            director_name: d.director_name || '',
+            service_offered: serviceOffered,
+            downloads: downloads,
+            document: d.document || '',
+            date: d.date || d.created_at || d.createdAt || '',
+            createdAt: d.created_at || d.createdAt || new Date().toISOString(),
+          };
+        });
+        setDirectorates(mappedDirectorates);
+      }
+    } catch (err) {
+      console.error('Error fetching directorates:', err);
+    }
+  };
+
+  const handleDirectorateClick = (e) => {
+    e.preventDefault();
+    setActiveNav('directorate');
+  };
+
+  const handleAddDirectorateClick = () => {
+    setEditingDirectorate(null);
+    setShowAddDirectorateForm(true);
+  };
+
+  const handleEditDirectorate = (directorate) => {
+    setEditingDirectorate(directorate);
+    setShowAddDirectorateForm(true);
+  };
+
+  const handleDeleteDirectorate = (id) => {
+    if (window.confirm('Are you sure you want to delete this directorate?')) {
+      (async () => {
+        try {
+          const response = await directorateAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchDirectorates();
+            alert('Directorate deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete directorate');
+          }
+        } catch (err) {
+          console.error('Error deleting directorate:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete directorate. Please try again.';
+          alert(errorMessage);
+        }
+      })();
+    }
+  };
+
+  const handleSaveDirectorate = async (directorateData, directorateId = null) => {
+    try {
+      let response;
+      
+      if (directorateId) {
+        response = await directorateAPI.update(directorateId, directorateData);
+      } else {
+        response = await directorateAPI.create(directorateData);
+      }
+      
+      if (response.status === 'OK') {
+        await fetchDirectorates();
+        setShowAddDirectorateForm(false);
+        setEditingDirectorate(null);
+        alert(directorateId ? 'Directorate updated successfully!' : 'Directorate saved successfully!');
+      } else {
+        const errorMsg = Array.isArray(response.errorMessage) 
+          ? response.errorMessage.join(', ') 
+          : response.errorMessage || (directorateId ? 'Failed to update directorate' : 'Failed to save directorate');
+        alert(errorMsg);
+      }
+    } catch (err) {
+      console.error('Error saving directorate:', err);
+      const backendError = err.response?.data?.errorMessage;
+      const errorMessage = Array.isArray(backendError)
+        ? backendError.join(', ')
+        : backendError || err.message || (directorateId ? 'Failed to update directorate. Please try again.' : 'Failed to save directorate. Please try again.');
+      alert(errorMessage);
+    }
+  };
+
   return (
     <div className="admin-panel">
       {/* Sidebar */}
@@ -2643,6 +2886,36 @@ export function AdminPanel({ onLogout }) {
             </svg>
             <span>ONLINE SERVICES</span>
           </a>
+
+          {/* HERIN Dropdown */}
+          <div className="nav-dropdown">
+            <div 
+              className={`nav-dropdown-header ${openDropdowns.herin ? 'open' : ''} ${activeNav === 'herin-institution' ? 'active' : ''}`}
+              onClick={() => toggleDropdown('herin')}
+            >
+              <div className="nav-dropdown-title">
+                <svg className="nav-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span>HERIN</span>
+              </div>
+              <svg className="nav-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div className={`nav-dropdown-menu ${openDropdowns.herin ? 'open' : ''}`}>
+              <a 
+                href="#herin-institution" 
+                className={`nav-dropdown-item ${activeNav === 'herin-institution' ? 'active' : ''}`}
+                onClick={handleHerinInstitutionClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span>Institution</span>
+              </a>
+            </div>
+          </div>
           
           {/* PUBLICATION Dropdown */}
           <div className="nav-dropdown">
@@ -2899,9 +3172,21 @@ export function AdminPanel({ onLogout }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
             <span>Newsletter</span>
-          </a>
+              </a>
             </div>
           </div>
+
+          {/* Directorate */}
+          <a 
+            href="#directorate" 
+            className={`nav-item ${activeNav === 'directorate' ? 'active' : ''}`}
+            onClick={handleDirectorateClick}
+          >
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span>Directorate</span>
+          </a>
         </nav>
       </aside>
 
@@ -3150,6 +3435,24 @@ export function AdminPanel({ onLogout }) {
             onAddEngagementClick={handleAddCommunityEngagementClick}
             onDelete={handleDeleteCommunityEngagement}
             onEdit={handleEditCommunityEngagement}
+          />
+        ) : activeNav === 'herin-institution' ? (
+          <HerinInstitutionPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveHerinInstitution}
+            institutions={herinInstitutions}
+            onAddInstitutionClick={handleAddHerinInstitutionClick}
+            onDelete={handleDeleteHerinInstitution}
+            onEdit={handleEditHerinInstitution}
+          />
+        ) : activeNav === 'directorate' ? (
+          <DirectoratePage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveDirectorate}
+            directorates={directorates}
+            onAddDirectorateClick={handleAddDirectorateClick}
+            onDelete={handleDeleteDirectorate}
+            onEdit={handleEditDirectorate}
           />
         ) : (
           <>
@@ -3515,6 +3818,26 @@ export function AdminPanel({ onLogout }) {
           }}
           onSave={handleSaveFellowshipGrant}
           editGrant={editingFellowshipGrant}
+        />
+      )}
+      {showAddHerinInstitutionForm && (
+        <AddHerinInstitutionModal
+          onClose={() => {
+            setShowAddHerinInstitutionForm(false);
+            setEditingHerinInstitution(null);
+          }}
+          onSave={handleSaveHerinInstitution}
+          editInstitution={editingHerinInstitution}
+        />
+      )}
+      {showAddDirectorateForm && (
+        <AddDirectorateModal
+          onClose={() => {
+            setShowAddDirectorateForm(false);
+            setEditingDirectorate(null);
+          }}
+          onSave={handleSaveDirectorate}
+          editDirectorate={editingDirectorate}
         />
       )}
       {showAddPressReleaseForm && (

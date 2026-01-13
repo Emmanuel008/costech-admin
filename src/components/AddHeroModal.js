@@ -5,11 +5,11 @@ import { compressImage } from '../utils/imageCompression';
 export function AddHeroModal({ onClose, onSave, editHero = null }) {
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     title: '',
     tagline: '',
+    description: '',
     content: '',
-    preference: '',
+    reference: '',
     image: null
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -19,12 +19,12 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
   useEffect(() => {
     if (editHero) {
       setFormData({
-        name: editHero.name || editHero.title || '',
-        description: editHero.description || '',
+        name: editHero.name || '',
         title: editHero.title || '',
         tagline: editHero.tagline || '',
+        description: editHero.description || '',
         content: editHero.content || '',
-        preference: editHero.preference || '',
+        reference: editHero.reference !== null && editHero.reference !== undefined ? editHero.reference : '',
         image: null // Don't preload image file
       });
       // Set image preview if hero has image URL
@@ -80,32 +80,32 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.description || !formData.title || !formData.tagline || !formData.content) {
+    if (!formData.name || !formData.title || !formData.tagline || !formData.description || !formData.content) {
       setError('Please fill in all required fields');
       return;
     }
 
-    // Convert preference to number if provided
+    // Convert reference to number if provided
     const heroDataToSave = {
       ...formData,
-      preference: formData.preference ? parseInt(formData.preference, 10) : null
+      reference: formData.reference ? parseInt(formData.reference, 10) : null
     };
 
     // Image is optional for both new and updates
     // Call onSave with form data and edit hero ID if editing
     if (onSave) {
-      onSave(heroDataToSave, editHero?.id || editHero?.uuid);
+      onSave(heroDataToSave, editHero?.id);
     }
 
     // Reset form only if not editing
     if (!editHero) {
       setFormData({
         name: '',
-        description: '',
         title: '',
         tagline: '',
+        description: '',
         content: '',
-        preference: '',
+        reference: '',
         image: null
       });
       setImagePreview(null);
@@ -145,23 +145,6 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
               className="form-input"
               value={formData.name}
               onChange={handleInputChange}
-              placeholder="Enter hero name"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="add-hero-description" className="form-label">
-              Description <span className="required">*</span>
-            </label>
-            <textarea
-              id="add-hero-description"
-              name="description"
-              className="form-textarea"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Enter hero description"
-              rows="3"
               required
             />
           </div>
@@ -177,7 +160,6 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
               className="form-input"
               value={formData.title}
               onChange={handleInputChange}
-              placeholder="Enter hero title"
               required
             />
           </div>
@@ -193,7 +175,21 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
               className="form-input"
               value={formData.tagline}
               onChange={handleInputChange}
-              placeholder="Enter hero tagline"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="add-hero-description" className="form-label">
+              Description <span className="required">*</span>
+            </label>
+            <textarea
+              id="add-hero-description"
+              name="description"
+              className="form-textarea"
+              rows="4"
+              value={formData.description}
+              onChange={handleInputChange}
               required
             />
           </div>
@@ -206,33 +202,31 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
               id="add-hero-content"
               name="content"
               className="form-textarea"
+              rows="6"
               value={formData.content}
               onChange={handleInputChange}
-              placeholder="Enter hero content"
-              rows="4"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="add-hero-preference" className="form-label">
-              Preference
+            <label htmlFor="add-hero-reference" className="form-label">
+              Reference
             </label>
             <input
               type="number"
-              id="add-hero-preference"
-              name="preference"
+              id="add-hero-reference"
+              name="reference"
               className="form-input"
-              value={formData.preference}
+              value={formData.reference}
               onChange={handleInputChange}
-              placeholder="Enter preference (e.g., 1)"
               min="0"
             />
           </div>
 
           <div className="form-group">
             <label htmlFor="add-hero-image" className="form-label">
-              Image
+              Image <span className="required">*</span>
               <span className="form-hint">(Will be compressed automatically)</span>
             </label>
             <div className="image-upload-container">
@@ -266,11 +260,11 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
             )}
           </div>
 
-          <div className="add-hero-actions">
-            <button type="button" className="btn-cancel" onClick={onClose}>
+          <div className="form-actions">
+            <button type="button" className="form-button-cancel" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn-submit">
+            <button type="submit" className="form-button-submit">
               {editHero ? 'Update Hero' : 'Save Hero'}
             </button>
           </div>
@@ -279,4 +273,3 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
     </div>
   );
 }
-

@@ -92,42 +92,32 @@
   background: #a06b06;
 }
 
+/* Form Styles */
 .form-group {
   margin-bottom: 20px;
 }
 
 .form-label {
   display: block;
+  margin-bottom: 8px;
   font-size: 14px;
   font-weight: 500;
   color: #374151;
-  margin-bottom: 8px;
 }
 
 .required {
-  color: #ef4444;
-}
-
-.form-hint {
-  color: #6b7280;
-  font-weight: 400;
-  font-size: 12px;
-  margin-left: 4px;
+  color: #dc2626;
 }
 
 .form-input,
 .form-textarea {
   width: 100%;
   padding: 10px 12px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #111827;
-  background-color: white;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  font-family: "Aeonik Pro", "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  resize: vertical;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
 }
 
 .form-input:focus,
@@ -138,7 +128,16 @@
 }
 
 .form-textarea {
-  min-height: 80px;
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Image Upload Styles */
+.form-hint {
+  color: #6b7280;
+  font-weight: 400;
+  font-size: 12px;
+  margin-left: 4px;
 }
 
 .image-upload-container {
@@ -154,8 +153,9 @@
 .form-file-label {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 16px;
+  padding: 40px 16px;
   background-color: #f9fafb;
   border: 2px dashed #d1d5db;
   border-radius: 6px;
@@ -164,7 +164,6 @@
   color: #6b7280;
   font-size: 14px;
   font-weight: 500;
-  justify-content: center;
 }
 
 .form-file-label:hover {
@@ -216,46 +215,125 @@
   border-radius: 6px;
 }
 
-.add-hero-actions {
+.form-actions {
   display: flex;
-  justify-content: flex-end;
   gap: 12px;
-  margin-top: 32px;
+  justify-content: flex-end;
+  margin-top: 24px;
   padding-top: 24px;
   border-top: 1px solid #e5e7eb;
 }
 
-.btn-cancel,
-.btn-submit {
-  padding: 12px 24px;
+.form-button-cancel,
+.form-button-submit {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: "Aeonik Pro", "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  border: none;
 }
 
-.btn-cancel {
+.form-button-cancel {
   background-color: #f3f4f6;
   color: #374151;
 }
 
-.btn-cancel:hover {
+.form-button-cancel:hover {
   background-color: #e5e7eb;
 }
 
-.btn-submit {
+.form-button-submit {
   background-color: #b97c07;
   color: white;
 }
 
-.btn-submit:hover {
+.form-button-submit:hover {
   background-color: #a06b06;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(185, 124, 7, 0.3);
 }
 
-.btn-submit:active {
-  background-color: #96750a;
+/* Image Upload Styles */
+.form-hint {
+  color: #6b7280;
+  font-weight: 400;
+  font-size: 12px;
+  margin-left: 4px;
 }
 
+.image-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-file-input {
+  display: none;
+}
+
+.form-file-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 16px;
+  background-color: #f9fafb;
+  border: 2px dashed #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.form-file-label:hover {
+  background-color: #f3f4f6;
+  border-color: #b97c07;
+  color: #b97c07;
+}
+
+.form-file-label svg {
+  width: 24px;
+  height: 24px;
+}
+
+.image-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  color: #374151;
+  padding: 12px 16px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.image-size {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.image-preview {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-preview img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 6px;
+}

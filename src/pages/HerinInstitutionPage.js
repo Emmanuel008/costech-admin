@@ -1,6 +1,29 @@
+import { useState, useMemo, useEffect } from 'react';
 import '../css/InnovationSpacePage.css';
 
 export function HerinInstitutionPage({ onBack, onSave, institutions = [], onAddInstitutionClick, onDelete, onEdit }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Calculate pagination
+  const totalPages = Math.ceil(institutions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentInstitutions = useMemo(() => {
+    return institutions.slice(startIndex, endIndex);
+  }, [institutions, startIndex, endIndex]);
+
+  // Reset to page 1 when institutions change
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [institutions.length, totalPages, currentPage]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="innovation-space-page">
@@ -18,7 +41,14 @@ export function HerinInstitutionPage({ onBack, onSave, institutions = [], onAddI
         {/* Institutions List */}
         <div className="spaces-list-container">
           <div className="spaces-list-header">
-            <h2 className="spaces-list-title">All HERIN Institutions ({institutions.length})</h2>
+            <h2 className="spaces-list-title">
+              All HERIN Institutions ({institutions.length})
+              {institutions.length > itemsPerPage && (
+                <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#6b7280', marginLeft: '8px' }}>
+                  (Showing {startIndex + 1}-{Math.min(endIndex, institutions.length)} of {institutions.length})
+                </span>
+              )}
+            </h2>
             <button className="add-space-button" onClick={onAddInstitutionClick}>
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -46,7 +76,7 @@ export function HerinInstitutionPage({ onBack, onSave, institutions = [], onAddI
                   </tr>
                 </thead>
                 <tbody>
-                  {institutions.map((institution) => (
+                  {currentInstitutions.map((institution) => (
                     <tr key={institution.id}>
                       <td className="table-name-cell">
                         <strong>{institution.name}</strong>
@@ -90,6 +120,64 @@ export function HerinInstitutionPage({ onBack, onSave, institutions = [], onAddI
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          
+          {/* Pagination Controls */}
+          {institutions.length > itemsPerPage && (
+            <div className="pagination-container">
+              <div className="pagination-info">
+                Page {currentPage} of {totalPages}
+              </div>
+              <div className="pagination-controls">
+                <button
+                  className="pagination-button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  title="Previous page"
+                >
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Previous
+                </button>
+                
+                <div className="pagination-numbers">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      );
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return <span key={page} className="pagination-ellipsis">...</span>;
+                    }
+                    return null;
+                  })}
+                </div>
+                
+                <button
+                  className="pagination-button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  title="Next page"
+                >
+                  Next
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
           )}
         </div>

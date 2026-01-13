@@ -29,9 +29,9 @@ export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDele
           {heroes.length === 0 ? (
             <div className="no-heroes">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 4a2 2 0 002 2m0 0a2 2 0 002-2m-2 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
-              <p>No heroes uploaded yet. Create your first hero above!</p>
+              <p>No heroes added yet. Create your first hero above!</p>
             </div>
           ) : (
             <div className="heroes-table-wrapper">
@@ -40,38 +40,46 @@ export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDele
                   <tr>
                     <th>Image</th>
                     <th>Title</th>
-                    <th>Tagline</th>
-                    <th>Content</th>
+                    <th>Description</th>
+                    <th>Reference</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {heroes.map((item, index) => (
-                    <tr key={item.uuid || item.id || `hero-row-${index}`}>
+                  {heroes.map((hero) => (
+                    <tr key={hero.id}>
                       <td className="table-image-cell">
-                        {item.image ? (
+                        {hero.image ? (
                           <div className="table-image">
-                            <img src={item.image} alt={item.title} />
+                            <img src={hero.image} alt={hero.title || 'Hero'} />
                           </div>
                         ) : (
                           <span className="no-image">No Image</span>
                         )}
                       </td>
                       <td className="table-title-cell">
-                        <strong>{item.title}</strong>
+                        {hero.title || 'N/A'}
                       </td>
-                      <td className="table-tagline-cell">
-                        {item.tagline}
+                      <td className="table-description-cell">
+                        {hero.description ? (
+                          <div className="description-text" title={hero.description}>
+                            {hero.description.length > 100 
+                              ? `${hero.description.substring(0, 100)}...` 
+                              : hero.description}
+                          </div>
+                        ) : (
+                          'N/A'
+                        )}
                       </td>
-                      <td className="table-content-cell">
-                        {item.content ? (item.content.length > 100 ? item.content.substring(0, 100) + '...' : item.content) : 'N/A'}
+                      <td className="table-reference-cell">
+                        {hero.reference !== null && hero.reference !== undefined ? hero.reference : 'N/A'}
                       </td>
                       <td className="table-actions-cell">
                         <div className="action-buttons">
                           {onEdit && (
                             <button
                               className="edit-button"
-                              onClick={() => onEdit(item)}
+                              onClick={() => onEdit(hero)}
                               title="Edit hero"
                             >
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -82,7 +90,7 @@ export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDele
                           {onDelete && (
                             <button
                               className="delete-button"
-                              onClick={() => onDelete(item.uuid || item.id)}
+                              onClick={() => onDelete(hero.id)}
                               title="Delete hero"
                             >
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -103,4 +111,3 @@ export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDele
     </div>
   );
 }
-

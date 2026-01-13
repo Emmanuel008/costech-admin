@@ -299,30 +299,49 @@ export function AdminPanel({ onLogout }) {
   const fetchHeroes = async () => {
     try {
       const response = await heroesAPI.getAll();
+      
+      // Handle different response structures
+      let heroesList = [];
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        heroesList = response.returnData.list_of_item;
+      } else if (response.returnData?.list_of_item) {
+        // If status is not OK but list_of_item exists
+        heroesList = response.returnData.list_of_item;
+      } else if (Array.isArray(response.returnData)) {
+        // If returnData is directly an array
+        heroesList = response.returnData;
+      } else if (Array.isArray(response)) {
+        // If response is directly an array
+        heroesList = response;
+      }
+      
+      if (heroesList && heroesList.length > 0) {
         // Map API response to heroes format
-        // Use a single timestamp outside the map to ensure uniqueness
-        const baseTimestamp = Date.now();
-        const mappedHeroes = response.returnData.list_of_item.map((hero, index) => {
-          // Use UUID as primary identifier, fallback to generated unique ID
-          const uniqueId = hero.uuid || `hero-${baseTimestamp}-${index}`;
-          return {
-            id: uniqueId,
-            uuid: hero.uuid || null,
-            name: hero.name || hero.title || '',
-            description: hero.description || hero.content || '',
-            title: hero.title || '',
-            tagline: hero.tagline || '',
-            content: hero.content || '',
-            preference: hero.preference || null,
-            image: hero.image || null,
-            createdAt: hero.created_at || hero.createdAt || new Date().toISOString(),
-          };
-        });
-        setHeroes(mappedHeroes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        const mappedHeroes = heroesList.map((hero, index) => ({
+          id: hero.id?.toString() || `hero-${Date.now()}-${index}`,
+          name: hero.name || '',
+          title: hero.title || '',
+          tagline: hero.tagline || '',
+          description: hero.description || '',
+          content: hero.content || '',
+          reference: hero.reference || null,
+          image: hero.image || null,
+          createdAt: hero.created_at || hero.createdAt || new Date().toISOString(),
+        }));
+        setHeroes(mappedHeroes.sort((a, b) => {
+          // Sort by reference if available, otherwise by date
+          if (a.reference && b.reference) {
+            return parseInt(a.reference) - parseInt(b.reference);
+          }
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        }));
+      } else {
+        setHeroes([]);
       }
     } catch (err) {
       console.error('Error fetching heroes:', err);
+      setHeroes([]);
     }
   };
 
@@ -758,25 +777,11 @@ export function AdminPanel({ onLogout }) {
   };
 
   const handleDeleteHero = async (id) => {
-    // Find hero by id or uuid (id could be either)
-    const hero = heroes.find(h => h.id === id || h.uuid === id);
-    if (!hero) {
-      alert('Hero not found');
-      return;
-    }
-    
-    const heroName = hero.name || hero.title || 'this hero';
-    // Use the id value (which contains the UUID) for deletion
-    const heroId = hero.id;
-    
-    if (!heroId) {
-      alert('Cannot delete hero: ID not found');
-      return;
-    }
-    
-    showDeleteConfirmation(heroId, heroName, 'hero', async () => {
+    const hero = heroes.find(h => h.id === id);
+    const heroName = hero?.name || hero?.title || 'this hero';
+    showDeleteConfirmation(id, heroName, 'hero', async () => {
       try {
-        const response = await heroesAPI.delete(heroId);
+        const response = await heroesAPI.delete(id);
         if (response.status === 'OK') {
           await fetchHeroes();
           alert('Hero deleted successfully!');
@@ -796,11 +801,8 @@ export function AdminPanel({ onLogout }) {
       let response;
       
       if (heroId) {
-        // Find hero to get uuid
-        const hero = heroes.find(h => h.id === heroId || h.uuid === heroId);
-        const heroUuid = hero?.uuid || heroId;
         // Update existing hero
-        response = await heroesAPI.update(heroUuid, heroData);
+        response = await heroesAPI.update(heroId, heroData);
       } else {
         // Create new hero
         response = await heroesAPI.create(heroData);
@@ -813,12 +815,22 @@ export function AdminPanel({ onLogout }) {
         setEditingHero(null);
         alert(heroId ? 'Hero updated successfully!' : 'Hero saved successfully!');
       } else {
-        alert(response.errorMessage || (heroId ? 'Failed to update hero' : 'Failed to save hero'));
+        // Handle array error messages
+        const errorMsg = response.errorMessage || (heroId ? 'Failed to update hero' : 'Failed to save hero');
+        if (Array.isArray(errorMsg)) {
+          alert(errorMsg.join(', '));
+        } else {
+          alert(errorMsg);
+        }
       }
     } catch (err) {
       console.error('Error saving hero:', err);
       const errorMessage = err.response?.data?.errorMessage || err.message || (heroId ? 'Failed to update hero. Please try again.' : 'Failed to save hero. Please try again.');
-      alert(errorMessage);
+      if (Array.isArray(errorMessage)) {
+        alert(errorMessage.join(', '));
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 
@@ -2793,8 +2805,8 @@ export function AdminPanel({ onLogout }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
                 <span>Heroes</span>
-          </a>
-          <a 
+              </a>
+              <a 
             href="#news" 
                 className={`nav-dropdown-item ${activeNav === 'news' ? 'active' : ''}`}
             onClick={handleNewsClick}
@@ -3172,7 +3184,7 @@ export function AdminPanel({ onLogout }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
             <span>Newsletter</span>
-              </a>
+          </a>
             </div>
           </div>
 
@@ -3634,6 +3646,8 @@ export function AdminPanel({ onLogout }) {
           editPartner={editingPartner}
         />
       )}
+
+      {/* Add Hero Modal */}
       {showAddHeroForm && (
         <AddHeroModal
           onClose={handleCloseForm}
@@ -3641,6 +3655,7 @@ export function AdminPanel({ onLogout }) {
           editHero={editingHero}
         />
       )}
+
       {showAddPositionForm && (
         <AddPositionModal
           onClose={handleCloseForm}

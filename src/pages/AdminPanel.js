@@ -29,6 +29,8 @@ import { CostechVideoPage } from './CostechVideoPage';
 import { CommunityEngagementPage } from './CommunityEngagementPage';
 import { HerinInstitutionPage } from './HerinInstitutionPage';
 import { DirectoratePage } from './DirectoratePage';
+import { FaqCategoryPage } from './FaqCategoryPage';
+import { FaqPage } from './FaqPage';
 import { AddSectionModal } from '../components/AddSectionModal';
 import { AddNewsModal } from '../components/AddNewsModal';
 import { AddPartnerModal } from '../components/AddPartnerModal';
@@ -58,8 +60,10 @@ import { AddCostechVideoModal } from '../components/AddCostechVideoModal';
 import { AddCommunityEngagementModal } from '../components/AddCommunityEngagementModal';
 import { AddHerinInstitutionModal } from '../components/AddHerinInstitutionModal';
 import { AddDirectorateModal } from '../components/AddDirectorateModal';
+import { AddFaqCategoryModal } from '../components/AddFaqCategoryModal';
+import { AddFaqModal } from '../components/AddFaqModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
-import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, newsletterAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI, herinInstitutionAPI, directorateAPI } from '../services/api';
+import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, newsletterAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI, herinInstitutionAPI, directorateAPI, faqCategoryAPI, faqAPI } from '../services/api';
 
 export function AdminPanel({ onLogout }) {
   const [activeNav, setActiveNav] = useState('dashboard');
@@ -70,7 +74,8 @@ export function AdminPanel({ onLogout }) {
     events: false,
     mediaCentre: false,
     about: false,
-    herin: false
+    herin: false,
+    faqManagement: false
   });
   const [sections, setSections] = useState([]);
   const [news, setNews] = useState([]);
@@ -101,6 +106,8 @@ export function AdminPanel({ onLogout }) {
   const [communityEngagements, setCommunityEngagements] = useState([]);
   const [herinInstitutions, setHerinInstitutions] = useState([]);
   const [directorates, setDirectorates] = useState([]);
+  const [faqCategories, setFaqCategories] = useState([]);
+  const [faqs, setFaqs] = useState([]);
   const [showAddSectionForm, setShowAddSectionForm] = useState(false);
   const [showAddNewsForm, setShowAddNewsForm] = useState(false);
   const [showAddPartnerForm, setShowAddPartnerForm] = useState(false);
@@ -130,6 +137,8 @@ export function AdminPanel({ onLogout }) {
   const [showAddCommunityEngagementForm, setShowAddCommunityEngagementForm] = useState(false);
   const [showAddHerinInstitutionForm, setShowAddHerinInstitutionForm] = useState(false);
   const [showAddDirectorateForm, setShowAddDirectorateForm] = useState(false);
+  const [showAddFaqCategoryForm, setShowAddFaqCategoryForm] = useState(false);
+  const [showAddFaqForm, setShowAddFaqForm] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
   const [editingPartner, setEditingPartner] = useState(null);
@@ -159,6 +168,8 @@ export function AdminPanel({ onLogout }) {
   const [editingCommunityEngagement, setEditingCommunityEngagement] = useState(null);
   const [editingHerinInstitution, setEditingHerinInstitution] = useState(null);
   const [editingDirectorate, setEditingDirectorate] = useState(null);
+  const [editingFaqCategory, setEditingFaqCategory] = useState(null);
+  const [editingFaq, setEditingFaq] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, id: null, name: '', type: '', onConfirm: null });
 
   // Fetch sections, news, partners, heroes, positions, and team members on component mount
@@ -190,6 +201,8 @@ export function AdminPanel({ onLogout }) {
     fetchCommunityEngagements();
     fetchHerinInstitutions();
     fetchDirectorates();
+    fetchFaqCategories();
+    fetchFaqs();
   }, []);
 
   // Auto-open dropdowns when their items are active
@@ -200,6 +213,7 @@ export function AdminPanel({ onLogout }) {
     const eventsItems = ['exhibition', 'conference', 'community-engagement'];
     const mediaCentreItems = ['press-release', 'statement', 'costech-video', 'newsletter'];
     const aboutItems = ['positions', 'management-team', 'commission-members'];
+    const faqManagementItems = ['faq-category', 'faq'];
     const herinItems = ['herin-institution'];
 
     setOpenDropdowns(prev => ({
@@ -209,8 +223,19 @@ export function AdminPanel({ onLogout }) {
       events: eventsItems.includes(activeNav) ? true : prev.events,
       mediaCentre: mediaCentreItems.includes(activeNav) ? true : prev.mediaCentre,
       about: aboutItems.includes(activeNav) ? true : prev.about,
+      faqManagement: faqManagementItems.includes(activeNav) ? true : prev.faqManagement,
       herin: herinItems.includes(activeNav) ? true : prev.herin
     }));
+  }, [activeNav]);
+
+  // Refresh FAQ data when navigating to FAQ pages
+  useEffect(() => {
+    if (activeNav === 'faq-category' || activeNav === 'faq') {
+      fetchFaqCategories();
+      if (activeNav === 'faq') {
+        fetchFaqs();
+      }
+    }
   }, [activeNav]);
 
   const fetchSections = async () => {
@@ -363,6 +388,86 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
+  const fetchFaqCategories = async () => {
+    try {
+      const response = await faqCategoryAPI.getAll();
+      
+      // Handle different response structures
+      let categoriesList = [];
+      
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        categoriesList = response.returnData.list_of_item;
+      } else if (response.returnData?.list_of_item) {
+        // If status is not OK but list_of_item exists
+        categoriesList = response.returnData.list_of_item;
+      } else if (Array.isArray(response.returnData)) {
+        // If returnData is directly an array
+        categoriesList = response.returnData;
+      } else if (Array.isArray(response)) {
+        // If response is directly an array
+        categoriesList = response;
+      }
+      
+      if (categoriesList && categoriesList.length > 0) {
+        // Map API response to FAQ categories format
+        const mappedCategories = categoriesList.map((category, index) => ({
+          id: category.id?.toString() || `category-${Date.now()}-${index}`,
+          name: category.name || '',
+          description: category.description || '',
+          createdAt: category.created_at || category.createdAt || new Date().toISOString(),
+        }));
+        setFaqCategories(mappedCategories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      } else {
+        setFaqCategories([]);
+      }
+    } catch (err) {
+      console.error('Error fetching FAQ categories:', err);
+      setFaqCategories([]);
+    }
+  };
+
+  const fetchFaqs = async () => {
+    try {
+      const response = await faqAPI.getAll();
+      
+      // Handle different response structures
+      let faqsList = [];
+      
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        faqsList = response.returnData.list_of_item;
+      } else if (response.status === 'ERROR' && response.returnData?.list_of_item) {
+        // Even if status is ERROR, try to get the list if it exists
+        faqsList = response.returnData.list_of_item;
+      } else if (response.returnData?.list_of_item) {
+        // If status is not OK but list_of_item exists
+        faqsList = response.returnData.list_of_item;
+      } else if (Array.isArray(response.returnData)) {
+        // If returnData is directly an array
+        faqsList = response.returnData;
+      } else if (Array.isArray(response)) {
+        // If response is directly an array
+        faqsList = response;
+      }
+      
+      if (faqsList && faqsList.length > 0) {
+        // Map API response to FAQs format
+        const mappedFaqs = faqsList.map((faq, index) => ({
+          id: faq.id?.toString() || `faq-${Date.now()}-${index}`,
+          faq_category_id: faq.faq_category_id || null,
+          question: faq.question || '',
+          answer: faq.answer || '',
+          createdAt: faq.created_at || faq.createdAt || new Date().toISOString(),
+        }));
+        setFaqs(mappedFaqs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      } else {
+        setFaqs([]);
+      }
+    } catch (err) {
+      console.error('Error fetching FAQs:', err);
+      setFaqs([]);
+    }
+  };
+
   const fetchTeamMembers = async () => {
     try {
       const response = await managementTeamAPI.getAll();
@@ -467,6 +572,16 @@ export function AdminPanel({ onLogout }) {
     setActiveNav('positions');
   };
 
+  const handleFaqCategoryClick = (e) => {
+    e.preventDefault();
+    setActiveNav('faq-category');
+  };
+
+  const handleFaqClick = (e) => {
+    e.preventDefault();
+    setActiveNav('faq');
+  };
+
   const handleManagementTeamClick = (e) => {
     e.preventDefault();
     setActiveNav('management-team');
@@ -551,6 +666,7 @@ export function AdminPanel({ onLogout }) {
     setShowAddFellowshipGrantForm(false);
     setShowAddHerinInstitutionForm(false);
     setShowAddDirectorateForm(false);
+    setShowAddFaqCategoryForm(false);
     setEditingHerinInstitution(null);
     setEditingDirectorate(null);
   };
@@ -578,6 +694,17 @@ export function AdminPanel({ onLogout }) {
   const handleAddPositionClick = () => {
     setEditingPosition(null);
     setShowAddPositionForm(true);
+  };
+
+  const handleAddFaqCategoryClick = () => {
+    setEditingFaqCategory(null);
+    setEditingFaq(null);
+    setShowAddFaqCategoryForm(true);
+  };
+
+  const handleAddFaqClick = () => {
+    setEditingFaq(null);
+    setShowAddFaqForm(true);
   };
 
   const handleAddTeamMemberClick = () => {
@@ -618,6 +745,16 @@ export function AdminPanel({ onLogout }) {
   const handleEditPosition = (position) => {
     setEditingPosition(position);
     setShowAddPositionForm(true);
+  };
+
+  const handleEditFaqCategory = (category) => {
+    setEditingFaqCategory(category);
+    setShowAddFaqCategoryForm(true);
+  };
+
+  const handleEditFaq = (faq) => {
+    setEditingFaq(faq);
+    setShowAddFaqForm(true);
   };
 
   const handleEditTeamMember = (member) => {
@@ -925,6 +1062,103 @@ export function AdminPanel({ onLogout }) {
     } catch (err) {
       console.error('Error saving position:', err);
       const errorMessage = err.response?.data?.errorMessage || err.message || (positionId ? 'Failed to update position. Please try again.' : 'Failed to save position. Please try again.');
+      alert(errorMessage);
+    }
+  };
+
+  const handleDeleteFaqCategory = async (id) => {
+    const category = faqCategories.find(c => c.id === id);
+    const categoryName = category?.name || 'this FAQ category';
+    showDeleteConfirmation(id, categoryName, 'FAQ category', async () => {
+    try {
+      const response = await faqCategoryAPI.delete(id);
+      if (response.status === 'OK') {
+        await fetchFaqCategories();
+        alert('FAQ Category deleted successfully!');
+      } else {
+        alert(response.errorMessage || 'Failed to delete FAQ category');
+      }
+    } catch (err) {
+      console.error('Error deleting FAQ category:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete FAQ category. Please try again.';
+      alert(errorMessage);
+    }
+    });
+  };
+
+  const handleSaveFaqCategory = async (categoryData, categoryId = null) => {
+    try {
+      let response;
+      
+      if (categoryId) {
+        // Update existing category
+        response = await faqCategoryAPI.update(categoryId, categoryData);
+      } else {
+        // Create new category
+        response = await faqCategoryAPI.create(categoryData);
+      }
+      
+      if (response.status === 'OK') {
+        // Refresh categories list from API
+        await fetchFaqCategories();
+        setShowAddFaqCategoryForm(false);
+        setEditingFaqCategory(null);
+    setEditingFaq(null);
+        alert(categoryId ? 'FAQ Category updated successfully!' : 'FAQ Category saved successfully!');
+      } else {
+        alert(response.errorMessage || (categoryId ? 'Failed to update FAQ category' : 'Failed to save FAQ category'));
+      }
+    } catch (err) {
+      console.error('Error saving FAQ category:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || (categoryId ? 'Failed to update FAQ category. Please try again.' : 'Failed to save FAQ category. Please try again.');
+      alert(errorMessage);
+    }
+  };
+
+  const handleDeleteFaq = async (id) => {
+    const faq = faqs.find(f => f.id === id);
+    const faqQuestion = faq?.question || 'this FAQ';
+    showDeleteConfirmation(id, faqQuestion, 'FAQ', async () => {
+    try {
+      const response = await faqAPI.delete(id);
+      if (response.status === 'OK') {
+        await fetchFaqs();
+        alert('FAQ deleted successfully!');
+      } else {
+        alert(response.errorMessage || 'Failed to delete FAQ');
+      }
+    } catch (err) {
+      console.error('Error deleting FAQ:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete FAQ. Please try again.';
+      alert(errorMessage);
+    }
+    });
+  };
+
+  const handleSaveFaq = async (faqData, faqId = null) => {
+    try {
+      let response;
+      
+      if (faqId) {
+        // Update existing FAQ
+        response = await faqAPI.update(faqId, faqData);
+      } else {
+        // Create new FAQ
+        response = await faqAPI.create(faqData);
+      }
+      
+      if (response.status === 'OK') {
+        // Refresh FAQs list from API
+        await fetchFaqs();
+        setShowAddFaqForm(false);
+        setEditingFaq(null);
+        alert(faqId ? 'FAQ updated successfully!' : 'FAQ saved successfully!');
+      } else {
+        alert(response.errorMessage || (faqId ? 'Failed to update FAQ' : 'Failed to save FAQ'));
+      }
+    } catch (err) {
+      console.error('Error saving FAQ:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || (faqId ? 'Failed to update FAQ. Please try again.' : 'Failed to save FAQ. Please try again.');
       alert(errorMessage);
     }
   };
@@ -2878,6 +3112,46 @@ export function AdminPanel({ onLogout }) {
           </a>
             </div>
           </div>
+
+          {/* FAQ MANAGEMENT Dropdown */}
+          <div className="nav-dropdown">
+            <div 
+              className={`nav-dropdown-header ${openDropdowns.faqManagement ? 'open' : ''} ${['faq-category', 'faq'].includes(activeNav) ? 'active' : ''}`}
+              onClick={() => toggleDropdown('faqManagement')}
+            >
+              <div className="nav-dropdown-title">
+                <svg className="nav-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>FAQ MANAGEMENT</span>
+              </div>
+              <svg className="nav-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div className={`nav-dropdown-menu ${openDropdowns.faqManagement ? 'open' : ''}`}>
+              <a 
+                href="#faq-category" 
+                    className={`nav-dropdown-item ${activeNav === 'faq-category' ? 'active' : ''}`}
+                onClick={handleFaqCategoryClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>FAQ Category</span>
+              </a>
+              <a 
+                href="#faq" 
+                    className={`nav-dropdown-item ${activeNav === 'faq' ? 'active' : ''}`}
+                onClick={handleFaqClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>FAQ</span>
+              </a>
+            </div>
+          </div>
           <a 
             href="#innovation-space" 
             className={`nav-item ${activeNav === 'innovation-space' ? 'active' : ''}`}
@@ -3197,7 +3471,7 @@ export function AdminPanel({ onLogout }) {
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            <span>Directorate</span>
+            <span>DIRECTORATES</span>
           </a>
         </nav>
       </aside>
@@ -3248,6 +3522,25 @@ export function AdminPanel({ onLogout }) {
             onAddPositionClick={handleAddPositionClick}
             onDelete={handleDeletePosition}
             onEdit={handleEditPosition}
+          />
+        ) : activeNav === 'faq-category' ? (
+          <FaqCategoryPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveFaqCategory}
+            categories={faqCategories}
+            onAddCategoryClick={handleAddFaqCategoryClick}
+            onDelete={handleDeleteFaqCategory}
+            onEdit={handleEditFaqCategory}
+          />
+        ) : activeNav === 'faq' ? (
+          <FaqPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveFaq}
+            faqs={faqs}
+            categories={faqCategories}
+            onAddFaqClick={handleAddFaqClick}
+            onDelete={handleDeleteFaq}
+            onEdit={handleEditFaq}
           />
         ) : activeNav === 'management-team' ? (
           <ManagementTeamPage 
@@ -3661,6 +3954,21 @@ export function AdminPanel({ onLogout }) {
           onClose={handleCloseForm}
           onSave={handleSavePosition}
           editPosition={editingPosition}
+        />
+      )}
+      {showAddFaqCategoryForm && (
+        <AddFaqCategoryModal
+          onClose={handleCloseForm}
+          onSave={handleSaveFaqCategory}
+          editCategory={editingFaqCategory}
+        />
+      )}
+      {showAddFaqForm && (
+        <AddFaqModal
+          onClose={handleCloseForm}
+          onSave={handleSaveFaq}
+          editFaq={editingFaq}
+          categories={faqCategories}
         />
       )}
       {showAddTeamMemberForm && (

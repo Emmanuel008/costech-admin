@@ -96,5 +96,11 @@ export { herinPointOfPresenceAPI } from './apis/herinPointOfPresenceAPI';
 // Directorate API
 export { directorateAPI } from './apis/directorateAPI';
 
+// FAQ Category API
+export { faqCategoryAPI } from './apis/faqCategoryAPI';
+
+// FAQ API
+export { faqAPI } from './apis/faqAPI';
+
 // Export the api client as default for backward compatibility
 export default api;

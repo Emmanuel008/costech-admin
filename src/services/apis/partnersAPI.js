@@ -1,8 +1,10 @@
 import api from '../apiClient';
 
 export const partnersAPI = {
-  getAll: async () => {
-    const response = await api.get('/api/partners/ilist');
+  getAll: async (page = 1, limit = 10) => {
+    const response = await api.get('/api/partners/ilist', {
+      params: { page, limit }
+    });
     return response.data;
   },
 

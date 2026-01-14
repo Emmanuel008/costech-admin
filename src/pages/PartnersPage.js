@@ -1,6 +1,7 @@
 import '../css/PartnersPage.css';
+import { Pagination } from '../components/Pagination';
 
-export function PartnersPage({ onBack, onSave, partners = [], onAddPartnerClick, onDelete, onEdit }) {
+export function PartnersPage({ onBack, onSave, partners = [], onAddPartnerClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="partners-page">
@@ -93,6 +94,16 @@ export function PartnersPage({ onBack, onSave, partners = [], onAddPartnerClick,
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

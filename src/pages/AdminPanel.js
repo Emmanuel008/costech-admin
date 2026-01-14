@@ -171,6 +171,11 @@ export function AdminPanel({ onLogout }) {
   const [editingFaqCategory, setEditingFaqCategory] = useState(null);
   const [editingFaq, setEditingFaq] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, id: null, name: '', type: '', onConfirm: null });
+  
+  // Pagination state
+  const [heroesPagination, setHeroesPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [newsPagination, setNewsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [partnersPagination, setPartnersPagination] = useState({ page: 1, limit: 10, total: 0 });
 
   // Fetch sections, news, partners, heroes, positions, and team members on component mount
   useEffect(() => {
@@ -203,6 +208,7 @@ export function AdminPanel({ onLogout }) {
     fetchDirectorates();
     fetchFaqCategories();
     fetchFaqs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-open dropdowns when their items are active
@@ -283,12 +289,31 @@ export function AdminPanel({ onLogout }) {
     });
   };
 
-  const fetchNews = async () => {
+  const fetchNews = async (page = newsPagination.page, limit = newsPagination.limit) => {
     try {
-      const response = await newsAPI.getAll();
+      const response = await newsAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let newsList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        newsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || newsList.length;
+      } else if (response.returnData?.list_of_item) {
+        newsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || newsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        newsList = response.returnData;
+        total = newsList.length;
+      } else if (Array.isArray(response)) {
+        newsList = response;
+        total = newsList.length;
+      }
+      
+      if (newsList && newsList.length > 0) {
         // Map API response to news format
-        const mappedNews = response.returnData.list_of_item.map(item => ({
+        const mappedNews = newsList.map(item => ({
           id: item.id?.toString() || Date.now().toString(),
           title: item.title || '',
           description: item.description || '',
@@ -297,48 +322,84 @@ export function AdminPanel({ onLogout }) {
           createdAt: item.created_at || item.createdAt || new Date().toISOString(),
         }));
         setNews(mappedNews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setNewsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setNews([]);
+        setNewsPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching news:', err);
+      setNews([]);
+      setNewsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
-  const fetchPartners = async () => {
+  const fetchPartners = async (page = partnersPagination.page, limit = partnersPagination.limit) => {
     try {
-      const response = await partnersAPI.getAll();
+      const response = await partnersAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let partnersList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        partnersList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || partnersList.length;
+      } else if (response.returnData?.list_of_item) {
+        partnersList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || partnersList.length;
+      } else if (Array.isArray(response.returnData)) {
+        partnersList = response.returnData;
+        total = partnersList.length;
+      } else if (Array.isArray(response)) {
+        partnersList = response;
+        total = partnersList.length;
+      }
+      
+      if (partnersList && partnersList.length > 0) {
         // Map API response to partners format
-        const mappedPartners = response.returnData.list_of_item.map(partner => ({
+        const mappedPartners = partnersList.map(partner => ({
           id: partner.id?.toString() || Date.now().toString(),
           name: partner.name || '',
           logo: partner.logo || partner.image || null,
           createdAt: partner.created_at || partner.createdAt || new Date().toISOString(),
         }));
         setPartners(mappedPartners.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setPartnersPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setPartners([]);
+        setPartnersPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching partners:', err);
+      setPartners([]);
+      setPartnersPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
-  const fetchHeroes = async () => {
+  const fetchHeroes = async (page = heroesPagination.page, limit = heroesPagination.limit) => {
     try {
-      const response = await heroesAPI.getAll();
+      const response = await heroesAPI.getAll(page, limit);
       
       // Handle different response structures
       let heroesList = [];
+      let total = 0;
       
       if (response.status === 'OK' && response.returnData?.list_of_item) {
         heroesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || heroesList.length;
       } else if (response.returnData?.list_of_item) {
         // If status is not OK but list_of_item exists
         heroesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || heroesList.length;
       } else if (Array.isArray(response.returnData)) {
         // If returnData is directly an array
         heroesList = response.returnData;
+        total = heroesList.length;
       } else if (Array.isArray(response)) {
         // If response is directly an array
         heroesList = response;
+        total = heroesList.length;
       }
       
       if (heroesList && heroesList.length > 0) {
@@ -361,13 +422,47 @@ export function AdminPanel({ onLogout }) {
           }
           return new Date(b.createdAt) - new Date(a.createdAt);
         }));
+        setHeroesPagination(prev => ({ ...prev, page, limit, total }));
       } else {
         setHeroes([]);
+        setHeroesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching heroes:', err);
       setHeroes([]);
+      setHeroesPagination(prev => ({ ...prev, total: 0 }));
     }
+  };
+
+  // Pagination handlers
+  const handleHeroesPageChange = (page) => {
+    setHeroesPagination(prev => ({ ...prev, page }));
+    fetchHeroes(page, heroesPagination.limit);
+  };
+
+  const handleHeroesItemsPerPageChange = (limit) => {
+    setHeroesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchHeroes(1, limit);
+  };
+
+  const handleNewsPageChange = (page) => {
+    setNewsPagination(prev => ({ ...prev, page }));
+    fetchNews(page, newsPagination.limit);
+  };
+
+  const handleNewsItemsPerPageChange = (limit) => {
+    setNewsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchNews(1, limit);
+  };
+
+  const handlePartnersPageChange = (page) => {
+    setPartnersPagination(prev => ({ ...prev, page }));
+    fetchPartners(page, partnersPagination.limit);
+  };
+
+  const handlePartnersItemsPerPageChange = (limit) => {
+    setPartnersPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchPartners(1, limit);
   };
 
   const fetchPositions = async () => {
@@ -824,7 +919,7 @@ export function AdminPanel({ onLogout }) {
     try {
       const response = await newsAPI.delete(id);
       if (response.status === 'OK') {
-        await fetchNews();
+        await fetchNews(newsPagination.page, newsPagination.limit);
         alert('News deleted successfully!');
       } else {
         alert(response.errorMessage || 'Failed to delete news');
@@ -851,7 +946,7 @@ export function AdminPanel({ onLogout }) {
       
       if (response.status === 'OK') {
         // Refresh news list from API
-        await fetchNews();
+        await fetchNews(newsPagination.page, newsPagination.limit);
         setShowAddNewsForm(false);
         setEditingNews(null);
         alert(newsId ? 'News updated successfully!' : 'News saved successfully!');
@@ -872,7 +967,7 @@ export function AdminPanel({ onLogout }) {
     try {
       const response = await partnersAPI.delete(id);
       if (response.status === 'OK') {
-        await fetchPartners();
+        await fetchPartners(partnersPagination.page, partnersPagination.limit);
         alert('Partner deleted successfully!');
       } else {
         alert(response.errorMessage || 'Failed to delete partner');
@@ -899,7 +994,7 @@ export function AdminPanel({ onLogout }) {
       
       if (response.status === 'OK') {
         // Refresh partners list from API
-        await fetchPartners();
+        await fetchPartners(partnersPagination.page, partnersPagination.limit);
         setShowAddPartnerForm(false);
         setEditingPartner(null);
         alert(partnerId ? 'Partner updated successfully!' : 'Partner saved successfully!');
@@ -920,7 +1015,7 @@ export function AdminPanel({ onLogout }) {
       try {
         const response = await heroesAPI.delete(id);
         if (response.status === 'OK') {
-          await fetchHeroes();
+          await fetchHeroes(heroesPagination.page, heroesPagination.limit);
           alert('Hero deleted successfully!');
         } else {
           alert(response.errorMessage || 'Failed to delete hero');
@@ -947,7 +1042,7 @@ export function AdminPanel({ onLogout }) {
       
       if (response.status === 'OK') {
         // Refresh heroes list from API
-        await fetchHeroes();
+        await fetchHeroes(heroesPagination.page, heroesPagination.limit);
         setShowAddHeroForm(false);
         setEditingHero(null);
         alert(heroId ? 'Hero updated successfully!' : 'Hero saved successfully!');
@@ -3495,6 +3590,14 @@ export function AdminPanel({ onLogout }) {
             onAddNewsClick={handleAddNewsClick}
             onDelete={handleDeleteNews}
             onEdit={handleEditNews}
+            pagination={{
+              currentPage: newsPagination.page,
+              totalPages: Math.ceil(newsPagination.total / newsPagination.limit),
+              itemsPerPage: newsPagination.limit,
+              totalItems: newsPagination.total,
+              onPageChange: handleNewsPageChange,
+              onItemsPerPageChange: handleNewsItemsPerPageChange
+            }}
           />
         ) : activeNav === 'partners' ? (
           <PartnersPage 
@@ -3504,6 +3607,14 @@ export function AdminPanel({ onLogout }) {
             onAddPartnerClick={handleAddPartnerClick}
             onDelete={handleDeletePartner}
             onEdit={handleEditPartner}
+            pagination={{
+              currentPage: partnersPagination.page,
+              totalPages: Math.ceil(partnersPagination.total / partnersPagination.limit),
+              itemsPerPage: partnersPagination.limit,
+              totalItems: partnersPagination.total,
+              onPageChange: handlePartnersPageChange,
+              onItemsPerPageChange: handlePartnersItemsPerPageChange
+            }}
           />
         ) : activeNav === 'heroes' ? (
           <HeroesPage 
@@ -3513,6 +3624,14 @@ export function AdminPanel({ onLogout }) {
             onAddHeroClick={handleAddHeroClick}
             onDelete={handleDeleteHero}
             onEdit={handleEditHero}
+            pagination={{
+              currentPage: heroesPagination.page,
+              totalPages: Math.ceil(heroesPagination.total / heroesPagination.limit),
+              itemsPerPage: heroesPagination.limit,
+              totalItems: heroesPagination.total,
+              onPageChange: handleHeroesPageChange,
+              onItemsPerPageChange: handleHeroesItemsPerPageChange
+            }}
           />
         ) : activeNav === 'positions' ? (
           <PositionPage 

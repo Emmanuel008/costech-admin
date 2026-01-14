@@ -1,6 +1,7 @@
 import '../css/NewsPage.css';
+import { Pagination } from '../components/Pagination';
 
-export function NewsPage({ onBack, onSave, news = [], onAddNewsClick, onDelete, onEdit }) {
+export function NewsPage({ onBack, onSave, news = [], onAddNewsClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="news-page">
@@ -97,6 +98,16 @@ export function NewsPage({ onBack, onSave, news = [], onAddNewsClick, onDelete, 
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

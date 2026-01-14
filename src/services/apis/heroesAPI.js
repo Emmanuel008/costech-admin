@@ -1,8 +1,10 @@
 import api from '../apiClient';
 
 export const heroesAPI = {
-  getAll: async () => {
-    const response = await api.get('/api/hero/ilist');
+  getAll: async (page = 1, limit = 10) => {
+    const response = await api.get('/api/hero/ilist', {
+      params: { page, limit }
+    });
     return response.data;
   },
 

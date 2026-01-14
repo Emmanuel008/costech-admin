@@ -1,6 +1,7 @@
 import '../css/HeroesPage.css';
+import { Pagination } from '../components/Pagination';
 
-export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDelete, onEdit }) {
+export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="heroes-page">
@@ -105,6 +106,16 @@ export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDele
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

@@ -1,8 +1,10 @@
 import api from '../apiClient';
 
 export const faqCategoryAPI = {
-  getAll: async () => {
-    const response = await api.get('/api/faqCategory/ilist');
+  getAll: async (page = 1, limit = 10) => {
+    const response = await api.get('/api/faqCategory/ilist', {
+      params: { page, limit }
+    });
     return response.data;
   },
 

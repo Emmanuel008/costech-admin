@@ -1,8 +1,10 @@
 import api from '../apiClient';
 
 export const booksAPI = {
-  getAll: async () => {
-    const response = await api.get('/api/books/ilist');
+  getAll: async (page = 1, limit = 10) => {
+    const response = await api.get('/api/books/ilist', {
+      params: { page, limit }
+    });
     return response.data;
   },
 

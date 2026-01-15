@@ -1,6 +1,7 @@
 import '../css/InnovationSpacePage.css';
+import { Pagination } from '../components/Pagination';
 
-export function InnovationSpacePage({ onBack, onSave, spaces = [], onAddSpaceClick, onDelete, onEdit }) {
+export function InnovationSpacePage({ onBack, onSave, spaces = [], onAddSpaceClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="innovation-space-page">
@@ -112,6 +113,16 @@ export function InnovationSpacePage({ onBack, onSave, spaces = [], onAddSpaceCli
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

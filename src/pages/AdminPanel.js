@@ -176,6 +176,30 @@ export function AdminPanel({ onLogout }) {
   const [heroesPagination, setHeroesPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [newsPagination, setNewsPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [partnersPagination, setPartnersPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [onlineServicesPagination, setOnlineServicesPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [innovationSpacesPagination, setInnovationSpacesPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [faqCategoriesPagination, setFaqCategoriesPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [faqsPagination, setFaqsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [ongoingProjectsPagination, setOngoingProjectsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [areasOfPartnershipPagination, setAreasOfPartnershipPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [fellowshipGrantsPagination, setFellowshipGrantsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [booksPagination, setBooksPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [magazinesPagination, setMagazinesPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [reportsPagination, setReportsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [policiesPagination, setPoliciesPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [guidelineDocumentsPagination, setGuidelineDocumentsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [strategicPlansPagination, setStrategicPlansPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [actsAndLegalPagination, setActsAndLegalPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [financialReportsPagination, setFinancialReportsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [pressReleasesPagination, setPressReleasesPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [statementsPagination, setStatementsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [videosPagination, setVideosPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [newslettersPagination, setNewslettersPagination] = useState({ page: 1, limit: 10, total: 0 });
+  
+  // Loading states to prevent multiple submissions
+  const [savingNews, setSavingNews] = useState(false);
+  const [savingHero, setSavingHero] = useState(false);
+  const [savingPartner, setSavingPartner] = useState(false);
 
   // Fetch sections, news, partners, heroes, positions, and team members on component mount
   useEffect(() => {
@@ -242,6 +266,7 @@ export function AdminPanel({ onLogout }) {
         fetchFaqs();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeNav]);
 
   const fetchSections = async () => {
@@ -407,13 +432,13 @@ export function AdminPanel({ onLogout }) {
         const mappedHeroes = heroesList.map((hero, index) => ({
           id: hero.id?.toString() || `hero-${Date.now()}-${index}`,
           name: hero.name || '',
-          title: hero.title || '',
-          tagline: hero.tagline || '',
+            title: hero.title || '',
+            tagline: hero.tagline || '',
           description: hero.description || '',
-          content: hero.content || '',
+            content: hero.content || '',
           reference: hero.reference || null,
-          image: hero.image || null,
-          createdAt: hero.created_at || hero.createdAt || new Date().toISOString(),
+            image: hero.image || null,
+            createdAt: hero.created_at || hero.createdAt || new Date().toISOString(),
         }));
         setHeroes(mappedHeroes.sort((a, b) => {
           // Sort by reference if available, otherwise by date
@@ -465,6 +490,197 @@ export function AdminPanel({ onLogout }) {
     fetchPartners(1, limit);
   };
 
+  // Additional pagination handlers
+  const handleOnlineServicesPageChange = (page) => {
+    setOnlineServicesPagination(prev => ({ ...prev, page }));
+    fetchOnlineServices(page, onlineServicesPagination.limit);
+  };
+
+  const handleOnlineServicesItemsPerPageChange = (limit) => {
+    setOnlineServicesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchOnlineServices(1, limit);
+  };
+
+  const handleInnovationSpacesPageChange = (page) => {
+    setInnovationSpacesPagination(prev => ({ ...prev, page }));
+    fetchInnovationSpaces(page, innovationSpacesPagination.limit);
+  };
+
+  const handleInnovationSpacesItemsPerPageChange = (limit) => {
+    setInnovationSpacesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchInnovationSpaces(1, limit);
+  };
+
+  const handleFaqCategoriesPageChange = (page) => {
+    setFaqCategoriesPagination(prev => ({ ...prev, page }));
+    fetchFaqCategories(page, faqCategoriesPagination.limit);
+  };
+
+  const handleFaqCategoriesItemsPerPageChange = (limit) => {
+    setFaqCategoriesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchFaqCategories(1, limit);
+  };
+
+  const handleFaqsPageChange = (page) => {
+    setFaqsPagination(prev => ({ ...prev, page }));
+    fetchFaqs(page, faqsPagination.limit);
+  };
+
+  const handleFaqsItemsPerPageChange = (limit) => {
+    setFaqsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchFaqs(1, limit);
+  };
+
+  const handleOngoingProjectsPageChange = (page) => {
+    setOngoingProjectsPagination(prev => ({ ...prev, page }));
+    fetchOngoingProjects(page, ongoingProjectsPagination.limit);
+  };
+
+  const handleOngoingProjectsItemsPerPageChange = (limit) => {
+    setOngoingProjectsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchOngoingProjects(1, limit);
+  };
+
+  const handleAreasOfPartnershipPageChange = (page) => {
+    setAreasOfPartnershipPagination(prev => ({ ...prev, page }));
+    fetchAreasOfPartnership(page, areasOfPartnershipPagination.limit);
+  };
+
+  const handleAreasOfPartnershipItemsPerPageChange = (limit) => {
+    setAreasOfPartnershipPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchAreasOfPartnership(1, limit);
+  };
+
+  const handleFellowshipGrantsPageChange = (page) => {
+    setFellowshipGrantsPagination(prev => ({ ...prev, page }));
+    fetchFellowshipGrants(page, fellowshipGrantsPagination.limit);
+  };
+
+  const handleFellowshipGrantsItemsPerPageChange = (limit) => {
+    setFellowshipGrantsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchFellowshipGrants(1, limit);
+  };
+
+  const handleBooksPageChange = (page) => {
+    setBooksPagination(prev => ({ ...prev, page }));
+    fetchBooks(page, booksPagination.limit);
+  };
+
+  const handleBooksItemsPerPageChange = (limit) => {
+    setBooksPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchBooks(1, limit);
+  };
+
+  const handleMagazinesPageChange = (page) => {
+    setMagazinesPagination(prev => ({ ...prev, page }));
+    fetchMagazines(page, magazinesPagination.limit);
+  };
+
+  const handleMagazinesItemsPerPageChange = (limit) => {
+    setMagazinesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchMagazines(1, limit);
+  };
+
+  const handleReportsPageChange = (page) => {
+    setReportsPagination(prev => ({ ...prev, page }));
+    fetchReports(page, reportsPagination.limit);
+  };
+
+  const handleReportsItemsPerPageChange = (limit) => {
+    setReportsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchReports(1, limit);
+  };
+
+  const handlePoliciesPageChange = (page) => {
+    setPoliciesPagination(prev => ({ ...prev, page }));
+    fetchPolicies(page, policiesPagination.limit);
+  };
+
+  const handlePoliciesItemsPerPageChange = (limit) => {
+    setPoliciesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchPolicies(1, limit);
+  };
+
+  const handleGuidelineDocumentsPageChange = (page) => {
+    setGuidelineDocumentsPagination(prev => ({ ...prev, page }));
+    fetchGuidelineDocuments(page, guidelineDocumentsPagination.limit);
+  };
+
+  const handleGuidelineDocumentsItemsPerPageChange = (limit) => {
+    setGuidelineDocumentsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchGuidelineDocuments(1, limit);
+  };
+
+  const handleStrategicPlansPageChange = (page) => {
+    setStrategicPlansPagination(prev => ({ ...prev, page }));
+    fetchStrategicPlans(page, strategicPlansPagination.limit);
+  };
+
+  const handleStrategicPlansItemsPerPageChange = (limit) => {
+    setStrategicPlansPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchStrategicPlans(1, limit);
+  };
+
+  const handleActsAndLegalPageChange = (page) => {
+    setActsAndLegalPagination(prev => ({ ...prev, page }));
+    fetchActsAndLegal(page, actsAndLegalPagination.limit);
+  };
+
+  const handleActsAndLegalItemsPerPageChange = (limit) => {
+    setActsAndLegalPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchActsAndLegal(1, limit);
+  };
+
+  const handleFinancialReportsPageChange = (page) => {
+    setFinancialReportsPagination(prev => ({ ...prev, page }));
+    fetchFinancialReports(page, financialReportsPagination.limit);
+  };
+
+  const handleFinancialReportsItemsPerPageChange = (limit) => {
+    setFinancialReportsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchFinancialReports(1, limit);
+  };
+
+  const handlePressReleasesPageChange = (page) => {
+    setPressReleasesPagination(prev => ({ ...prev, page }));
+    fetchPressReleases(page, pressReleasesPagination.limit);
+  };
+
+  const handlePressReleasesItemsPerPageChange = (limit) => {
+    setPressReleasesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchPressReleases(1, limit);
+  };
+
+  const handleStatementsPageChange = (page) => {
+    setStatementsPagination(prev => ({ ...prev, page }));
+    fetchStatements(page, statementsPagination.limit);
+  };
+
+  const handleStatementsItemsPerPageChange = (limit) => {
+    setStatementsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchStatements(1, limit);
+  };
+
+  const handleVideosPageChange = (page) => {
+    setVideosPagination(prev => ({ ...prev, page }));
+    fetchVideos(page, videosPagination.limit);
+  };
+
+  const handleVideosItemsPerPageChange = (limit) => {
+    setVideosPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchVideos(1, limit);
+  };
+
+  const handleNewslettersPageChange = (page) => {
+    setNewslettersPagination(prev => ({ ...prev, page }));
+    fetchNewsletters(page, newslettersPagination.limit);
+  };
+
+  const handleNewslettersItemsPerPageChange = (limit) => {
+    setNewslettersPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchNewsletters(1, limit);
+  };
+
   const fetchPositions = async () => {
     try {
       const response = await positionAPI.getAll();
@@ -483,24 +699,29 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchFaqCategories = async () => {
+  const fetchFaqCategories = async (page = faqCategoriesPagination.page, limit = faqCategoriesPagination.limit) => {
     try {
-      const response = await faqCategoryAPI.getAll();
+      const response = await faqCategoryAPI.getAll(page, limit);
       
       // Handle different response structures
       let categoriesList = [];
+      let total = 0;
       
       if (response.status === 'OK' && response.returnData?.list_of_item) {
         categoriesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || categoriesList.length;
       } else if (response.returnData?.list_of_item) {
         // If status is not OK but list_of_item exists
         categoriesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || categoriesList.length;
       } else if (Array.isArray(response.returnData)) {
         // If returnData is directly an array
         categoriesList = response.returnData;
+        total = categoriesList.length;
       } else if (Array.isArray(response)) {
         // If response is directly an array
         categoriesList = response;
+        total = categoriesList.length;
       }
       
       if (categoriesList && categoriesList.length > 0) {
@@ -512,36 +733,45 @@ export function AdminPanel({ onLogout }) {
           createdAt: category.created_at || category.createdAt || new Date().toISOString(),
         }));
         setFaqCategories(mappedCategories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setFaqCategoriesPagination(prev => ({ ...prev, page, limit, total }));
       } else {
         setFaqCategories([]);
+        setFaqCategoriesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching FAQ categories:', err);
       setFaqCategories([]);
+      setFaqCategoriesPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
-  const fetchFaqs = async () => {
+  const fetchFaqs = async (page = faqsPagination.page, limit = faqsPagination.limit) => {
     try {
-      const response = await faqAPI.getAll();
+      const response = await faqAPI.getAll(page, limit);
       
       // Handle different response structures
       let faqsList = [];
+      let total = 0;
       
       if (response.status === 'OK' && response.returnData?.list_of_item) {
         faqsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || faqsList.length;
       } else if (response.status === 'ERROR' && response.returnData?.list_of_item) {
         // Even if status is ERROR, try to get the list if it exists
         faqsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || faqsList.length;
       } else if (response.returnData?.list_of_item) {
         // If status is not OK but list_of_item exists
         faqsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || faqsList.length;
       } else if (Array.isArray(response.returnData)) {
         // If returnData is directly an array
         faqsList = response.returnData;
+        total = faqsList.length;
       } else if (Array.isArray(response)) {
         // If response is directly an array
         faqsList = response;
+        total = faqsList.length;
       }
       
       if (faqsList && faqsList.length > 0) {
@@ -554,12 +784,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: faq.created_at || faq.createdAt || new Date().toISOString(),
         }));
         setFaqs(mappedFaqs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setFaqsPagination(prev => ({ ...prev, page, limit, total }));
       } else {
         setFaqs([]);
+        setFaqsPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching FAQs:', err);
       setFaqs([]);
+      setFaqsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -603,12 +836,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchInnovationSpaces = async () => {
+  const fetchInnovationSpaces = async (page = innovationSpacesPagination.page, limit = innovationSpacesPagination.limit) => {
     try {
-      const response = await innovationSpaceAPI.getAll();
+      const response = await innovationSpaceAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let spacesList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        spacesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || spacesList.length;
+      } else if (response.returnData?.list_of_item) {
+        spacesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || spacesList.length;
+      } else if (Array.isArray(response.returnData)) {
+        spacesList = response.returnData;
+        total = spacesList.length;
+      } else if (Array.isArray(response)) {
+        spacesList = response;
+        total = spacesList.length;
+      }
+      
+      if (spacesList && spacesList.length > 0) {
         // Map API response to innovation spaces format
-        const mappedSpaces = response.returnData.list_of_item.map(space => ({
+        const mappedSpaces = spacesList.map(space => ({
           id: space.id?.toString() || Date.now().toString(),
           name: space.name || '',
           category: space.category || '',
@@ -636,9 +888,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: space.created_at || space.createdAt || new Date().toISOString(),
         }));
         setInnovationSpaces(mappedSpaces.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setInnovationSpacesPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setInnovationSpaces([]);
+        setInnovationSpacesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching innovation spaces:', err);
+      setInnovationSpaces([]);
+      setInnovationSpacesPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -933,6 +1191,9 @@ export function AdminPanel({ onLogout }) {
   };
 
   const handleSaveNews = async (newsData, newsId = null) => {
+    if (savingNews) return;
+    
+    setSavingNews(true);
     try {
       let response;
       
@@ -957,6 +1218,8 @@ export function AdminPanel({ onLogout }) {
       console.error('Error saving news:', err);
       const errorMessage = err.response?.data?.errorMessage || err.message || (newsId ? 'Failed to update news. Please try again.' : 'Failed to save news. Please try again.');
       alert(errorMessage);
+    } finally {
+      setSavingNews(false);
     }
   };
 
@@ -981,6 +1244,9 @@ export function AdminPanel({ onLogout }) {
   };
 
   const handleSavePartner = async (partnerData, partnerId = null) => {
+    if (savingPartner) return;
+    
+    setSavingPartner(true);
     try {
       let response;
       
@@ -1005,6 +1271,8 @@ export function AdminPanel({ onLogout }) {
       console.error('Error saving partner:', err);
       const errorMessage = err.response?.data?.errorMessage || err.message || (partnerId ? 'Failed to update partner. Please try again.' : 'Failed to save partner. Please try again.');
       alert(errorMessage);
+    } finally {
+      setSavingPartner(false);
     }
   };
 
@@ -1029,6 +1297,9 @@ export function AdminPanel({ onLogout }) {
   };
 
   const handleSaveHero = async (heroData, heroId = null) => {
+    if (savingHero) return;
+    
+    setSavingHero(true);
     try {
       let response;
       
@@ -1061,8 +1332,10 @@ export function AdminPanel({ onLogout }) {
       if (Array.isArray(errorMessage)) {
         alert(errorMessage.join(', '));
       } else {
-        alert(errorMessage);
+      alert(errorMessage);
       }
+    } finally {
+      setSavingHero(false);
     }
   };
 
@@ -1402,21 +1675,46 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchOnlineServices = async () => {
+  const fetchOnlineServices = async (page = onlineServicesPagination.page, limit = onlineServicesPagination.limit) => {
     try {
-      const response = await onlineServiceAPI.getAll();
+      const response = await onlineServiceAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let servicesList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        servicesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || servicesList.length;
+      } else if (response.returnData?.list_of_item) {
+        servicesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || servicesList.length;
+      } else if (Array.isArray(response.returnData)) {
+        servicesList = response.returnData;
+        total = servicesList.length;
+      } else if (Array.isArray(response)) {
+        servicesList = response;
+        total = servicesList.length;
+      }
+      
+      if (servicesList && servicesList.length > 0) {
         // Map API response to online services format
-        const mappedServices = response.returnData.list_of_item.map(service => ({
+        const mappedServices = servicesList.map(service => ({
           id: service.id?.toString() || Date.now().toString(),
           name: service.name || '',
           link: service.link || '',
           createdAt: service.created_at || service.createdAt || new Date().toISOString(),
         }));
         setOnlineServices(mappedServices);
+        setOnlineServicesPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setOnlineServices([]);
+        setOnlineServicesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching online services:', err);
+      setOnlineServices([]);
+      setOnlineServicesPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -1437,7 +1735,7 @@ export function AdminPanel({ onLogout }) {
       try {
         const response = await onlineServiceAPI.delete(id);
         if (response.status === 'OK') {
-          await fetchOnlineServices();
+          await fetchOnlineServices(onlineServicesPagination.page, onlineServicesPagination.limit);
           alert('Online service deleted successfully!');
         } else {
           alert(response.errorMessage || 'Failed to delete online service');
@@ -1458,7 +1756,7 @@ export function AdminPanel({ onLogout }) {
 
       if (response.status === 'OK') {
         // Refresh online services list from API
-        await fetchOnlineServices();
+        await fetchOnlineServices(onlineServicesPagination.page, onlineServicesPagination.limit);
         setShowAddOnlineServiceForm(false);
         setEditingOnlineService(null);
         alert(serviceId ? 'Online service updated successfully!' : 'Online service saved successfully!');
@@ -1472,12 +1770,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchFinancialReports = async () => {
+  const fetchFinancialReports = async (page = financialReportsPagination.page, limit = financialReportsPagination.limit) => {
     try {
-      const response = await financialReportAPI.getAll();
+      const response = await financialReportAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let reportsList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        reportsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || reportsList.length;
+      } else if (response.returnData?.list_of_item) {
+        reportsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || reportsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        reportsList = response.returnData;
+        total = reportsList.length;
+      } else if (Array.isArray(response)) {
+        reportsList = response;
+        total = reportsList.length;
+      }
+      
+      if (reportsList && reportsList.length > 0) {
         // Map API response to financial reports format
-        const mappedReports = response.returnData.list_of_item.map(report => ({
+        const mappedReports = reportsList.map(report => ({
           id: report.id?.toString() || Date.now().toString(),
           title: report.title || '',
           description: report.description || '',
@@ -1485,9 +1802,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: report.created_at || report.createdAt || new Date().toISOString(),
         }));
         setFinancialReports(mappedReports);
+        setFinancialReportsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setFinancialReports([]);
+        setFinancialReportsPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching financial reports:', err);
+      setFinancialReports([]);
+      setFinancialReportsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -1542,12 +1865,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchMagazines = async () => {
+  const fetchMagazines = async (page = magazinesPagination.page, limit = magazinesPagination.limit) => {
     try {
-      const response = await magazineAPI.getAll();
+      const response = await magazineAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let magazinesList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        magazinesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || magazinesList.length;
+      } else if (response.returnData?.list_of_item) {
+        magazinesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || magazinesList.length;
+      } else if (Array.isArray(response.returnData)) {
+        magazinesList = response.returnData;
+        total = magazinesList.length;
+      } else if (Array.isArray(response)) {
+        magazinesList = response;
+        total = magazinesList.length;
+      }
+      
+      if (magazinesList && magazinesList.length > 0) {
         // Map API response to magazines format
-        const mappedMagazines = response.returnData.list_of_item.map(magazine => ({
+        const mappedMagazines = magazinesList.map(magazine => ({
           id: magazine.id?.toString() || Date.now().toString(),
           title: magazine.title || '',
           date: magazine.date || '',
@@ -1555,9 +1897,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: magazine.created_at || magazine.createdAt || new Date().toISOString(),
         }));
         setMagazines(mappedMagazines);
+        setMagazinesPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setMagazines([]);
+        setMagazinesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching magazines:', err);
+      setMagazines([]);
+      setMagazinesPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -1617,12 +1965,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchNewsletters = async () => {
+  const fetchNewsletters = async (page = newslettersPagination.page, limit = newslettersPagination.limit) => {
     try {
-      const response = await newsletterAPI.getAll();
+      const response = await newsletterAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let newslettersList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        newslettersList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || newslettersList.length;
+      } else if (response.returnData?.list_of_item) {
+        newslettersList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || newslettersList.length;
+      } else if (Array.isArray(response.returnData)) {
+        newslettersList = response.returnData;
+        total = newslettersList.length;
+      } else if (Array.isArray(response)) {
+        newslettersList = response;
+        total = newslettersList.length;
+      }
+      
+      if (newslettersList && newslettersList.length > 0) {
         // Map API response to newsletters format
-        const mappedNewsletters = response.returnData.list_of_item.map(newsletter => ({
+        const mappedNewsletters = newslettersList.map(newsletter => ({
           id: newsletter.id?.toString() || Date.now().toString(),
           title: newsletter.title || '',
           date: newsletter.date || '',
@@ -1630,9 +1997,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: newsletter.created_at || newsletter.createdAt || new Date().toISOString(),
         }));
         setNewsletters(mappedNewsletters);
+        setNewslettersPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setNewsletters([]);
+        setNewslettersPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching newsletters:', err);
+      setNewsletters([]);
+      setNewslettersPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -1700,12 +2073,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchBooks = async () => {
+  const fetchBooks = async (page = booksPagination.page, limit = booksPagination.limit) => {
     try {
-      const response = await booksAPI.getAll();
+      const response = await booksAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let booksList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        booksList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || booksList.length;
+      } else if (response.returnData?.list_of_item) {
+        booksList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || booksList.length;
+      } else if (Array.isArray(response.returnData)) {
+        booksList = response.returnData;
+        total = booksList.length;
+      } else if (Array.isArray(response)) {
+        booksList = response;
+        total = booksList.length;
+      }
+      
+      if (booksList && booksList.length > 0) {
         // Map API response to books format
-        const mappedBooks = response.returnData.list_of_item.map(book => ({
+        const mappedBooks = booksList.map(book => ({
           id: book.id?.toString() || Date.now().toString(),
           title: book.title || '',
           date: book.date || '',
@@ -1713,9 +2105,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: book.created_at || book.createdAt || new Date().toISOString(),
         }));
         setBooks(mappedBooks);
+        setBooksPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setBooks([]);
+        setBooksPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching books:', err);
+      setBooks([]);
+      setBooksPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -1775,12 +2173,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchReports = async () => {
+  const fetchReports = async (page = reportsPagination.page, limit = reportsPagination.limit) => {
     try {
-      const response = await reportsAPI.getAll();
+      const response = await reportsAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let reportsList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        reportsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || reportsList.length;
+      } else if (response.returnData?.list_of_item) {
+        reportsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || reportsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        reportsList = response.returnData;
+        total = reportsList.length;
+      } else if (Array.isArray(response)) {
+        reportsList = response;
+        total = reportsList.length;
+      }
+      
+      if (reportsList && reportsList.length > 0) {
         // Map API response to reports format
-        const mappedReports = response.returnData.list_of_item.map(report => ({
+        const mappedReports = reportsList.map(report => ({
           id: report.id?.toString() || Date.now().toString(),
           title: report.title || '',
           date: report.date || '',
@@ -1788,9 +2205,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: report.created_at || report.createdAt || new Date().toISOString(),
         }));
         setReports(mappedReports);
+        setReportsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setReports([]);
+        setReportsPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching reports:', err);
+      setReports([]);
+      setReportsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -1850,12 +2273,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchActsAndLegal = async () => {
+  const fetchActsAndLegal = async (page = actsAndLegalPagination.page, limit = actsAndLegalPagination.limit) => {
     try {
-      const response = await actsAndLegalAPI.getAll();
+      const response = await actsAndLegalAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let actsList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        actsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || actsList.length;
+      } else if (response.returnData?.list_of_item) {
+        actsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || actsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        actsList = response.returnData;
+        total = actsList.length;
+      } else if (Array.isArray(response)) {
+        actsList = response;
+        total = actsList.length;
+      }
+      
+      if (actsList && actsList.length > 0) {
         // Map API response to acts and legal format
-        const mappedActs = response.returnData.list_of_item.map(act => ({
+        const mappedActs = actsList.map(act => ({
           id: act.id?.toString() || Date.now().toString(),
           title: act.title || '',
           date: act.date || '',
@@ -1863,9 +2305,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: act.created_at || act.createdAt || new Date().toISOString(),
         }));
         setActsAndLegal(mappedActs);
+        setActsAndLegalPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setActsAndLegal([]);
+        setActsAndLegalPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching acts and legal:', err);
+      setActsAndLegal([]);
+      setActsAndLegalPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -1925,12 +2373,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchPolicies = async () => {
+  const fetchPolicies = async (page = policiesPagination.page, limit = policiesPagination.limit) => {
     try {
-      const response = await policiesAPI.getAll();
+      const response = await policiesAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let policiesList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        policiesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || policiesList.length;
+      } else if (response.returnData?.list_of_item) {
+        policiesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || policiesList.length;
+      } else if (Array.isArray(response.returnData)) {
+        policiesList = response.returnData;
+        total = policiesList.length;
+      } else if (Array.isArray(response)) {
+        policiesList = response;
+        total = policiesList.length;
+      }
+      
+      if (policiesList && policiesList.length > 0) {
         // Map API response to policies format
-        const mappedPolicies = response.returnData.list_of_item.map(policy => ({
+        const mappedPolicies = policiesList.map(policy => ({
           id: policy.id?.toString() || Date.now().toString(),
           title: policy.title || '',
           date: policy.date || '',
@@ -1938,9 +2405,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: policy.created_at || policy.createdAt || new Date().toISOString(),
         }));
         setPolicies(mappedPolicies);
+        setPoliciesPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setPolicies([]);
+        setPoliciesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching policies:', err);
+      setPolicies([]);
+      setPoliciesPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2000,12 +2473,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchStrategicPlans = async () => {
+  const fetchStrategicPlans = async (page = strategicPlansPagination.page, limit = strategicPlansPagination.limit) => {
     try {
-      const response = await strategicPlanAPI.getAll();
+      const response = await strategicPlanAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let plansList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        plansList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || plansList.length;
+      } else if (response.returnData?.list_of_item) {
+        plansList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || plansList.length;
+      } else if (Array.isArray(response.returnData)) {
+        plansList = response.returnData;
+        total = plansList.length;
+      } else if (Array.isArray(response)) {
+        plansList = response;
+        total = plansList.length;
+      }
+      
+      if (plansList && plansList.length > 0) {
         // Map API response to strategic plans format
-        const mappedPlans = response.returnData.list_of_item.map(plan => ({
+        const mappedPlans = plansList.map(plan => ({
           id: plan.id?.toString() || Date.now().toString(),
           title: plan.title || '',
           date: plan.date || '',
@@ -2013,9 +2505,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: plan.created_at || plan.createdAt || new Date().toISOString(),
         }));
         setStrategicPlans(mappedPlans);
+        setStrategicPlansPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setStrategicPlans([]);
+        setStrategicPlansPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching strategic plans:', err);
+      setStrategicPlans([]);
+      setStrategicPlansPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2075,12 +2573,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchGuidelineDocuments = async () => {
+  const fetchGuidelineDocuments = async (page = guidelineDocumentsPagination.page, limit = guidelineDocumentsPagination.limit) => {
     try {
-      const response = await guidelineDocumentsAPI.getAll();
+      const response = await guidelineDocumentsAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let documentsList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        documentsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || documentsList.length;
+      } else if (response.returnData?.list_of_item) {
+        documentsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || documentsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        documentsList = response.returnData;
+        total = documentsList.length;
+      } else if (Array.isArray(response)) {
+        documentsList = response;
+        total = documentsList.length;
+      }
+      
+      if (documentsList && documentsList.length > 0) {
         // Map API response to guideline documents format
-        const mappedDocuments = response.returnData.list_of_item.map(doc => ({
+        const mappedDocuments = documentsList.map(doc => ({
           id: doc.id?.toString() || Date.now().toString(),
           title: doc.title || '',
           date: doc.date || '',
@@ -2088,9 +2605,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: doc.created_at || doc.createdAt || new Date().toISOString(),
         }));
         setGuidelineDocuments(mappedDocuments);
+        setGuidelineDocumentsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setGuidelineDocuments([]);
+        setGuidelineDocumentsPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching guideline documents:', err);
+      setGuidelineDocuments([]);
+      setGuidelineDocumentsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2300,12 +2823,31 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchOngoingProjects = async () => {
+  const fetchOngoingProjects = async (page = ongoingProjectsPagination.page, limit = ongoingProjectsPagination.limit) => {
     try {
-      const response = await ongoingProjectAPI.getAll();
+      const response = await ongoingProjectAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let projectsList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        projectsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || projectsList.length;
+      } else if (response.returnData?.list_of_item) {
+        projectsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || projectsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        projectsList = response.returnData;
+        total = projectsList.length;
+      } else if (Array.isArray(response)) {
+        projectsList = response;
+        total = projectsList.length;
+      }
+      
+      if (projectsList && projectsList.length > 0) {
         // Map API response to ongoing projects format
-        const mappedProjects = response.returnData.list_of_item.map(proj => ({
+        const mappedProjects = projectsList.map(proj => ({
           id: proj.id?.toString() || Date.now().toString(),
           title: proj.title || '',
           description: proj.description || '',
@@ -2313,9 +2855,15 @@ export function AdminPanel({ onLogout }) {
           createdAt: proj.created_at || proj.createdAt || new Date().toISOString(),
         }));
         setOngoingProjects(mappedProjects);
+        setOngoingProjectsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setOngoingProjects([]);
+        setOngoingProjectsPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching ongoing projects:', err);
+      setOngoingProjects([]);
+      setOngoingProjectsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2375,21 +2923,46 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchAreasOfPartnership = async () => {
+  const fetchAreasOfPartnership = async (page = areasOfPartnershipPagination.page, limit = areasOfPartnershipPagination.limit) => {
     try {
-      const response = await areaOfPartnershipAPI.getAll();
+      const response = await areaOfPartnershipAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let areasList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
+        areasList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || areasList.length;
+      } else if (response.returnData?.list_of_item) {
+        areasList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || areasList.length;
+      } else if (Array.isArray(response.returnData)) {
+        areasList = response.returnData;
+        total = areasList.length;
+      } else if (Array.isArray(response)) {
+        areasList = response;
+        total = areasList.length;
+      }
+      
+      if (areasList && areasList.length > 0) {
         // Map API response to areas of partnership format
-        const mappedAreas = response.returnData.list_of_item.map(area => ({
+        const mappedAreas = areasList.map(area => ({
           id: area.id?.toString() || Date.now().toString(),
           title: area.title || '',
           description: area.description || '',
           createdAt: area.created_at || area.createdAt || new Date().toISOString(),
         }));
         setAreasOfPartnership(mappedAreas);
+        setAreasOfPartnershipPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setAreasOfPartnership([]);
+        setAreasOfPartnershipPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching areas of partnership:', err);
+      setAreasOfPartnership([]);
+      setAreasOfPartnershipPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2449,11 +3022,30 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchFellowshipGrants = async () => {
+  const fetchFellowshipGrants = async (page = fellowshipGrantsPagination.page, limit = fellowshipGrantsPagination.limit) => {
     try {
-      const response = await fellowshipGrantsAPI.getAll();
+      const response = await fellowshipGrantsAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let grantsList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
-        const mappedGrants = response.returnData.list_of_item.map(grant => ({
+        grantsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || grantsList.length;
+      } else if (response.returnData?.list_of_item) {
+        grantsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || grantsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        grantsList = response.returnData;
+        total = grantsList.length;
+      } else if (Array.isArray(response)) {
+        grantsList = response;
+        total = grantsList.length;
+      }
+      
+      if (grantsList && grantsList.length > 0) {
+        const mappedGrants = grantsList.map(grant => ({
           id: grant.id,
           title: grant.title || '',
           description: grant.description || '',
@@ -2462,9 +3054,15 @@ export function AdminPanel({ onLogout }) {
           image: grant.image || null
         }));
         setFellowshipGrants(mappedGrants);
+        setFellowshipGrantsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setFellowshipGrants([]);
+        setFellowshipGrantsPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching fellowship grants:', err);
+      setFellowshipGrants([]);
+      setFellowshipGrantsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2532,20 +3130,45 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchPressReleases = async () => {
+  const fetchPressReleases = async (page = pressReleasesPagination.page, limit = pressReleasesPagination.limit) => {
     try {
-      const response = await pressReleaseAPI.getAll();
+      const response = await pressReleaseAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let pressReleasesList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
-        const mappedPressReleases = response.returnData.list_of_item.map(pr => ({
+        pressReleasesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || pressReleasesList.length;
+      } else if (response.returnData?.list_of_item) {
+        pressReleasesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || pressReleasesList.length;
+      } else if (Array.isArray(response.returnData)) {
+        pressReleasesList = response.returnData;
+        total = pressReleasesList.length;
+      } else if (Array.isArray(response)) {
+        pressReleasesList = response;
+        total = pressReleasesList.length;
+      }
+      
+      if (pressReleasesList && pressReleasesList.length > 0) {
+        const mappedPressReleases = pressReleasesList.map(pr => ({
           id: pr.id?.toString() || Date.now().toString(),
           title: pr.title || '',
           description: pr.description || '',
           image: pr.image || null
         }));
         setPressReleases(mappedPressReleases);
+        setPressReleasesPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setPressReleases([]);
+        setPressReleasesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching press releases:', err);
+      setPressReleases([]);
+      setPressReleasesPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2612,20 +3235,45 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchStatements = async () => {
+  const fetchStatements = async (page = statementsPagination.page, limit = statementsPagination.limit) => {
     try {
-      const response = await statementAPI.getAll();
+      const response = await statementAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let statementsList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
-        const mappedStatements = response.returnData.list_of_item.map(s => ({
+        statementsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || statementsList.length;
+      } else if (response.returnData?.list_of_item) {
+        statementsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || statementsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        statementsList = response.returnData;
+        total = statementsList.length;
+      } else if (Array.isArray(response)) {
+        statementsList = response;
+        total = statementsList.length;
+      }
+      
+      if (statementsList && statementsList.length > 0) {
+        const mappedStatements = statementsList.map(s => ({
           id: s.id?.toString() || Date.now().toString(),
           title: s.title || '',
           description: s.description || '',
           image: s.image || null
         }));
         setStatements(mappedStatements);
+        setStatementsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setStatements([]);
+        setStatementsPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching statements:', err);
+      setStatements([]);
+      setStatementsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2692,20 +3340,45 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchVideos = async () => {
+  const fetchVideos = async (page = videosPagination.page, limit = videosPagination.limit) => {
     try {
-      const response = await costechVideoAPI.getAll();
+      const response = await costechVideoAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let videosList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
-        const mappedVideos = response.returnData.list_of_item.map(v => ({
+        videosList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || videosList.length;
+      } else if (response.returnData?.list_of_item) {
+        videosList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || videosList.length;
+      } else if (Array.isArray(response.returnData)) {
+        videosList = response.returnData;
+        total = videosList.length;
+      } else if (Array.isArray(response)) {
+        videosList = response;
+        total = videosList.length;
+      }
+      
+      if (videosList && videosList.length > 0) {
+        const mappedVideos = videosList.map(v => ({
           id: v.id?.toString() || Date.now().toString(),
           title: v.title || '',
           description: v.description || '',
           video_link: v.video_link || null
         }));
         setVideos(mappedVideos);
+        setVideosPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setVideos([]);
+        setVideosPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching videos:', err);
+      setVideos([]);
+      setVideosPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -3134,8 +3807,8 @@ export function AdminPanel({ onLogout }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
                 <span>Heroes</span>
-              </a>
-              <a 
+          </a>
+          <a 
             href="#news" 
                 className={`nav-dropdown-item ${activeNav === 'news' ? 'active' : ''}`}
             onClick={handleNewsClick}
@@ -3244,7 +3917,7 @@ export function AdminPanel({ onLogout }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>FAQ</span>
-              </a>
+          </a>
             </div>
           </div>
           <a 
@@ -3650,6 +4323,14 @@ export function AdminPanel({ onLogout }) {
             onAddCategoryClick={handleAddFaqCategoryClick}
             onDelete={handleDeleteFaqCategory}
             onEdit={handleEditFaqCategory}
+            pagination={{
+              currentPage: faqCategoriesPagination.page,
+              totalPages: Math.ceil(faqCategoriesPagination.total / faqCategoriesPagination.limit),
+              itemsPerPage: faqCategoriesPagination.limit,
+              totalItems: faqCategoriesPagination.total,
+              onPageChange: handleFaqCategoriesPageChange,
+              onItemsPerPageChange: handleFaqCategoriesItemsPerPageChange
+            }}
           />
         ) : activeNav === 'faq' ? (
           <FaqPage 
@@ -3660,6 +4341,14 @@ export function AdminPanel({ onLogout }) {
             onAddFaqClick={handleAddFaqClick}
             onDelete={handleDeleteFaq}
             onEdit={handleEditFaq}
+            pagination={{
+              currentPage: faqsPagination.page,
+              totalPages: Math.ceil(faqsPagination.total / faqsPagination.limit),
+              itemsPerPage: faqsPagination.limit,
+              totalItems: faqsPagination.total,
+              onPageChange: handleFaqsPageChange,
+              onItemsPerPageChange: handleFaqsItemsPerPageChange
+            }}
           />
         ) : activeNav === 'management-team' ? (
           <ManagementTeamPage 
@@ -3688,6 +4377,14 @@ export function AdminPanel({ onLogout }) {
             onAddSpaceClick={handleAddInnovationSpaceClick}
             onDelete={handleDeleteInnovationSpace}
             onEdit={handleEditInnovationSpace}
+            pagination={{
+              currentPage: innovationSpacesPagination.page,
+              totalPages: Math.ceil(innovationSpacesPagination.total / innovationSpacesPagination.limit),
+              itemsPerPage: innovationSpacesPagination.limit,
+              totalItems: innovationSpacesPagination.total,
+              onPageChange: handleInnovationSpacesPageChange,
+              onItemsPerPageChange: handleInnovationSpacesItemsPerPageChange
+            }}
           />
         ) : activeNav === 'online-service' ? (
           <OnlineServicePage 
@@ -3697,6 +4394,14 @@ export function AdminPanel({ onLogout }) {
             onAddServiceClick={handleAddOnlineServiceClick}
             onDelete={handleDeleteOnlineService}
             onEdit={handleEditOnlineService}
+            pagination={{
+              currentPage: onlineServicesPagination.page,
+              totalPages: Math.ceil(onlineServicesPagination.total / onlineServicesPagination.limit),
+              itemsPerPage: onlineServicesPagination.limit,
+              totalItems: onlineServicesPagination.total,
+              onPageChange: handleOnlineServicesPageChange,
+              onItemsPerPageChange: handleOnlineServicesItemsPerPageChange
+            }}
           />
         ) : activeNav === 'financial-report' ? (
           <FinancialReportPage 
@@ -3706,6 +4411,14 @@ export function AdminPanel({ onLogout }) {
             onAddReportClick={handleAddFinancialReportClick}
             onDelete={handleDeleteFinancialReport}
             onEdit={handleEditFinancialReport}
+            pagination={{
+              currentPage: financialReportsPagination.page,
+              totalPages: Math.ceil(financialReportsPagination.total / financialReportsPagination.limit),
+              itemsPerPage: financialReportsPagination.limit,
+              totalItems: financialReportsPagination.total,
+              onPageChange: handleFinancialReportsPageChange,
+              onItemsPerPageChange: handleFinancialReportsItemsPerPageChange
+            }}
           />
         ) : activeNav === 'magazine' ? (
           <MagazinePage 
@@ -3715,6 +4428,14 @@ export function AdminPanel({ onLogout }) {
             onAddMagazineClick={handleAddMagazineClick}
             onDelete={handleDeleteMagazine}
             onEdit={handleEditMagazine}
+            pagination={{
+              currentPage: magazinesPagination.page,
+              totalPages: Math.ceil(magazinesPagination.total / magazinesPagination.limit),
+              itemsPerPage: magazinesPagination.limit,
+              totalItems: magazinesPagination.total,
+              onPageChange: handleMagazinesPageChange,
+              onItemsPerPageChange: handleMagazinesItemsPerPageChange
+            }}
           />
         ) : activeNav === 'newsletter' ? (
           <NewsletterPage 
@@ -3724,6 +4445,14 @@ export function AdminPanel({ onLogout }) {
             onAddNewsletterClick={handleAddNewsletterClick}
             onDelete={handleDeleteNewsletter}
             onEdit={handleEditNewsletter}
+            pagination={{
+              currentPage: newslettersPagination.page,
+              totalPages: Math.ceil(newslettersPagination.total / newslettersPagination.limit),
+              itemsPerPage: newslettersPagination.limit,
+              totalItems: newslettersPagination.total,
+              onPageChange: handleNewslettersPageChange,
+              onItemsPerPageChange: handleNewslettersItemsPerPageChange
+            }}
           />
         ) : activeNav === 'books' ? (
           <BooksPage 
@@ -3733,6 +4462,14 @@ export function AdminPanel({ onLogout }) {
             onAddBookClick={handleAddBookClick}
             onDelete={handleDeleteBook}
             onEdit={handleEditBook}
+            pagination={{
+              currentPage: booksPagination.page,
+              totalPages: Math.ceil(booksPagination.total / booksPagination.limit),
+              itemsPerPage: booksPagination.limit,
+              totalItems: booksPagination.total,
+              onPageChange: handleBooksPageChange,
+              onItemsPerPageChange: handleBooksItemsPerPageChange
+            }}
           />
         ) : activeNav === 'reports' ? (
           <ReportsPage 
@@ -3742,6 +4479,14 @@ export function AdminPanel({ onLogout }) {
             onAddReportClick={handleAddReportClick}
             onDelete={handleDeleteReport}
             onEdit={handleEditReport}
+            pagination={{
+              currentPage: reportsPagination.page,
+              totalPages: Math.ceil(reportsPagination.total / reportsPagination.limit),
+              itemsPerPage: reportsPagination.limit,
+              totalItems: reportsPagination.total,
+              onPageChange: handleReportsPageChange,
+              onItemsPerPageChange: handleReportsItemsPerPageChange
+            }}
           />
         ) : activeNav === 'acts-and-legal' ? (
           <ActsAndLegalPage 
@@ -3751,6 +4496,14 @@ export function AdminPanel({ onLogout }) {
             onAddActClick={handleAddActsAndLegalClick}
             onDelete={handleDeleteActsAndLegal}
             onEdit={handleEditActsAndLegal}
+            pagination={{
+              currentPage: actsAndLegalPagination.page,
+              totalPages: Math.ceil(actsAndLegalPagination.total / actsAndLegalPagination.limit),
+              itemsPerPage: actsAndLegalPagination.limit,
+              totalItems: actsAndLegalPagination.total,
+              onPageChange: handleActsAndLegalPageChange,
+              onItemsPerPageChange: handleActsAndLegalItemsPerPageChange
+            }}
           />
         ) : activeNav === 'policies' ? (
           <PoliciesPage 
@@ -3760,6 +4513,14 @@ export function AdminPanel({ onLogout }) {
             onAddPolicyClick={handleAddPolicyClick}
             onDelete={handleDeletePolicy}
             onEdit={handleEditPolicy}
+            pagination={{
+              currentPage: policiesPagination.page,
+              totalPages: Math.ceil(policiesPagination.total / policiesPagination.limit),
+              itemsPerPage: policiesPagination.limit,
+              totalItems: policiesPagination.total,
+              onPageChange: handlePoliciesPageChange,
+              onItemsPerPageChange: handlePoliciesItemsPerPageChange
+            }}
           />
         ) : activeNav === 'strategic-plan' ? (
           <StrategicPlanPage 
@@ -3769,6 +4530,14 @@ export function AdminPanel({ onLogout }) {
             onAddPlanClick={handleAddStrategicPlanClick}
             onDelete={handleDeleteStrategicPlan}
             onEdit={handleEditStrategicPlan}
+            pagination={{
+              currentPage: strategicPlansPagination.page,
+              totalPages: Math.ceil(strategicPlansPagination.total / strategicPlansPagination.limit),
+              itemsPerPage: strategicPlansPagination.limit,
+              totalItems: strategicPlansPagination.total,
+              onPageChange: handleStrategicPlansPageChange,
+              onItemsPerPageChange: handleStrategicPlansItemsPerPageChange
+            }}
           />
         ) : activeNav === 'guideline-documents' ? (
           <GuidelineDocumentsPage 
@@ -3778,6 +4547,14 @@ export function AdminPanel({ onLogout }) {
             onAddDocumentClick={handleAddGuidelineDocumentClick}
             onDelete={handleDeleteGuidelineDocument}
             onEdit={handleEditGuidelineDocument}
+            pagination={{
+              currentPage: guidelineDocumentsPagination.page,
+              totalPages: Math.ceil(guidelineDocumentsPagination.total / guidelineDocumentsPagination.limit),
+              itemsPerPage: guidelineDocumentsPagination.limit,
+              totalItems: guidelineDocumentsPagination.total,
+              onPageChange: handleGuidelineDocumentsPageChange,
+              onItemsPerPageChange: handleGuidelineDocumentsItemsPerPageChange
+            }}
           />
         ) : activeNav === 'conference' ? (
           <ConferencePage 
@@ -3805,6 +4582,14 @@ export function AdminPanel({ onLogout }) {
             onAddProjectClick={handleAddOngoingProjectClick}
             onDelete={handleDeleteOngoingProject}
             onEdit={handleEditOngoingProject}
+            pagination={{
+              currentPage: ongoingProjectsPagination.page,
+              totalPages: Math.ceil(ongoingProjectsPagination.total / ongoingProjectsPagination.limit),
+              itemsPerPage: ongoingProjectsPagination.limit,
+              totalItems: ongoingProjectsPagination.total,
+              onPageChange: handleOngoingProjectsPageChange,
+              onItemsPerPageChange: handleOngoingProjectsItemsPerPageChange
+            }}
           />
         ) : activeNav === 'area-of-partnership' ? (
           <AreaOfPartnershipPage 
@@ -3814,6 +4599,14 @@ export function AdminPanel({ onLogout }) {
             onAddAreaClick={handleAddAreaOfPartnershipClick}
             onDelete={handleDeleteAreaOfPartnership}
             onEdit={handleEditAreaOfPartnership}
+            pagination={{
+              currentPage: areasOfPartnershipPagination.page,
+              totalPages: Math.ceil(areasOfPartnershipPagination.total / areasOfPartnershipPagination.limit),
+              itemsPerPage: areasOfPartnershipPagination.limit,
+              totalItems: areasOfPartnershipPagination.total,
+              onPageChange: handleAreasOfPartnershipPageChange,
+              onItemsPerPageChange: handleAreasOfPartnershipItemsPerPageChange
+            }}
           />
         ) : activeNav === 'fellowship-grants' ? (
           <FellowshipGrantsPage 
@@ -3823,6 +4616,14 @@ export function AdminPanel({ onLogout }) {
             onAddGrantClick={handleAddFellowshipGrantClick}
             onDelete={handleDeleteFellowshipGrant}
             onEdit={handleEditFellowshipGrant}
+            pagination={{
+              currentPage: fellowshipGrantsPagination.page,
+              totalPages: Math.ceil(fellowshipGrantsPagination.total / fellowshipGrantsPagination.limit),
+              itemsPerPage: fellowshipGrantsPagination.limit,
+              totalItems: fellowshipGrantsPagination.total,
+              onPageChange: handleFellowshipGrantsPageChange,
+              onItemsPerPageChange: handleFellowshipGrantsItemsPerPageChange
+            }}
           />
         ) : activeNav === 'press-release' ? (
           <PressReleasePage 
@@ -3832,6 +4633,14 @@ export function AdminPanel({ onLogout }) {
             onAddPressReleaseClick={handleAddPressReleaseClick}
             onDelete={handleDeletePressRelease}
             onEdit={handleEditPressRelease}
+            pagination={{
+              currentPage: pressReleasesPagination.page,
+              totalPages: Math.ceil(pressReleasesPagination.total / pressReleasesPagination.limit),
+              itemsPerPage: pressReleasesPagination.limit,
+              totalItems: pressReleasesPagination.total,
+              onPageChange: handlePressReleasesPageChange,
+              onItemsPerPageChange: handlePressReleasesItemsPerPageChange
+            }}
           />
         ) : activeNav === 'statement' ? (
           <StatementPage 
@@ -3841,6 +4650,14 @@ export function AdminPanel({ onLogout }) {
             onAddStatementClick={handleAddStatementClick}
             onDelete={handleDeleteStatement}
             onEdit={handleEditStatement}
+            pagination={{
+              currentPage: statementsPagination.page,
+              totalPages: Math.ceil(statementsPagination.total / statementsPagination.limit),
+              itemsPerPage: statementsPagination.limit,
+              totalItems: statementsPagination.total,
+              onPageChange: handleStatementsPageChange,
+              onItemsPerPageChange: handleStatementsItemsPerPageChange
+            }}
           />
         ) : activeNav === 'costech-video' ? (
           <CostechVideoPage 
@@ -3850,6 +4667,14 @@ export function AdminPanel({ onLogout }) {
             onAddVideoClick={handleAddVideoClick}
             onDelete={handleDeleteVideo}
             onEdit={handleEditVideo}
+            pagination={{
+              currentPage: videosPagination.page,
+              totalPages: Math.ceil(videosPagination.total / videosPagination.limit),
+              itemsPerPage: videosPagination.limit,
+              totalItems: videosPagination.total,
+              onPageChange: handleVideosPageChange,
+              onItemsPerPageChange: handleVideosItemsPerPageChange
+            }}
           />
         ) : activeNav === 'community-engagement' ? (
           <CommunityEngagementPage 
@@ -4047,6 +4872,7 @@ export function AdminPanel({ onLogout }) {
           onClose={handleCloseForm}
           onSave={handleSaveNews}
           editNews={editingNews}
+          loading={savingNews}
         />
       )}
 
@@ -4056,6 +4882,7 @@ export function AdminPanel({ onLogout }) {
           onClose={handleCloseForm}
           onSave={handleSavePartner}
           editPartner={editingPartner}
+          loading={savingPartner}
         />
       )}
 
@@ -4065,6 +4892,7 @@ export function AdminPanel({ onLogout }) {
           onClose={handleCloseForm}
           onSave={handleSaveHero}
           editHero={editingHero}
+          loading={savingHero}
         />
       )}
 

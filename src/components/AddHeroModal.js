@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import '../css/AddHeroModal.css';
 import { compressImage } from '../utils/imageCompression';
+import { htmlToText, textToHtml } from '../utils/htmlUtils';
 
-export function AddHeroModal({ onClose, onSave, editHero = null }) {
+export function AddHeroModal({ onClose, onSave, editHero = null, loading = false }) {
   const [formData, setFormData] = useState({
     name: '',
     title: '',
@@ -22,8 +23,8 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
         name: editHero.name || '',
         title: editHero.title || '',
         tagline: editHero.tagline || '',
-        description: editHero.description || '',
-        content: editHero.content || '',
+        description: htmlToText(editHero.description || ''), // Convert HTML to plain text for editing
+        content: htmlToText(editHero.content || ''), // Convert HTML to plain text for editing
         reference: editHero.reference !== null && editHero.reference !== undefined ? editHero.reference : '',
         image: null // Don't preload image file
       });
@@ -85,9 +86,11 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
       return;
     }
 
-    // Convert reference to number if provided
+    // Convert reference to number if provided and convert plain text to HTML
     const heroDataToSave = {
       ...formData,
+      description: textToHtml(formData.description),
+      content: textToHtml(formData.content),
       reference: formData.reference ? parseInt(formData.reference, 10) : null
     };
 
@@ -182,14 +185,16 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
           <div className="form-group">
             <label htmlFor="add-hero-description" className="form-label">
               Description <span className="required">*</span>
+              <span className="form-hint">(Press Enter for new paragraphs)</span>
             </label>
             <textarea
               id="add-hero-description"
               name="description"
               className="form-textarea"
-              rows="4"
+              rows="6"
               value={formData.description}
               onChange={handleInputChange}
+              placeholder="Enter description. Press Enter for new paragraphs."
               required
             />
           </div>
@@ -197,14 +202,16 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
           <div className="form-group">
             <label htmlFor="add-hero-content" className="form-label">
               Content <span className="required">*</span>
+              <span className="form-hint">(Press Enter for new paragraphs)</span>
             </label>
             <textarea
               id="add-hero-content"
               name="content"
               className="form-textarea"
-              rows="6"
+              rows="8"
               value={formData.content}
               onChange={handleInputChange}
+              placeholder="Enter content. Press Enter for new paragraphs."
               required
             />
           </div>
@@ -261,11 +268,11 @@ export function AddHeroModal({ onClose, onSave, editHero = null }) {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="form-button-cancel" onClick={onClose}>
+            <button type="button" className="form-button-cancel" onClick={onClose} disabled={loading}>
               Cancel
             </button>
-            <button type="submit" className="form-button-submit">
-              {editHero ? 'Update Hero' : 'Save Hero'}
+            <button type="submit" className="form-button-submit" disabled={loading}>
+              {loading ? 'Saving...' : (editHero ? 'Update Hero' : 'Save Hero')}
             </button>
           </div>
         </form>

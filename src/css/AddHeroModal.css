@@ -249,10 +249,17 @@
   color: white;
 }
 
-.form-button-submit:hover {
+.form-button-submit:hover:not(:disabled) {
   background-color: #a06b06;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(185, 124, 7, 0.3);
+}
+
+.form-button-submit:disabled,
+.form-button-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Image Upload Styles */

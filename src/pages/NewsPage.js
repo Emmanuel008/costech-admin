@@ -1,5 +1,6 @@
 import '../css/NewsPage.css';
 import { Pagination } from '../components/Pagination';
+import { getHtmlPreview } from '../utils/htmlUtils';
 
 export function NewsPage({ onBack, onSave, news = [], onAddNewsClick, onDelete, onEdit, pagination }) {
 
@@ -62,7 +63,15 @@ export function NewsPage({ onBack, onSave, news = [], onAddNewsClick, onDelete, 
                         <strong>{item.title}</strong>
                       </td>
                       <td className="table-description-cell">
-                        {item.description}
+                        {item.description ? (
+                          <div 
+                            className="description-text html-content" 
+                            title={getHtmlPreview(item.description, 200)}
+                            dangerouslySetInnerHTML={{ __html: item.description }}
+                          />
+                        ) : (
+                          'N/A'
+                        )}
                       </td>
                       <td className="table-date-cell">
                         {item.date ? new Date(item.date).toLocaleDateString() : (item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A')}

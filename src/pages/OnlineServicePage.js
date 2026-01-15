@@ -1,6 +1,7 @@
 import '../css/OnlineServicePage.css';
+import { Pagination } from '../components/Pagination';
 
-export function OnlineServicePage({ onBack, onSave, services = [], onAddServiceClick, onDelete, onEdit }) {
+export function OnlineServicePage({ onBack, onSave, services = [], onAddServiceClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="online-service-page">
@@ -89,6 +90,16 @@ export function OnlineServicePage({ onBack, onSave, services = [], onAddServiceC
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

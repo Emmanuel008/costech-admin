@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import '../css/AddPartnerModal.css';
 import { compressImage } from '../utils/imageCompression';
 
-export function AddPartnerModal({ onClose, onSave, editPartner = null }) {
+export function AddPartnerModal({ onClose, onSave, editPartner = null, loading = false }) {
   const [formData, setFormData] = useState({
     name: '',
     image: null
@@ -172,11 +172,11 @@ export function AddPartnerModal({ onClose, onSave, editPartner = null }) {
           </div>
 
           <div className="add-partner-actions">
-            <button type="button" className="btn-cancel" onClick={onClose}>
+            <button type="button" className="btn-cancel" onClick={onClose} disabled={loading}>
               Cancel
             </button>
-            <button type="submit" className="btn-submit">
-              {editPartner ? 'Update Partner' : 'Save Partner'}
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? 'Saving...' : (editPartner ? 'Update Partner' : 'Save Partner')}
             </button>
           </div>
         </form>

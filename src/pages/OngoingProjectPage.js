@@ -1,6 +1,7 @@
 import '../css/OngoingProjectPage.css';
+import { Pagination } from '../components/Pagination';
 
-export function OngoingProjectPage({ onBack, onSave, ongoingProjects = [], onAddProjectClick, onDelete, onEdit }) {
+export function OngoingProjectPage({ onBack, onSave, ongoingProjects = [], onAddProjectClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="ongoing-project-page">
@@ -100,6 +101,16 @@ export function OngoingProjectPage({ onBack, onSave, ongoingProjects = [], onAdd
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

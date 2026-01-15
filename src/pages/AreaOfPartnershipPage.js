@@ -1,6 +1,7 @@
 import '../css/AreaOfPartnershipPage.css';
+import { Pagination } from '../components/Pagination';
 
-export function AreaOfPartnershipPage({ onBack, onSave, areasOfPartnership = [], onAddAreaClick, onDelete, onEdit }) {
+export function AreaOfPartnershipPage({ onBack, onSave, areasOfPartnership = [], onAddAreaClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="area-of-partnership-page">
@@ -85,6 +86,16 @@ export function AreaOfPartnershipPage({ onBack, onSave, areasOfPartnership = [],
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

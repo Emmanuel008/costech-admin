@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import '../css/AddNewsModal.css';
 import { compressImage } from '../utils/imageCompression';
+import { htmlToText, textToHtml } from '../utils/htmlUtils';
 
-export function AddNewsModal({ onClose, onSave, editNews = null }) {
+export function AddNewsModal({ onClose, onSave, editNews = null, loading = false }) {
   const [formData, setFormData] = useState({
     date: '',
     title: '',
@@ -18,7 +19,7 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
       setFormData({
         date: editNews.date || editNews.created_at ? new Date(editNews.date || editNews.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         title: editNews.title || '',
-        description: editNews.description || '',
+        description: htmlToText(editNews.description || ''), // Convert HTML to plain text for editing
         image: null // Don't preload image file
       });
       // Set image preview if news has image URL
@@ -91,9 +92,15 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
       return;
     }
 
+    // Convert plain text to HTML before saving
+    const dataToSave = {
+      ...formData,
+      description: textToHtml(formData.description)
+    };
+
     // Call onSave with form data and edit news ID if editing
     if (onSave) {
-      onSave(formData, editNews?.id);
+      onSave(dataToSave, editNews?.id);
     }
 
     // Reset form only if not editing
@@ -164,6 +171,7 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
           <div className="form-group">
             <label htmlFor="add-news-description" className="form-label">
               Description <span className="required">*</span>
+              <span className="form-hint">(Press Enter for new paragraphs)</span>
             </label>
             <textarea
               id="add-news-description"
@@ -171,8 +179,8 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
               className="form-textarea"
               value={formData.description}
               onChange={handleInputChange}
-              placeholder="Enter news description"
-              rows="5"
+              placeholder="Enter news description. Press Enter for new paragraphs."
+              rows="6"
               required
             />
           </div>
@@ -215,11 +223,11 @@ export function AddNewsModal({ onClose, onSave, editNews = null }) {
           </div>
 
           <div className="add-news-actions">
-            <button type="button" className="btn-cancel" onClick={onClose}>
+            <button type="button" className="btn-cancel" onClick={onClose} disabled={loading}>
               Cancel
             </button>
-            <button type="submit" className="btn-submit">
-              {editNews ? 'Update News' : 'Save News'}
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? 'Saving...' : (editNews ? 'Update News' : 'Save News')}
             </button>
           </div>
         </form>

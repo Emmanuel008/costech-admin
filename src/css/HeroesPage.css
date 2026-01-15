@@ -223,6 +223,40 @@
   word-wrap: break-word;
 }
 
+.description-text.html-content {
+  max-height: 60px;
+  overflow: hidden;
+}
+
+.description-text.html-content p {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+}
+
+.description-text.html-content p:last-child {
+  margin-bottom: 0;
+}
+
+.description-text.html-content strong {
+  font-weight: 600;
+}
+
+.description-text.html-content ul,
+.description-text.html-content ol {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.description-text.html-content li {
+  margin: 2px 0;
+  font-size: 13px;
+}
+
+.description-text.html-content a {
+  color: #b97c07;
+  text-decoration: underline;
+}
+
 .table-reference-cell {
   min-width: 100px;
   color: #374151;

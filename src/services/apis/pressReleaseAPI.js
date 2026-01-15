@@ -1,8 +1,10 @@
 import api from '../apiClient';
 
 export const pressReleaseAPI = {
-  getAll: async () => {
-    const response = await api.get('/api/pressRelease/ilist');
+  getAll: async (page = 1, limit = 10) => {
+    const response = await api.get('/api/pressRelease/ilist', {
+      params: { page, limit }
+    });
     return response.data;
   },
 

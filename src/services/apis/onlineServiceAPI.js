@@ -1,8 +1,10 @@
 import api from '../apiClient';
 
 export const onlineServiceAPI = {
-  getAll: async () => {
-    const response = await api.get('/api/onlineService/ilist');
+  getAll: async (page = 1, limit = 10) => {
+    const response = await api.get('/api/onlineService/ilist', {
+      params: { page, limit }
+    });
     return response.data;
   },
 

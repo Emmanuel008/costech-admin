@@ -1,5 +1,6 @@
 import '../css/HeroesPage.css';
 import { Pagination } from '../components/Pagination';
+import { getHtmlPreview } from '../utils/htmlUtils';
 
 export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDelete, onEdit, pagination }) {
 
@@ -63,11 +64,11 @@ export function HeroesPage({ onBack, onSave, heroes = [], onAddHeroClick, onDele
                       </td>
                       <td className="table-description-cell">
                         {hero.description ? (
-                          <div className="description-text" title={hero.description}>
-                            {hero.description.length > 100 
-                              ? `${hero.description.substring(0, 100)}...` 
-                              : hero.description}
-                          </div>
+                          <div 
+                            className="description-text html-content" 
+                            title={getHtmlPreview(hero.description, 200)}
+                            dangerouslySetInnerHTML={{ __html: hero.description }}
+                          />
                         ) : (
                           'N/A'
                         )}

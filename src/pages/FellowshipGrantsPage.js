@@ -1,6 +1,7 @@
 import '../css/FellowshipGrantsPage.css';
+import { Pagination } from '../components/Pagination';
 
-export function FellowshipGrantsPage({ onBack, onSave, fellowshipGrants = [], onAddGrantClick, onDelete, onEdit }) {
+export function FellowshipGrantsPage({ onBack, onSave, fellowshipGrants = [], onAddGrantClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="fellowship-grants-page">
@@ -104,6 +105,16 @@ export function FellowshipGrantsPage({ onBack, onSave, fellowshipGrants = [], on
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

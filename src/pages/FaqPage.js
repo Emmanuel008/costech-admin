@@ -1,6 +1,7 @@
 import '../css/FaqPage.css';
+import { Pagination } from '../components/Pagination';
 
-export function FaqPage({ onBack, onSave, faqs = [], categories = [], onAddFaqClick, onDelete, onEdit }) {
+export function FaqPage({ onBack, onSave, faqs = [], categories = [], onAddFaqClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="faq-page">
@@ -107,6 +108,16 @@ export function FaqPage({ onBack, onSave, faqs = [], categories = [], onAddFaqCl
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

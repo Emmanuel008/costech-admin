@@ -195,6 +195,7 @@ export function AdminPanel({ onLogout }) {
   const [statementsPagination, setStatementsPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [videosPagination, setVideosPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [newslettersPagination, setNewslettersPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [directoratesPagination, setDirectoratesPagination] = useState({ page: 1, limit: 10, total: 0 });
   
   // Loading states to prevent multiple submissions
   const [savingNews, setSavingNews] = useState(false);
@@ -679,6 +680,16 @@ export function AdminPanel({ onLogout }) {
   const handleNewslettersItemsPerPageChange = (limit) => {
     setNewslettersPagination(prev => ({ ...prev, page: 1, limit }));
     fetchNewsletters(1, limit);
+  };
+
+  const handleDirectoratesPageChange = (page) => {
+    setDirectoratesPagination(prev => ({ ...prev, page }));
+    fetchDirectorates(page, directoratesPagination.limit);
+  };
+
+  const handleDirectoratesItemsPerPageChange = (limit) => {
+    setDirectoratesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchDirectorates(1, limit);
   };
 
   const fetchPositions = async () => {
@@ -3614,11 +3625,30 @@ export function AdminPanel({ onLogout }) {
   };
 
   // Directorate handlers
-  const fetchDirectorates = async () => {
+  const fetchDirectorates = async (page = directoratesPagination.page, limit = directoratesPagination.limit) => {
     try {
-      const response = await directorateAPI.getAll();
+      const response = await directorateAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let directoratesList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
-        const mappedDirectorates = response.returnData.list_of_item.map(d => {
+        directoratesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || directoratesList.length;
+      } else if (response.returnData?.list_of_item) {
+        directoratesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || directoratesList.length;
+      } else if (Array.isArray(response.returnData)) {
+        directoratesList = response.returnData;
+        total = directoratesList.length;
+      } else if (Array.isArray(response)) {
+        directoratesList = response;
+        total = directoratesList.length;
+      }
+      
+      if (directoratesList && directoratesList.length > 0) {
+        const mappedDirectorates = directoratesList.map(d => {
           // Parse service_offered - could be JSON string or array
           let serviceOffered = [];
           if (d.service_offered) {
@@ -3674,9 +3704,15 @@ export function AdminPanel({ onLogout }) {
           };
         });
         setDirectorates(mappedDirectorates);
+        setDirectoratesPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setDirectorates([]);
+        setDirectoratesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching directorates:', err);
+      setDirectorates([]);
+      setDirectoratesPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -3701,7 +3737,7 @@ export function AdminPanel({ onLogout }) {
         try {
           const response = await directorateAPI.delete(id);
           if (response.status === 'OK') {
-            await fetchDirectorates();
+            await fetchDirectorates(directoratesPagination.page, directoratesPagination.limit);
             alert('Directorate deleted successfully!');
           } else {
             alert(response.errorMessage || 'Failed to delete directorate');
@@ -3726,7 +3762,7 @@ export function AdminPanel({ onLogout }) {
       }
       
       if (response.status === 'OK') {
-        await fetchDirectorates();
+        await fetchDirectorates(directoratesPagination.page, directoratesPagination.limit);
         setShowAddDirectorateForm(false);
         setEditingDirectorate(null);
         alert(directorateId ? 'Directorate updated successfully!' : 'Directorate saved successfully!');
@@ -4702,6 +4738,14 @@ export function AdminPanel({ onLogout }) {
             onAddDirectorateClick={handleAddDirectorateClick}
             onDelete={handleDeleteDirectorate}
             onEdit={handleEditDirectorate}
+            pagination={{
+              currentPage: directoratesPagination.page,
+              totalPages: Math.ceil(directoratesPagination.total / directoratesPagination.limit),
+              itemsPerPage: directoratesPagination.limit,
+              totalItems: directoratesPagination.total,
+              onPageChange: handleDirectoratesPageChange,
+              onItemsPerPageChange: handleDirectoratesItemsPerPageChange
+            }}
           />
         ) : (
           <>

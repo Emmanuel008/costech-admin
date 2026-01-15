@@ -1,6 +1,7 @@
 import '../css/InnovationSpacePage.css';
+import { Pagination } from '../components/Pagination';
 
-export function DirectoratePage({ onBack, onSave, directorates = [], onAddDirectorateClick, onDelete, onEdit }) {
+export function DirectoratePage({ onBack, onSave, directorates = [], onAddDirectorateClick, onDelete, onEdit, pagination }) {
 
   return (
     <div className="innovation-space-page">
@@ -115,6 +116,16 @@ export function DirectoratePage({ onBack, onSave, directorates = [], onAddDirect
                 </tbody>
               </table>
             </div>
+          )}
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              itemsPerPage={pagination.itemsPerPage}
+              totalItems={pagination.totalItems}
+              onPageChange={pagination.onPageChange}
+              onItemsPerPageChange={pagination.onItemsPerPageChange}
+            />
           )}
         </div>
       </div>

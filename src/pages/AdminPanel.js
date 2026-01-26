@@ -31,6 +31,11 @@ import { HerinInstitutionPage } from './HerinInstitutionPage';
 import { DirectoratePage } from './DirectoratePage';
 import { FaqCategoryPage } from './FaqCategoryPage';
 import { FaqPage } from './FaqPage';
+import { FooterQuickLinkPage } from './FooterQuickLinkPage';
+import { FooterContactUsPage } from './FooterContactUsPage';
+import { FooterEresourcePage } from './FooterEresourcePage';
+import { SocialMediaPlatformPage } from './SocialMediaPlatformPage';
+import { JournalPage } from './JournalPage';
 import { AddSectionModal } from '../components/AddSectionModal';
 import { AddNewsModal } from '../components/AddNewsModal';
 import { AddPartnerModal } from '../components/AddPartnerModal';
@@ -50,7 +55,9 @@ import { AddPolicyModal } from '../components/AddPolicyModal';
 import { AddStrategicPlanModal } from '../components/AddStrategicPlanModal';
 import { AddGuidelineDocumentModal } from '../components/AddGuidelineDocumentModal';
 import { AddConferenceModal } from '../components/AddConferenceModal';
+import { ViewConferenceModal } from '../components/ViewConferenceModal';
 import { AddExhibitionModal } from '../components/AddExhibitionModal';
+import { ViewExhibitionModal } from '../components/ViewExhibitionModal';
 import { AddOngoingProjectModal } from '../components/AddOngoingProjectModal';
 import { AddAreaOfPartnershipModal } from '../components/AddAreaOfPartnershipModal';
 import { AddFellowshipGrantModal } from '../components/AddFellowshipGrantModal';
@@ -62,8 +69,14 @@ import { AddHerinInstitutionModal } from '../components/AddHerinInstitutionModal
 import { AddDirectorateModal } from '../components/AddDirectorateModal';
 import { AddFaqCategoryModal } from '../components/AddFaqCategoryModal';
 import { AddFaqModal } from '../components/AddFaqModal';
+import { AddFooterQuickLinkModal } from '../components/AddFooterQuickLinkModal';
+import { AddFooterContactUsModal } from '../components/AddFooterContactUsModal';
+import { AddFooterEresourceModal } from '../components/AddFooterEresourceModal';
+import { AddSocialMediaPlatformModal } from '../components/AddSocialMediaPlatformModal';
+import { AddJournalModal } from '../components/AddJournalModal';
+import { ViewJournalModal } from '../components/ViewJournalModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
-import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, newsletterAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI, herinInstitutionAPI, directorateAPI, faqCategoryAPI, faqAPI } from '../services/api';
+import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, newsletterAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI, herinInstitutionAPI, directorateAPI, faqCategoryAPI, faqAPI, footerQuickLinkAPI, footerContactUsAPI, footerEresourceAPI, socialMediaPlatformAPI, journalAPI } from '../services/api';
 
 export function AdminPanel({ onLogout }) {
   const [activeNav, setActiveNav] = useState('dashboard');
@@ -75,7 +88,8 @@ export function AdminPanel({ onLogout }) {
     mediaCentre: false,
     about: false,
     herin: false,
-    faqManagement: false
+    faqManagement: false,
+    footer: false
   });
   const [sections, setSections] = useState([]);
   const [news, setNews] = useState([]);
@@ -96,7 +110,9 @@ export function AdminPanel({ onLogout }) {
   const [strategicPlans, setStrategicPlans] = useState([]);
   const [guidelineDocuments, setGuidelineDocuments] = useState([]);
   const [conferences, setConferences] = useState([]);
+  const [conferencesPagination, setConferencesPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [exhibitions, setExhibitions] = useState([]);
+  const [exhibitionsPagination, setExhibitionsPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [ongoingProjects, setOngoingProjects] = useState([]);
   const [areasOfPartnership, setAreasOfPartnership] = useState([]);
   const [fellowshipGrants, setFellowshipGrants] = useState([]);
@@ -108,6 +124,11 @@ export function AdminPanel({ onLogout }) {
   const [directorates, setDirectorates] = useState([]);
   const [faqCategories, setFaqCategories] = useState([]);
   const [faqs, setFaqs] = useState([]);
+  const [footerQuickLinks, setFooterQuickLinks] = useState([]);
+  const [footerContactUs, setFooterContactUs] = useState([]);
+  const [footerEresources, setFooterEresources] = useState([]);
+  const [socialMediaPlatforms, setSocialMediaPlatforms] = useState([]);
+  const [journals, setJournals] = useState([]);
   const [showAddSectionForm, setShowAddSectionForm] = useState(false);
   const [showAddNewsForm, setShowAddNewsForm] = useState(false);
   const [showAddPartnerForm, setShowAddPartnerForm] = useState(false);
@@ -139,6 +160,11 @@ export function AdminPanel({ onLogout }) {
   const [showAddDirectorateForm, setShowAddDirectorateForm] = useState(false);
   const [showAddFaqCategoryForm, setShowAddFaqCategoryForm] = useState(false);
   const [showAddFaqForm, setShowAddFaqForm] = useState(false);
+  const [showAddFooterQuickLinkForm, setShowAddFooterQuickLinkForm] = useState(false);
+  const [showAddFooterContactUsForm, setShowAddFooterContactUsForm] = useState(false);
+  const [showAddFooterEresourceForm, setShowAddFooterEresourceForm] = useState(false);
+  const [showAddSocialMediaPlatformForm, setShowAddSocialMediaPlatformForm] = useState(false);
+  const [showAddJournalForm, setShowAddJournalForm] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
   const [editingPartner, setEditingPartner] = useState(null);
@@ -158,7 +184,9 @@ export function AdminPanel({ onLogout }) {
   const [editingStrategicPlan, setEditingStrategicPlan] = useState(null);
   const [editingGuidelineDocument, setEditingGuidelineDocument] = useState(null);
   const [editingConference, setEditingConference] = useState(null);
+  const [viewingConference, setViewingConference] = useState(null);
   const [editingExhibition, setEditingExhibition] = useState(null);
+  const [viewingExhibition, setViewingExhibition] = useState(null);
   const [editingOngoingProject, setEditingOngoingProject] = useState(null);
   const [editingAreaOfPartnership, setEditingAreaOfPartnership] = useState(null);
   const [editingFellowshipGrant, setEditingFellowshipGrant] = useState(null);
@@ -170,6 +198,12 @@ export function AdminPanel({ onLogout }) {
   const [editingDirectorate, setEditingDirectorate] = useState(null);
   const [editingFaqCategory, setEditingFaqCategory] = useState(null);
   const [editingFaq, setEditingFaq] = useState(null);
+  const [editingFooterQuickLink, setEditingFooterQuickLink] = useState(null);
+  const [editingFooterContactUs, setEditingFooterContactUs] = useState(null);
+  const [editingFooterEresource, setEditingFooterEresource] = useState(null);
+  const [editingSocialMediaPlatform, setEditingSocialMediaPlatform] = useState(null);
+  const [editingJournal, setEditingJournal] = useState(null);
+  const [viewingJournal, setViewingJournal] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, id: null, name: '', type: '', onConfirm: null });
   
   // Pagination state
@@ -196,6 +230,11 @@ export function AdminPanel({ onLogout }) {
   const [videosPagination, setVideosPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [newslettersPagination, setNewslettersPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [directoratesPagination, setDirectoratesPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [footerQuickLinksPagination, setFooterQuickLinksPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [footerContactUsPagination, setFooterContactUsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [footerEresourcesPagination, setFooterEresourcesPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [socialMediaPlatformsPagination, setSocialMediaPlatformsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [journalsPagination, setJournalsPagination] = useState({ page: 1, limit: 10, total: 0 });
   
   // Loading states to prevent multiple submissions
   const [savingNews, setSavingNews] = useState(false);
@@ -233,6 +272,11 @@ export function AdminPanel({ onLogout }) {
     fetchDirectorates();
     fetchFaqCategories();
     fetchFaqs();
+    fetchFooterQuickLinks();
+    fetchFooterContactUs();
+    fetchFooterEresources();
+    fetchSocialMediaPlatforms();
+    fetchJournals();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -246,6 +290,7 @@ export function AdminPanel({ onLogout }) {
     const aboutItems = ['positions', 'management-team', 'commission-members'];
     const faqManagementItems = ['faq-category', 'faq'];
     const herinItems = ['herin-institution'];
+    const footerItems = ['footer-quick-link', 'footer-contact-us', 'footer-eresource', 'social-media-platform'];
 
     setOpenDropdowns(prev => ({
       homepage: homepageItems.includes(activeNav) ? true : prev.homepage,
@@ -255,7 +300,8 @@ export function AdminPanel({ onLogout }) {
       mediaCentre: mediaCentreItems.includes(activeNav) ? true : prev.mediaCentre,
       about: aboutItems.includes(activeNav) ? true : prev.about,
       faqManagement: faqManagementItems.includes(activeNav) ? true : prev.faqManagement,
-      herin: herinItems.includes(activeNav) ? true : prev.herin
+      herin: herinItems.includes(activeNav) ? true : prev.herin,
+      footer: footerItems.includes(activeNav) ? true : prev.footer
     }));
   }, [activeNav]);
 
@@ -692,6 +738,56 @@ export function AdminPanel({ onLogout }) {
     fetchDirectorates(1, limit);
   };
 
+  const handleFooterQuickLinksPageChange = (page) => {
+    setFooterQuickLinksPagination(prev => ({ ...prev, page }));
+    fetchFooterQuickLinks(page, footerQuickLinksPagination.limit);
+  };
+
+  const handleFooterQuickLinksItemsPerPageChange = (limit) => {
+    setFooterQuickLinksPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchFooterQuickLinks(1, limit);
+  };
+
+  const handleFooterContactUsPageChange = (page) => {
+    setFooterContactUsPagination(prev => ({ ...prev, page }));
+    fetchFooterContactUs(page, footerContactUsPagination.limit);
+  };
+
+  const handleFooterContactUsItemsPerPageChange = (limit) => {
+    setFooterContactUsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchFooterContactUs(1, limit);
+  };
+
+  const handleFooterEresourcesPageChange = (page) => {
+    setFooterEresourcesPagination(prev => ({ ...prev, page }));
+    fetchFooterEresources(page, footerEresourcesPagination.limit);
+  };
+
+  const handleFooterEresourcesItemsPerPageChange = (limit) => {
+    setFooterEresourcesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchFooterEresources(1, limit);
+  };
+
+  const handleSocialMediaPlatformsPageChange = (page) => {
+    setSocialMediaPlatformsPagination(prev => ({ ...prev, page }));
+    fetchSocialMediaPlatforms(page, socialMediaPlatformsPagination.limit);
+  };
+
+  const handleSocialMediaPlatformsItemsPerPageChange = (limit) => {
+    setSocialMediaPlatformsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchSocialMediaPlatforms(1, limit);
+  };
+
+  const handleJournalsPageChange = (page) => {
+    setJournalsPagination(prev => ({ ...prev, page }));
+    fetchJournals(page, journalsPagination.limit);
+  };
+
+  const handleJournalsItemsPerPageChange = (limit) => {
+    setJournalsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchJournals(1, limit);
+  };
+
   const fetchPositions = async () => {
     try {
       const response = await positionAPI.getAll();
@@ -804,6 +900,225 @@ export function AdminPanel({ onLogout }) {
       console.error('Error fetching FAQs:', err);
       setFaqs([]);
       setFaqsPagination(prev => ({ ...prev, total: 0 }));
+    }
+  };
+
+  const fetchFooterQuickLinks = async (page = footerQuickLinksPagination.page, limit = footerQuickLinksPagination.limit) => {
+    try {
+      const response = await footerQuickLinkAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let linksList = [];
+      let total = 0;
+      
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        linksList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || linksList.length;
+      } else if (response.returnData?.list_of_item) {
+        linksList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || linksList.length;
+      } else if (Array.isArray(response.returnData)) {
+        linksList = response.returnData;
+        total = linksList.length;
+      } else if (Array.isArray(response)) {
+        linksList = response;
+        total = linksList.length;
+      }
+      
+      if (linksList && linksList.length > 0) {
+        const mappedLinks = linksList.map((link, index) => ({
+          id: link.id?.toString() || `link-${Date.now()}-${index}`,
+          name: link.name || '',
+          link: link.link || '',
+          createdAt: link.created_at || link.createdAt || new Date().toISOString(),
+        }));
+        setFooterQuickLinks(mappedLinks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setFooterQuickLinksPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setFooterQuickLinks([]);
+        setFooterQuickLinksPagination(prev => ({ ...prev, page, limit, total: 0 }));
+      }
+    } catch (err) {
+      console.error('Error fetching footer quick links:', err);
+      setFooterQuickLinks([]);
+      setFooterQuickLinksPagination(prev => ({ ...prev, total: 0 }));
+    }
+  };
+
+  const fetchFooterContactUs = async (page = footerContactUsPagination.page, limit = footerContactUsPagination.limit) => {
+    try {
+      const response = await footerContactUsAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let contactsList = [];
+      let total = 0;
+      
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        contactsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || contactsList.length;
+      } else if (response.returnData?.list_of_item) {
+        contactsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || contactsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        contactsList = response.returnData;
+        total = contactsList.length;
+      } else if (Array.isArray(response)) {
+        contactsList = response;
+        total = contactsList.length;
+      }
+      
+      if (contactsList && contactsList.length > 0) {
+        const mappedContacts = contactsList.map((contact, index) => ({
+          id: contact.id?.toString() || `contact-${Date.now()}-${index}`,
+          phone_number: contact.phone_number || '',
+          email: contact.email || '',
+          location: contact.location || '',
+          createdAt: contact.created_at || contact.createdAt || new Date().toISOString(),
+        }));
+        setFooterContactUs(mappedContacts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setFooterContactUsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setFooterContactUs([]);
+        setFooterContactUsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+      }
+    } catch (err) {
+      console.error('Error fetching footer contact us:', err);
+      setFooterContactUs([]);
+      setFooterContactUsPagination(prev => ({ ...prev, total: 0 }));
+    }
+  };
+
+  const fetchFooterEresources = async (page = footerEresourcesPagination.page, limit = footerEresourcesPagination.limit) => {
+    try {
+      const response = await footerEresourceAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let resourcesList = [];
+      let total = 0;
+      
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        resourcesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || resourcesList.length;
+      } else if (response.returnData?.list_of_item) {
+        resourcesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || resourcesList.length;
+      } else if (Array.isArray(response.returnData)) {
+        resourcesList = response.returnData;
+        total = resourcesList.length;
+      } else if (Array.isArray(response)) {
+        resourcesList = response;
+        total = resourcesList.length;
+      }
+      
+      if (resourcesList && resourcesList.length > 0) {
+        const mappedResources = resourcesList.map((resource, index) => ({
+          id: resource.id?.toString() || `resource-${Date.now()}-${index}`,
+          name: resource.name || '',
+          link: resource.link || '',
+          createdAt: resource.created_at || resource.createdAt || new Date().toISOString(),
+        }));
+        setFooterEresources(mappedResources.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setFooterEresourcesPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setFooterEresources([]);
+        setFooterEresourcesPagination(prev => ({ ...prev, page, limit, total: 0 }));
+      }
+    } catch (err) {
+      console.error('Error fetching footer e-resources:', err);
+      setFooterEresources([]);
+      setFooterEresourcesPagination(prev => ({ ...prev, total: 0 }));
+    }
+  };
+
+  const fetchSocialMediaPlatforms = async (page = socialMediaPlatformsPagination.page, limit = socialMediaPlatformsPagination.limit) => {
+    try {
+      const response = await socialMediaPlatformAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let platformsList = [];
+      let total = 0;
+      
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        platformsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || platformsList.length;
+      } else if (response.returnData?.list_of_item) {
+        platformsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || platformsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        platformsList = response.returnData;
+        total = platformsList.length;
+      } else if (Array.isArray(response)) {
+        platformsList = response;
+        total = platformsList.length;
+      }
+      
+      if (platformsList && platformsList.length > 0) {
+        const mappedPlatforms = platformsList.map((platform, index) => ({
+          id: platform.id?.toString() || `platform-${Date.now()}-${index}`,
+          icon: platform.icon || '',
+          link: platform.link || '',
+          createdAt: platform.created_at || platform.createdAt || new Date().toISOString(),
+        }));
+        setSocialMediaPlatforms(mappedPlatforms.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setSocialMediaPlatformsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setSocialMediaPlatforms([]);
+        setSocialMediaPlatformsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+      }
+    } catch (err) {
+      console.error('Error fetching social media platforms:', err);
+      setSocialMediaPlatforms([]);
+      setSocialMediaPlatformsPagination(prev => ({ ...prev, total: 0 }));
+    }
+  };
+
+  const fetchJournals = async (page = journalsPagination.page, limit = journalsPagination.limit) => {
+    try {
+      const response = await journalAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let journalsList = [];
+      let total = 0;
+      
+      if (response.status === 'OK' && response.returnData?.list_of_item) {
+        journalsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || journalsList.length;
+      } else if (response.returnData?.list_of_item) {
+        journalsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || journalsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        journalsList = response.returnData;
+        total = journalsList.length;
+      } else if (Array.isArray(response)) {
+        journalsList = response;
+        total = journalsList.length;
+      }
+      
+      if (journalsList && journalsList.length > 0) {
+        const mappedJournals = journalsList.map((journal, index) => ({
+          id: journal.id?.toString() || `journal-${Date.now()}-${index}`,
+          issn: journal.issn || '',
+          title: journal.title || '',
+          publisher: journal.publisher || '',
+          mode: journal.mode || '',
+          frequency: journal.frequency || '',
+          subject: journal.subject || '',
+          url: journal.url || '',
+          language: journal.language || '',
+          indexed: journal.indexed || '',
+          university: journal.university || '',
+          createdAt: journal.created_at || journal.createdAt || new Date().toISOString(),
+        }));
+        setJournals(mappedJournals.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setJournalsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setJournals([]);
+        setJournalsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+      }
+    } catch (err) {
+      console.error('Error fetching journals:', err);
+      setJournals([]);
+      setJournalsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2684,22 +2999,51 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchConferences = async () => {
+  const fetchConferences = async (page = conferencesPagination.page, limit = conferencesPagination.limit) => {
     try {
-      const response = await conferenceAPI.getAll();
+      const response = await conferenceAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let conferencesList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
-        // Map API response to conferences format
-        const mappedConferences = response.returnData.list_of_item.map(conf => ({
-          id: conf.id?.toString() || Date.now().toString(),
-          title: conf.title || '',
-          description: conf.description || '',
-          image: conf.image || null,
+        conferencesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || conferencesList.length;
+      } else if (response.returnData?.list_of_item) {
+        conferencesList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || conferencesList.length;
+      } else if (Array.isArray(response.returnData)) {
+        conferencesList = response.returnData;
+        total = conferencesList.length;
+      } else if (Array.isArray(response)) {
+        conferencesList = response;
+        total = conferencesList.length;
+      }
+      
+      if (conferencesList && conferencesList.length > 0) {
+        const mappedConferences = conferencesList.map((conf, index) => ({
+          id: conf.id?.toString() || `conference-${Date.now()}-${index}`,
+          name: conf.name || '',
+          abbreviation: conf.abbreviation || '',
+          organizer: conf.organizer || '',
+          theme: conf.theme || '',
+          tentative_start_date: conf.tentative_start_date || '',
+          tentative_end_date: conf.tentative_end_date || '',
+          location: conf.location || '',
+          link: conf.link || '',
           createdAt: conf.created_at || conf.createdAt || new Date().toISOString(),
         }));
-        setConferences(mappedConferences);
+        setConferences(mappedConferences.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setConferencesPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setConferences([]);
+        setConferencesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching conferences:', err);
+      setConferences([]);
+      setConferencesPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2718,14 +3062,28 @@ export function AdminPanel({ onLogout }) {
     setShowAddConferenceForm(true);
   };
 
+  const handleViewConference = (conference) => {
+    setViewingConference(conference);
+  };
+
+  const handleConferencesPageChange = (page) => {
+    setConferencesPagination(prev => ({ ...prev, page }));
+    fetchConferences(page, conferencesPagination.limit);
+  };
+
+  const handleConferencesItemsPerPageChange = (limit) => {
+    setConferencesPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchConferences(1, limit);
+  };
+
   const handleDeleteConference = async (id) => {
     const conference = conferences.find(c => c.id === id);
-    const conferenceName = conference?.title || 'this conference';
+    const conferenceName = conference?.name || 'this conference';
     showDeleteConfirmation(id, conferenceName, 'conference', async () => {
       try {
         const response = await conferenceAPI.delete(id);
         if (response.status === 'OK') {
-          await fetchConferences();
+          await fetchConferences(conferencesPagination.page, conferencesPagination.limit);
           alert('Conference deleted successfully!');
         } else {
           alert(response.errorMessage || 'Failed to delete conference');
@@ -2745,7 +3103,7 @@ export function AdminPanel({ onLogout }) {
         : await conferenceAPI.create(conferenceData);
 
       if (response.status === 'OK') {
-        await fetchConferences();
+        await fetchConferences(conferencesPagination.page, conferencesPagination.limit);
         setShowAddConferenceForm(false);
         setEditingConference(null);
         alert(conferenceId ? 'Conference updated successfully!' : 'Conference saved successfully!');
@@ -2759,22 +3117,51 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
-  const fetchExhibitions = async () => {
+  const fetchExhibitions = async (page = exhibitionsPagination.page, limit = exhibitionsPagination.limit) => {
     try {
-      const response = await exhibitionAPI.getAll();
+      const response = await exhibitionAPI.getAll(page, limit);
+      
+      // Handle different response structures
+      let exhibitionsList = [];
+      let total = 0;
+      
       if (response.status === 'OK' && response.returnData?.list_of_item) {
-        // Map API response to exhibitions format
-        const mappedExhibitions = response.returnData.list_of_item.map(exh => ({
-          id: exh.id?.toString() || Date.now().toString(),
-          title: exh.title || '',
-          date: exh.date || '',
-          image: exh.image || null,
+        exhibitionsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || exhibitionsList.length;
+      } else if (response.returnData?.list_of_item) {
+        exhibitionsList = response.returnData.list_of_item;
+        total = response.returnData?.total || response.returnData?.total_count || exhibitionsList.length;
+      } else if (Array.isArray(response.returnData)) {
+        exhibitionsList = response.returnData;
+        total = exhibitionsList.length;
+      } else if (Array.isArray(response)) {
+        exhibitionsList = response;
+        total = exhibitionsList.length;
+      }
+      
+      if (exhibitionsList && exhibitionsList.length > 0) {
+        const mappedExhibitions = exhibitionsList.map((exh, index) => ({
+          id: exh.id?.toString() || `exhibition-${Date.now()}-${index}`,
+          name: exh.name || '',
+          popular_name: exh.popular_name || '',
+          host_institution: exh.host_institution || '',
+          focus: exh.focus || '',
+          tentative_start_date: exh.tentative_start_date || '',
+          tentative_end_date: exh.tentative_end_date || '',
+          location: exh.location || '',
+          link: exh.link || '',
           createdAt: exh.created_at || exh.createdAt || new Date().toISOString(),
         }));
-        setExhibitions(mappedExhibitions);
+        setExhibitions(mappedExhibitions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setExhibitionsPagination(prev => ({ ...prev, page, limit, total }));
+      } else {
+        setExhibitions([]);
+        setExhibitionsPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching exhibitions:', err);
+      setExhibitions([]);
+      setExhibitionsPagination(prev => ({ ...prev, total: 0 }));
     }
   };
 
@@ -2788,19 +3175,33 @@ export function AdminPanel({ onLogout }) {
     setShowAddExhibitionForm(true);
   };
 
+  const handleExhibitionsPageChange = (page) => {
+    setExhibitionsPagination(prev => ({ ...prev, page }));
+    fetchExhibitions(page, exhibitionsPagination.limit);
+  };
+
+  const handleExhibitionsItemsPerPageChange = (limit) => {
+    setExhibitionsPagination(prev => ({ ...prev, page: 1, limit }));
+    fetchExhibitions(1, limit);
+  };
+
   const handleEditExhibition = (exhibition) => {
     setEditingExhibition(exhibition);
     setShowAddExhibitionForm(true);
   };
 
+  const handleViewExhibition = (exhibition) => {
+    setViewingExhibition(exhibition);
+  };
+
   const handleDeleteExhibition = async (id) => {
     const exhibition = exhibitions.find(e => e.id === id);
-    const exhibitionName = exhibition?.title || 'this exhibition';
+    const exhibitionName = exhibition?.name || 'this exhibition';
     showDeleteConfirmation(id, exhibitionName, 'exhibition', async () => {
       try {
         const response = await exhibitionAPI.delete(id);
         if (response.status === 'OK') {
-          await fetchExhibitions();
+          await fetchExhibitions(exhibitionsPagination.page, exhibitionsPagination.limit);
           alert('Exhibition deleted successfully!');
         } else {
           alert(response.errorMessage || 'Failed to delete exhibition');
@@ -2820,7 +3221,7 @@ export function AdminPanel({ onLogout }) {
         : await exhibitionAPI.create(exhibitionData);
 
       if (response.status === 'OK') {
-        await fetchExhibitions();
+        await fetchExhibitions(exhibitionsPagination.page, exhibitionsPagination.limit);
         setShowAddExhibitionForm(false);
         setEditingExhibition(null);
         alert(exhibitionId ? 'Exhibition updated successfully!' : 'Exhibition saved successfully!');
@@ -3782,6 +4183,310 @@ export function AdminPanel({ onLogout }) {
     }
   };
 
+  const handleFooterQuickLinkClick = (e) => {
+    e.preventDefault();
+    setActiveNav('footer-quick-link');
+  };
+
+  const handleAddFooterQuickLinkClick = () => {
+    setEditingFooterQuickLink(null);
+    setShowAddFooterQuickLinkForm(true);
+  };
+
+  const handleEditFooterQuickLink = (link) => {
+    setEditingFooterQuickLink(link);
+    setShowAddFooterQuickLinkForm(true);
+  };
+
+  const handleDeleteFooterQuickLink = (id) => {
+    if (window.confirm('Are you sure you want to delete this footer quick link?')) {
+      (async () => {
+        try {
+          const response = await footerQuickLinkAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchFooterQuickLinks(footerQuickLinksPagination.page, footerQuickLinksPagination.limit);
+            alert('Footer quick link deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete footer quick link');
+          }
+        } catch (err) {
+          console.error('Error deleting footer quick link:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete footer quick link. Please try again.';
+          alert(errorMessage);
+        }
+      })();
+    }
+  };
+
+  const handleSaveFooterQuickLink = async (linkData, linkId = null) => {
+    try {
+      let response;
+      
+      if (linkId) {
+        response = await footerQuickLinkAPI.update(linkId, linkData);
+      } else {
+        response = await footerQuickLinkAPI.create(linkData);
+      }
+      
+      if (response.status === 'OK') {
+        await fetchFooterQuickLinks(footerQuickLinksPagination.page, footerQuickLinksPagination.limit);
+        setShowAddFooterQuickLinkForm(false);
+        setEditingFooterQuickLink(null);
+        alert(linkId ? 'Footer quick link updated successfully!' : 'Footer quick link saved successfully!');
+      } else {
+        alert(response.errorMessage || 'Failed to save footer quick link');
+      }
+    } catch (err) {
+      console.error('Error saving footer quick link:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save footer quick link. Please try again.';
+      alert(errorMessage);
+    }
+  };
+
+  const handleFooterContactUsClick = (e) => {
+    e.preventDefault();
+    setActiveNav('footer-contact-us');
+  };
+
+  const handleAddFooterContactUsClick = () => {
+    setEditingFooterContactUs(null);
+    setShowAddFooterContactUsForm(true);
+  };
+
+  const handleEditFooterContactUs = (contact) => {
+    setEditingFooterContactUs(contact);
+    setShowAddFooterContactUsForm(true);
+  };
+
+  const handleDeleteFooterContactUs = (id) => {
+    if (window.confirm('Are you sure you want to delete this footer contact us entry?')) {
+      (async () => {
+        try {
+          const response = await footerContactUsAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchFooterContactUs(footerContactUsPagination.page, footerContactUsPagination.limit);
+            alert('Footer contact us entry deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete footer contact us entry');
+          }
+        } catch (err) {
+          console.error('Error deleting footer contact us:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete footer contact us entry. Please try again.';
+          alert(errorMessage);
+        }
+      })();
+    }
+  };
+
+  const handleSaveFooterContactUs = async (contactData, contactId = null) => {
+    try {
+      let response;
+      
+      if (contactId) {
+        response = await footerContactUsAPI.update(contactId, contactData);
+      } else {
+        response = await footerContactUsAPI.create(contactData);
+      }
+      
+      if (response.status === 'OK') {
+        await fetchFooterContactUs(footerContactUsPagination.page, footerContactUsPagination.limit);
+        setShowAddFooterContactUsForm(false);
+        setEditingFooterContactUs(null);
+        alert(contactId ? 'Footer contact us entry updated successfully!' : 'Footer contact us entry saved successfully!');
+      } else {
+        alert(response.errorMessage || 'Failed to save footer contact us entry');
+      }
+    } catch (err) {
+      console.error('Error saving footer contact us:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save footer contact us entry. Please try again.';
+      alert(errorMessage);
+    }
+  };
+
+  const handleFooterEresourceClick = (e) => {
+    e.preventDefault();
+    setActiveNav('footer-eresource');
+  };
+
+  const handleAddFooterEresourceClick = () => {
+    setEditingFooterEresource(null);
+    setShowAddFooterEresourceForm(true);
+  };
+
+  const handleEditFooterEresource = (resource) => {
+    setEditingFooterEresource(resource);
+    setShowAddFooterEresourceForm(true);
+  };
+
+  const handleDeleteFooterEresource = (id) => {
+    if (window.confirm('Are you sure you want to delete this footer e-resource?')) {
+      (async () => {
+        try {
+          const response = await footerEresourceAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchFooterEresources(footerEresourcesPagination.page, footerEresourcesPagination.limit);
+            alert('Footer e-resource deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete footer e-resource');
+          }
+        } catch (err) {
+          console.error('Error deleting footer e-resource:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete footer e-resource. Please try again.';
+          alert(errorMessage);
+        }
+      })();
+    }
+  };
+
+  const handleSaveFooterEresource = async (resourceData, resourceId = null) => {
+    try {
+      let response;
+      
+      if (resourceId) {
+        response = await footerEresourceAPI.update(resourceId, resourceData);
+      } else {
+        response = await footerEresourceAPI.create(resourceData);
+      }
+      
+      if (response.status === 'OK') {
+        await fetchFooterEresources(footerEresourcesPagination.page, footerEresourcesPagination.limit);
+        setShowAddFooterEresourceForm(false);
+        setEditingFooterEresource(null);
+        alert(resourceId ? 'Footer e-resource updated successfully!' : 'Footer e-resource saved successfully!');
+      } else {
+        alert(response.errorMessage || 'Failed to save footer e-resource');
+      }
+    } catch (err) {
+      console.error('Error saving footer e-resource:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save footer e-resource. Please try again.';
+      alert(errorMessage);
+    }
+  };
+
+  const handleSocialMediaPlatformClick = (e) => {
+    e.preventDefault();
+    setActiveNav('social-media-platform');
+  };
+
+  const handleAddSocialMediaPlatformClick = () => {
+    setEditingSocialMediaPlatform(null);
+    setShowAddSocialMediaPlatformForm(true);
+  };
+
+  const handleEditSocialMediaPlatform = (platform) => {
+    setEditingSocialMediaPlatform(platform);
+    setShowAddSocialMediaPlatformForm(true);
+  };
+
+  const handleDeleteSocialMediaPlatform = (id) => {
+    if (window.confirm('Are you sure you want to delete this social media platform?')) {
+      (async () => {
+        try {
+          const response = await socialMediaPlatformAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchSocialMediaPlatforms(socialMediaPlatformsPagination.page, socialMediaPlatformsPagination.limit);
+            alert('Social media platform deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete social media platform');
+          }
+        } catch (err) {
+          console.error('Error deleting social media platform:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete social media platform. Please try again.';
+          alert(errorMessage);
+        }
+      })();
+    }
+  };
+
+  const handleSaveSocialMediaPlatform = async (platformData, platformId = null) => {
+    try {
+      let response;
+      
+      if (platformId) {
+        response = await socialMediaPlatformAPI.update(platformId, platformData);
+      } else {
+        response = await socialMediaPlatformAPI.create(platformData);
+      }
+      
+      if (response.status === 'OK') {
+        await fetchSocialMediaPlatforms(socialMediaPlatformsPagination.page, socialMediaPlatformsPagination.limit);
+        setShowAddSocialMediaPlatformForm(false);
+        setEditingSocialMediaPlatform(null);
+        alert(platformId ? 'Social media platform updated successfully!' : 'Social media platform saved successfully!');
+      } else {
+        alert(response.errorMessage || 'Failed to save social media platform');
+      }
+    } catch (err) {
+      console.error('Error saving social media platform:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save social media platform. Please try again.';
+      alert(errorMessage);
+    }
+  };
+
+  const handleJournalClick = (e) => {
+    e.preventDefault();
+    setActiveNav('journal');
+  };
+
+  const handleAddJournalClick = () => {
+    setEditingJournal(null);
+    setShowAddJournalForm(true);
+  };
+
+  const handleEditJournal = (journal) => {
+    setEditingJournal(journal);
+    setShowAddJournalForm(true);
+  };
+
+  const handleViewJournal = (journal) => {
+    setViewingJournal(journal);
+  };
+
+  const handleDeleteJournal = (id) => {
+    if (window.confirm('Are you sure you want to delete this journal?')) {
+      (async () => {
+        try {
+          const response = await journalAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchJournals(journalsPagination.page, journalsPagination.limit);
+            alert('Journal deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete journal');
+          }
+        } catch (err) {
+          console.error('Error deleting journal:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete journal. Please try again.';
+          alert(errorMessage);
+        }
+      })();
+    }
+  };
+
+  const handleSaveJournal = async (journalData, journalId = null) => {
+    try {
+      let response;
+      
+      if (journalId) {
+        response = await journalAPI.update(journalId, journalData);
+      } else {
+        response = await journalAPI.create(journalData);
+      }
+      
+      if (response.status === 'OK') {
+        await fetchJournals(journalsPagination.page, journalsPagination.limit);
+        setShowAddJournalForm(false);
+        setEditingJournal(null);
+        alert(journalId ? 'Journal updated successfully!' : 'Journal saved successfully!');
+      } else {
+        alert(response.errorMessage || 'Failed to save journal');
+      }
+    } catch (err) {
+      console.error('Error saving journal:', err);
+      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save journal. Please try again.';
+      alert(errorMessage);
+    }
+  };
+
   return (
     <div className="admin-panel">
       {/* Sidebar */}
@@ -4267,7 +4972,7 @@ export function AdminPanel({ onLogout }) {
           </div>
 
           {/* Directorate */}
-          <a 
+          <a
             href="#directorate" 
             className={`nav-item ${activeNav === 'directorate' ? 'active' : ''}`}
             onClick={handleDirectorateClick}
@@ -4276,6 +4981,74 @@ export function AdminPanel({ onLogout }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
             <span>DIRECTORATES</span>
+          </a>
+          <div className="nav-dropdown">
+            <div 
+              className={`nav-dropdown-header ${openDropdowns.footer ? 'open' : ''} ${['footer-quick-link', 'footer-contact-us', 'footer-eresource', 'social-media-platform'].includes(activeNav) ? 'active' : ''}`}
+              onClick={() => toggleDropdown('footer')}
+            >
+              <div className="nav-dropdown-title">
+                <svg className="nav-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>FOOTER</span>
+              </div>
+              <svg className="nav-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div className={`nav-dropdown-menu ${openDropdowns.footer ? 'open' : ''}`}>
+              <a
+                href="#footer-quick-link"
+                className={`nav-dropdown-item ${activeNav === 'footer-quick-link' ? 'active' : ''}`}
+                onClick={handleFooterQuickLinkClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                <span>Footer Quick Links</span>
+              </a>
+              <a
+                href="#footer-contact-us"
+                className={`nav-dropdown-item ${activeNav === 'footer-contact-us' ? 'active' : ''}`}
+                onClick={handleFooterContactUsClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                <span>Footer Contact Us</span>
+              </a>
+              <a
+                href="#footer-eresource"
+                className={`nav-dropdown-item ${activeNav === 'footer-eresource' ? 'active' : ''}`}
+                onClick={handleFooterEresourceClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                <span>Footer E-Resource</span>
+              </a>
+              <a
+                href="#social-media-platform"
+                className={`nav-dropdown-item ${activeNav === 'social-media-platform' ? 'active' : ''}`}
+                onClick={handleSocialMediaPlatformClick}
+              >
+                <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>Social Media Platform</span>
+              </a>
+            </div>
+          </div>
+          <a
+            href="#journal"
+            className={`nav-item ${activeNav === 'journal' ? 'active' : ''}`}
+            onClick={handleJournalClick}
+          >
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span>JOURNAL</span>
           </a>
         </nav>
       </aside>
@@ -4600,6 +5373,15 @@ export function AdminPanel({ onLogout }) {
             onAddConferenceClick={handleAddConferenceClick}
             onDelete={handleDeleteConference}
             onEdit={handleEditConference}
+            onView={handleViewConference}
+            pagination={{
+              currentPage: conferencesPagination.page,
+              totalPages: Math.ceil(conferencesPagination.total / conferencesPagination.limit),
+              itemsPerPage: conferencesPagination.limit,
+              totalItems: conferencesPagination.total,
+              onPageChange: handleConferencesPageChange,
+              onItemsPerPageChange: handleConferencesItemsPerPageChange
+            }}
           />
         ) : activeNav === 'exhibition' ? (
           <ExhibitionPage 
@@ -4609,6 +5391,15 @@ export function AdminPanel({ onLogout }) {
             onAddExhibitionClick={handleAddExhibitionClick}
             onDelete={handleDeleteExhibition}
             onEdit={handleEditExhibition}
+            onView={handleViewExhibition}
+            pagination={{
+              currentPage: exhibitionsPagination.page,
+              totalPages: Math.ceil(exhibitionsPagination.total / exhibitionsPagination.limit),
+              itemsPerPage: exhibitionsPagination.limit,
+              totalItems: exhibitionsPagination.total,
+              onPageChange: handleExhibitionsPageChange,
+              onItemsPerPageChange: handleExhibitionsItemsPerPageChange
+            }}
           />
         ) : activeNav === 'ongoing-project' ? (
           <OngoingProjectPage 
@@ -4745,6 +5536,92 @@ export function AdminPanel({ onLogout }) {
               totalItems: directoratesPagination.total,
               onPageChange: handleDirectoratesPageChange,
               onItemsPerPageChange: handleDirectoratesItemsPerPageChange
+            }}
+          />
+        ) : activeNav === 'footer-quick-link' ? (
+          <FooterQuickLinkPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveFooterQuickLink}
+            links={footerQuickLinks}
+            onAddLinkClick={handleAddFooterQuickLinkClick}
+            onDelete={handleDeleteFooterQuickLink}
+            onEdit={handleEditFooterQuickLink}
+            pagination={{
+              currentPage: footerQuickLinksPagination.page,
+              totalPages: Math.ceil(footerQuickLinksPagination.total / footerQuickLinksPagination.limit),
+              itemsPerPage: footerQuickLinksPagination.limit,
+              totalItems: footerQuickLinksPagination.total,
+              onPageChange: handleFooterQuickLinksPageChange,
+              onItemsPerPageChange: handleFooterQuickLinksItemsPerPageChange
+            }}
+          />
+        ) : activeNav === 'footer-contact-us' ? (
+          <FooterContactUsPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveFooterContactUs}
+            contacts={footerContactUs}
+            onAddContactClick={handleAddFooterContactUsClick}
+            onDelete={handleDeleteFooterContactUs}
+            onEdit={handleEditFooterContactUs}
+            pagination={{
+              currentPage: footerContactUsPagination.page,
+              totalPages: Math.ceil(footerContactUsPagination.total / footerContactUsPagination.limit),
+              itemsPerPage: footerContactUsPagination.limit,
+              totalItems: footerContactUsPagination.total,
+              onPageChange: handleFooterContactUsPageChange,
+              onItemsPerPageChange: handleFooterContactUsItemsPerPageChange
+            }}
+          />
+        ) : activeNav === 'footer-eresource' ? (
+          <FooterEresourcePage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveFooterEresource}
+            resources={footerEresources}
+            onAddResourceClick={handleAddFooterEresourceClick}
+            onDelete={handleDeleteFooterEresource}
+            onEdit={handleEditFooterEresource}
+            pagination={{
+              currentPage: footerEresourcesPagination.page,
+              totalPages: Math.ceil(footerEresourcesPagination.total / footerEresourcesPagination.limit),
+              itemsPerPage: footerEresourcesPagination.limit,
+              totalItems: footerEresourcesPagination.total,
+              onPageChange: handleFooterEresourcesPageChange,
+              onItemsPerPageChange: handleFooterEresourcesItemsPerPageChange
+            }}
+          />
+        ) : activeNav === 'social-media-platform' ? (
+          <SocialMediaPlatformPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveSocialMediaPlatform}
+            platforms={socialMediaPlatforms}
+            onAddPlatformClick={handleAddSocialMediaPlatformClick}
+            onDelete={handleDeleteSocialMediaPlatform}
+            onEdit={handleEditSocialMediaPlatform}
+            pagination={{
+              currentPage: socialMediaPlatformsPagination.page,
+              totalPages: Math.ceil(socialMediaPlatformsPagination.total / socialMediaPlatformsPagination.limit),
+              itemsPerPage: socialMediaPlatformsPagination.limit,
+              totalItems: socialMediaPlatformsPagination.total,
+              onPageChange: handleSocialMediaPlatformsPageChange,
+              onItemsPerPageChange: handleSocialMediaPlatformsItemsPerPageChange
+            }}
+          />
+        ) : activeNav === 'journal' ? (
+          <JournalPage 
+            onBack={handleBackToDashboard}
+            onSave={handleSaveJournal}
+            journals={journals}
+            onAddJournalClick={handleAddJournalClick}
+            onDelete={handleDeleteJournal}
+            onEdit={handleEditJournal}
+            onView={handleViewJournal}
+            pagination={{
+              currentPage: journalsPagination.page,
+              totalPages: Math.ceil(journalsPagination.total / journalsPagination.limit),
+              itemsPerPage: journalsPagination.limit,
+              totalItems: journalsPagination.total,
+              onPageChange: handleJournalsPageChange,
+              onItemsPerPageChange: handleJournalsItemsPerPageChange
             }}
           />
         ) : (
@@ -5094,6 +5971,14 @@ export function AdminPanel({ onLogout }) {
           editConference={editingConference}
         />
       )}
+      {viewingConference && (
+        <ViewConferenceModal
+          onClose={() => {
+            setViewingConference(null);
+          }}
+          conference={viewingConference}
+        />
+      )}
       {showAddExhibitionForm && (
         <AddExhibitionModal
           onClose={() => {
@@ -5102,6 +5987,14 @@ export function AdminPanel({ onLogout }) {
           }}
           onSave={handleSaveExhibition}
           editExhibition={editingExhibition}
+        />
+      )}
+      {viewingExhibition && (
+        <ViewExhibitionModal
+          onClose={() => {
+            setViewingExhibition(null);
+          }}
+          exhibition={viewingExhibition}
         />
       )}
       {showAddOngoingProjectForm && (
@@ -5152,6 +6045,64 @@ export function AdminPanel({ onLogout }) {
           }}
           onSave={handleSaveDirectorate}
           editDirectorate={editingDirectorate}
+        />
+      )}
+      {showAddFooterQuickLinkForm && (
+        <AddFooterQuickLinkModal
+          onClose={() => {
+            setShowAddFooterQuickLinkForm(false);
+            setEditingFooterQuickLink(null);
+          }}
+          onSave={handleSaveFooterQuickLink}
+          editLink={editingFooterQuickLink}
+        />
+      )}
+      {showAddFooterContactUsForm && (
+        <AddFooterContactUsModal
+          onClose={() => {
+            setShowAddFooterContactUsForm(false);
+            setEditingFooterContactUs(null);
+          }}
+          onSave={handleSaveFooterContactUs}
+          editContact={editingFooterContactUs}
+        />
+      )}
+      {showAddFooterEresourceForm && (
+        <AddFooterEresourceModal
+          onClose={() => {
+            setShowAddFooterEresourceForm(false);
+            setEditingFooterEresource(null);
+          }}
+          onSave={handleSaveFooterEresource}
+          editResource={editingFooterEresource}
+        />
+      )}
+      {showAddSocialMediaPlatformForm && (
+        <AddSocialMediaPlatformModal
+          onClose={() => {
+            setShowAddSocialMediaPlatformForm(false);
+            setEditingSocialMediaPlatform(null);
+          }}
+          onSave={handleSaveSocialMediaPlatform}
+          editPlatform={editingSocialMediaPlatform}
+        />
+      )}
+      {showAddJournalForm && (
+        <AddJournalModal
+          onClose={() => {
+            setShowAddJournalForm(false);
+            setEditingJournal(null);
+          }}
+          onSave={handleSaveJournal}
+          editJournal={editingJournal}
+        />
+      )}
+      {viewingJournal && (
+        <ViewJournalModal
+          onClose={() => {
+            setViewingJournal(null);
+          }}
+          journal={viewingJournal}
         />
       )}
       {showAddPressReleaseForm && (

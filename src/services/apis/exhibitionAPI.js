@@ -1,8 +1,10 @@
 import api from '../apiClient';
 
 export const exhibitionAPI = {
-  getAll: async () => {
-    const response = await api.get('/api/exhibition/ilist');
+  getAll: async (page = 1, limit = 10) => {
+    const response = await api.get('/api/exhibition/ilist', {
+      params: { page, limit }
+    });
     return response.data;
   },
 
@@ -16,9 +18,14 @@ export const exhibitionAPI = {
   create: async (exhibitionData) => {
     const payload = {
       form_method: 'save',
-      title: exhibitionData.title || '',
-      date: exhibitionData.date || '',
-      image: exhibitionData.image || null,
+      name: exhibitionData.name || '',
+      popular_name: exhibitionData.popular_name || '',
+      host_institution: exhibitionData.host_institution || '',
+      focus: exhibitionData.focus || '',
+      tentative_start_date: exhibitionData.tentative_start_date || '',
+      tentative_end_date: exhibitionData.tentative_end_date || '',
+      location: exhibitionData.location || '',
+      link: exhibitionData.link || '',
     };
 
     const response = await api.post('/api/exhibition/iformAction', payload);
@@ -29,9 +36,14 @@ export const exhibitionAPI = {
     const payload = {
       form_method: 'update',
       id: typeof id === 'string' ? parseInt(id, 10) : id,
-      title: exhibitionData.title || '',
-      date: exhibitionData.date || '',
-      image: exhibitionData.image || null,
+      name: exhibitionData.name || '',
+      popular_name: exhibitionData.popular_name || '',
+      host_institution: exhibitionData.host_institution || '',
+      focus: exhibitionData.focus || '',
+      tentative_start_date: exhibitionData.tentative_start_date || '',
+      tentative_end_date: exhibitionData.tentative_end_date || '',
+      location: exhibitionData.location || '',
+      link: exhibitionData.link || '',
     };
 
     const response = await api.post('/api/exhibition/iformAction', payload);

@@ -1,31 +1,32 @@
 import { useState, useEffect } from 'react';
 import '../css/AddExhibitionModal.css';
-import { compressImage } from '../utils/imageCompression';
 
-export function AddExhibitionModal({ onClose, onSave, editExhibition = null }) {
+export function AddExhibitionModal({ onClose, onSave, editExhibition = null, loading = false }) {
   const [formData, setFormData] = useState({
-    title: '',
-    date: '',
-    image: null
+    name: '',
+    popular_name: '',
+    host_institution: '',
+    focus: '',
+    tentative_start_date: '',
+    tentative_end_date: '',
+    location: '',
+    link: ''
   });
-  const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
 
   // Load edit data if editing
   useEffect(() => {
     if (editExhibition) {
       setFormData({
-        title: editExhibition.title || '',
-        date: editExhibition.date || '',
-        image: null // Don't preload image file
+        name: editExhibition.name || '',
+        popular_name: editExhibition.popular_name || '',
+        host_institution: editExhibition.host_institution || '',
+        focus: editExhibition.focus || '',
+        tentative_start_date: editExhibition.tentative_start_date || '',
+        tentative_end_date: editExhibition.tentative_end_date || '',
+        location: editExhibition.location || '',
+        link: editExhibition.link || ''
       });
-      // Set image preview if exhibition has image URL
-      if (editExhibition.image) {
-        const imageUrl = editExhibition.image.startsWith('http') 
-          ? editExhibition.image 
-          : `https://costech.kingdomsolutions.co.tz/${editExhibition.image}`;
-        setImagePreview(imageUrl);
-      }
     }
   }, [editExhibition]);
 
@@ -37,57 +38,45 @@ export function AddExhibitionModal({ onClose, onSave, editExhibition = null }) {
     }));
   };
 
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file');
-      e.target.value = '';
-      return;
-    }
-
-    setError('');
-    
-    try {
-      // Compress the image before storing
-      const compressedFile = await compressImage(file, 1920, 1080, 0.8);
-      
-      // Convert compressed file to base64 data URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result; // This is already a data URL (base64)
-        setFormData(prev => ({
-          ...prev,
-          image: base64String
-        }));
-        setImagePreview(base64String);
-      };
-      reader.onerror = () => {
-        setError('Failed to read file. Please try again.');
-        e.target.value = '';
-      };
-      reader.readAsDataURL(compressedFile);
-    } catch (err) {
-      console.error('Error compressing image:', err);
-      setError('Failed to process image. Please try again.');
-      e.target.value = '';
-    }
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.date) {
-      setError('Please fill in all required fields');
+    if (loading) return;
+    
+    if (!formData.name) {
+      setError('Please enter exhibition name');
       return;
     }
 
-    // Image is only required for new exhibitions, not for updates
-    if (!editExhibition && !formData.image) {
-      setError('Please upload an image');
+    if (!formData.popular_name) {
+      setError('Please enter popular name');
       return;
+    }
+
+    if (!formData.tentative_start_date) {
+      setError('Please enter tentative start date');
+      return;
+    }
+
+    if (!formData.tentative_end_date) {
+      setError('Please enter tentative end date');
+      return;
+    }
+
+    // Validate dates
+    if (new Date(formData.tentative_start_date) > new Date(formData.tentative_end_date)) {
+      setError('End date must be after start date');
+      return;
+    }
+
+    // Validate link if provided
+    if (formData.link) {
+      try {
+        new URL(formData.link);
+      } catch (err) {
+        setError('Please enter a valid URL for the link');
+        return;
+      }
     }
 
     setError('');
@@ -100,18 +89,16 @@ export function AddExhibitionModal({ onClose, onSave, editExhibition = null }) {
     // Reset form only if not editing
     if (!editExhibition) {
       setFormData({
-        title: '',
-        date: '',
-        image: null
+        name: '',
+        popular_name: '',
+        host_institution: '',
+        focus: '',
+        tentative_start_date: '',
+        tentative_end_date: '',
+        location: '',
+        link: ''
       });
-      setImagePreview(null);
       setError('');
-    
-      // Reset file input
-      const fileInput = document.getElementById('add-exhibition-image');
-      if (fileInput) {
-        fileInput.value = '';
-      }
     }
   };
 
@@ -120,7 +107,7 @@ export function AddExhibitionModal({ onClose, onSave, editExhibition = null }) {
       <div className="add-exhibition-modal" onClick={(e) => e.stopPropagation()}>
         <div className="add-exhibition-header">
           <h2 className="add-exhibition-title">{editExhibition ? 'Edit Exhibition' : 'Add New Exhibition'}</h2>
-          <button className="add-exhibition-close" onClick={onClose}>
+          <button className="add-exhibition-close" onClick={onClose} disabled={loading}>
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -131,81 +118,144 @@ export function AddExhibitionModal({ onClose, onSave, editExhibition = null }) {
           {error && <div className="add-exhibition-error">{error}</div>}
 
           <div className="form-group">
-            <label htmlFor="add-exhibition-title" className="form-label">
-              Title <span className="required">*</span>
+            <label htmlFor="add-exhibition-name" className="form-label">
+              Name <span className="required">*</span>
             </label>
             <input
               type="text"
-              id="add-exhibition-title"
-              name="title"
+              id="add-exhibition-name"
+              name="name"
               className="form-input"
-              value={formData.title}
+              value={formData.name}
               onChange={handleInputChange}
-              placeholder="Enter exhibition title"
+              placeholder="Enter exhibition name"
               required
+              disabled={loading}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="add-exhibition-date" className="form-label">
-              Date <span className="required">*</span>
+            <label htmlFor="add-exhibition-popular-name" className="form-label">
+              Popular Name <span className="required">*</span>
             </label>
             <input
               type="text"
-              id="add-exhibition-date"
-              name="date"
+              id="add-exhibition-popular-name"
+              name="popular_name"
               className="form-input"
-              value={formData.date}
+              value={formData.popular_name}
               onChange={handleInputChange}
-              placeholder="DD/MM/YYYY (e.g., 12/06/2025)"
+              placeholder="Enter popular name"
               required
+              disabled={loading}
             />
-            <span className="form-hint">Format: DD/MM/YYYY</span>
           </div>
 
           <div className="form-group">
-            <label htmlFor="add-exhibition-image" className="form-label">
-              Image <span className="required">*</span>
-              <span className="form-hint">(JPG/PNG, will be compressed automatically)</span>
+            <label htmlFor="add-exhibition-host-institution" className="form-label">
+              Host Institution
             </label>
-            <div className="image-upload-container">
-              <input
-                type="file"
-                id="add-exhibition-image"
-                name="image"
-                className="form-file-input"
-                accept="image/*"
-                onChange={handleImageChange}
-                required={!editExhibition}
-              />
-              <label htmlFor="add-exhibition-image" className="form-file-label">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span>Choose Image</span>
+            <input
+              type="text"
+              id="add-exhibition-host-institution"
+              name="host_institution"
+              className="form-input"
+              value={formData.host_institution}
+              onChange={handleInputChange}
+              placeholder="Enter host institution"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="add-exhibition-focus" className="form-label">
+              Focus
+            </label>
+            <input
+              type="text"
+              id="add-exhibition-focus"
+              name="focus"
+              className="form-input"
+              value={formData.focus}
+              onChange={handleInputChange}
+              placeholder="Enter exhibition focus"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="add-exhibition-start-date" className="form-label">
+                Tentative Start Date <span className="required">*</span>
               </label>
-              {formData.image && (
-                <div className="image-info">
-                  <span>Image Selected</span>
-                  <span className="image-size">
-                    ({(formData.image.length * 3 / 4 / 1024).toFixed(2)} KB - base64)
-                  </span>
-                </div>
-              )}
+              <input
+                type="date"
+                id="add-exhibition-start-date"
+                name="tentative_start_date"
+                className="form-input"
+                value={formData.tentative_start_date}
+                onChange={handleInputChange}
+                required
+                disabled={loading}
+              />
             </div>
-            {imagePreview && (
-              <div className="image-preview">
-                <img src={imagePreview} alt="Preview" className="preview-image" />
-              </div>
-            )}
+
+            <div className="form-group">
+              <label htmlFor="add-exhibition-end-date" className="form-label">
+                Tentative End Date <span className="required">*</span>
+              </label>
+              <input
+                type="date"
+                id="add-exhibition-end-date"
+                name="tentative_end_date"
+                className="form-input"
+                value={formData.tentative_end_date}
+                onChange={handleInputChange}
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="add-exhibition-location" className="form-label">
+              Location
+            </label>
+            <input
+              type="text"
+              id="add-exhibition-location"
+              name="location"
+              className="form-input"
+              value={formData.location}
+              onChange={handleInputChange}
+              placeholder="Enter exhibition location"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="add-exhibition-link" className="form-label">
+              Link
+            </label>
+            <input
+              type="url"
+              id="add-exhibition-link"
+              name="link"
+              className="form-input"
+              value={formData.link}
+              onChange={handleInputChange}
+              placeholder="https://example.com"
+              disabled={loading}
+            />
+            <small className="form-hint">Enter a valid URL (must start with http:// or https://)</small>
           </div>
 
           <div className="add-exhibition-actions">
-            <button type="button" className="btn-cancel" onClick={onClose}>
+            <button type="button" className="btn-cancel" onClick={onClose} disabled={loading}>
               Cancel
             </button>
-            <button type="submit" className="btn-submit">
-              {editExhibition ? 'Update Exhibition' : 'Save Exhibition'}
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? 'Saving...' : (editExhibition ? 'Update Exhibition' : 'Save Exhibition')}
             </button>
           </div>
         </form>
@@ -213,4 +263,3 @@ export function AddExhibitionModal({ onClose, onSave, editExhibition = null }) {
     </div>
   );
 }
-

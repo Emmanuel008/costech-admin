@@ -102,5 +102,20 @@ export { faqCategoryAPI } from './apis/faqCategoryAPI';
 // FAQ API
 export { faqAPI } from './apis/faqAPI';
 
+// Footer Quick Link API
+export { footerQuickLinkAPI } from './apis/footerQuickLinkAPI';
+
+// Footer Contact Us API
+export { footerContactUsAPI } from './apis/footerContactUsAPI';
+
+// Footer E-Resource API
+export { footerEresourceAPI } from './apis/footerEresourceAPI';
+
+// Social Media Platform API
+export { socialMediaPlatformAPI } from './apis/socialMediaPlatformAPI';
+
+// Journal API
+export { journalAPI } from './apis/journalAPI';
+
 // Export the api client as default for backward compatibility
 export default api;

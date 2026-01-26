@@ -1,4 +1,4 @@
-.conference-page {
+.footer-eresource-page {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -6,7 +6,7 @@
   min-height: calc(100vh - 0px);
 }
 
-.conference-page-header {
+.footer-eresource-page-header {
   background: white;
   border-bottom: 1px solid #e5e7eb;
   padding: 20px 32px;
@@ -19,14 +19,14 @@
   z-index: 10;
 }
 
-.conference-page-title {
+.footer-eresource-page-title {
   font-size: 24px;
   font-weight: 600;
   color: #b97c07;
   margin: 0;
 }
 
-.conference-page-content {
+.footer-eresource-page-content {
   flex: 1;
   padding: 32px;
   max-width: 1400px;
@@ -37,8 +37,8 @@
   gap: 32px;
 }
 
-/* Conference List */
-.conference-list-container {
+/* Resources List */
+.footer-eresource-list-container {
   background: white;
   border-radius: 12px;
   padding: 32px;
@@ -46,7 +46,7 @@
   border: 1px solid #e5e7eb;
 }
 
-.conference-list-header {
+.footer-eresource-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -55,7 +55,7 @@
   border-bottom: 3px solid #b97c07;
 }
 
-.conference-list-title {
+.footer-eresource-list-title {
   font-size: 22px;
   font-weight: 600;
   color: #b97c07;
@@ -65,7 +65,7 @@
   gap: 12px;
 }
 
-.conference-list-title::before {
+.footer-eresource-list-title::before {
   content: '';
   width: 4px;
   height: 24px;
@@ -73,7 +73,7 @@
   border-radius: 2px;
 }
 
-.add-conference-button {
+.add-resource-button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -89,55 +89,55 @@
   font-family: "Aeonik Pro", "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-.add-conference-button:hover {
+.add-resource-button:hover {
   background-color: #a06b06;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(185, 124, 7, 0.3);
 }
 
-.add-conference-button svg {
+.add-resource-button svg {
   width: 18px;
   height: 18px;
 }
 
-.no-conferences {
+.no-resources {
   text-align: center;
   padding: 60px 20px;
   color: #6b7280;
 }
 
-.no-conferences svg {
+.no-resources svg {
   width: 64px;
   height: 64px;
   margin: 0 auto 16px;
   color: #d1d5db;
 }
 
-.no-conferences p {
+.no-resources p {
   font-size: 16px;
   margin: 0;
 }
 
-/* Conference Table */
-.conference-table-wrapper {
+/* Resources Table */
+.footer-eresource-table-wrapper {
   overflow-x: auto;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
 }
 
-.conference-table {
+.footer-eresource-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
   font-size: 12px;
 }
 
-.conference-table thead {
+.footer-eresource-table thead {
   background: linear-gradient(135deg, #b97c07 0%, #d4a017 100%);
   color: white;
 }
 
-.conference-table th {
+.footer-eresource-table th {
   padding: 10px 12px;
   text-align: left;
   font-weight: 600;
@@ -147,35 +147,35 @@
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.conference-table th:first-child {
+.footer-eresource-table th:first-child {
   border-top-left-radius: 8px;
 }
 
-.conference-table th:last-child {
+.footer-eresource-table th:last-child {
   border-top-right-radius: 8px;
 }
 
-.conference-table tbody tr {
+.footer-eresource-table tbody tr {
   border-bottom: 1px solid #e5e7eb;
   transition: background-color 0.2s ease;
 }
 
-.conference-table tbody tr:hover {
+.footer-eresource-table tbody tr:hover {
   background-color: #fef9e7;
 }
 
-.conference-table tbody tr:last-child {
+.footer-eresource-table tbody tr:last-child {
   border-bottom: none;
 }
 
-.conference-table td {
+.footer-eresource-table td {
   padding: 10px 12px;
   vertical-align: middle;
   color: #374151;
 }
 
 .table-name-cell {
-  min-width: 150px;
+  min-width: 200px;
   font-weight: 600;
 }
 
@@ -184,38 +184,11 @@
   font-size: 13px;
 }
 
-.table-abbreviation-cell {
-  min-width: 100px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.table-organizer-cell {
-  min-width: 150px;
-  font-size: 13px;
-}
-
-.table-theme-cell {
-  min-width: 120px;
-  font-size: 13px;
-}
-
-.table-date-cell {
-  min-width: 120px;
-  color: #6b7280;
-  font-size: 12px;
-}
-
-.table-location-cell {
-  min-width: 150px;
-  font-size: 13px;
-}
-
 .table-link-cell {
-  min-width: 200px;
+  min-width: 300px;
 }
 
-.conference-link {
+.resource-link {
   color: #2563eb;
   text-decoration: none;
   font-size: 13px;
@@ -223,9 +196,15 @@
   word-break: break-all;
 }
 
-.conference-link:hover {
+.resource-link:hover {
   color: #1d4ed8;
   text-decoration: underline;
+}
+
+.table-date-cell {
+  min-width: 120px;
+  color: #6b7280;
+  font-size: 12px;
 }
 
 .table-actions-cell {
@@ -240,7 +219,6 @@
   align-items: center;
 }
 
-.view-button,
 .edit-button,
 .delete-button {
   background: none;
@@ -253,11 +231,6 @@
   justify-content: center;
   transition: all 0.2s ease;
   color: #6b7280;
-}
-
-.view-button:hover {
-  background-color: #e0f2fe;
-  color: #0284c7;
 }
 
 .edit-button:hover {
@@ -298,20 +271,19 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .conference-page-header {
+  .footer-eresource-page-header {
     padding: 16px 20px;
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
 
-  .conference-page-content {
+  .footer-eresource-page-content {
     padding: 20px;
     gap: 24px;
   }
 
-  .conference-list-container {
+  .footer-eresource-list-container {
     padding: 20px;
   }
 }
-

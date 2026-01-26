@@ -1,0 +1,144 @@
+.view-exhibition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.view-exhibition-modal {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.view-exhibition-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.view-exhibition-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #b97c07;
+  margin: 0;
+}
+
+.view-exhibition-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.view-exhibition-close:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.view-exhibition-close svg {
+  width: 24px;
+  height: 24px;
+}
+
+.view-exhibition-content {
+  padding: 24px;
+}
+
+.view-field {
+  margin-bottom: 20px;
+}
+
+.view-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.view-value {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.view-link {
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  word-break: break-all;
+}
+
+.view-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.view-exhibition-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-close {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Aeonik Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: #b97c07;
+  color: white;
+}
+
+.btn-close:hover {
+  background-color: #a06b06;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(185, 124, 7, 0.3);
+}
+
+.view-exhibition-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.view-exhibition-modal::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 12px;
+}
+
+.view-exhibition-modal::-webkit-scrollbar-thumb {
+  background: #b97c07;
+  border-radius: 12px;
+}
+
+.view-exhibition-modal::-webkit-scrollbar-thumb:hover {
+  background: #a06b06;
+}

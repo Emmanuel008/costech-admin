@@ -1,8 +1,10 @@
 import api from '../apiClient';
 
 export const conferenceAPI = {
-  getAll: async () => {
-    const response = await api.get('/api/conference/ilist');
+  getAll: async (page = 1, limit = 10) => {
+    const response = await api.get('/api/conference/ilist', {
+      params: { page, limit }
+    });
     return response.data;
   },
 
@@ -16,9 +18,14 @@ export const conferenceAPI = {
   create: async (conferenceData) => {
     const payload = {
       form_method: 'save',
-      title: conferenceData.title || '',
-      description: conferenceData.description || '',
-      image: conferenceData.image || null,
+      name: conferenceData.name || '',
+      abbreviation: conferenceData.abbreviation || '',
+      organizer: conferenceData.organizer || '',
+      theme: conferenceData.theme || '',
+      tentative_start_date: conferenceData.tentative_start_date || '',
+      tentative_end_date: conferenceData.tentative_end_date || '',
+      location: conferenceData.location || '',
+      link: conferenceData.link || '',
     };
 
     const response = await api.post('/api/conference/iformAction', payload);
@@ -29,9 +36,14 @@ export const conferenceAPI = {
     const payload = {
       form_method: 'update',
       id: typeof id === 'string' ? parseInt(id, 10) : id,
-      title: conferenceData.title || '',
-      description: conferenceData.description || '',
-      image: conferenceData.image || null,
+      name: conferenceData.name || '',
+      abbreviation: conferenceData.abbreviation || '',
+      organizer: conferenceData.organizer || '',
+      theme: conferenceData.theme || '',
+      tentative_start_date: conferenceData.tentative_start_date || '',
+      tentative_end_date: conferenceData.tentative_end_date || '',
+      location: conferenceData.location || '',
+      link: conferenceData.link || '',
     };
 
     const response = await api.post('/api/conference/iformAction', payload);

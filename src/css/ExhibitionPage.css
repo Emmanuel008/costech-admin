@@ -174,40 +174,29 @@
   color: #374151;
 }
 
-.table-image-cell {
-  width: 80px;
-  text-align: center;
-}
-
-.exhibition-image {
-  width: 60px;
-  height: 50px;
-  border-radius: 4px;
-  object-fit: cover;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-}
-
-.no-image {
-  color: #9ca3af;
-  font-size: 12px;
-  font-style: italic;
-}
-
-.table-title-cell {
+.table-name-cell {
   min-width: 150px;
   font-weight: 600;
 }
 
-.table-title-cell strong {
+.table-name-cell strong {
   color: #b97c07;
   font-size: 13px;
 }
 
-.table-date-cell {
+.table-popular-name-cell {
   min-width: 150px;
-  color: #6b7280;
-  font-size: 12px;
+  font-size: 13px;
+}
+
+.table-host-institution-cell {
+  min-width: 150px;
+  font-size: 13px;
+}
+
+.table-location-cell {
+  min-width: 150px;
+  font-size: 13px;
 }
 
 .table-actions-cell {
@@ -222,6 +211,7 @@
   align-items: center;
 }
 
+.view-button,
 .edit-button,
 .delete-button {
   background: none;
@@ -234,6 +224,11 @@
   justify-content: center;
   transition: all 0.2s ease;
   color: #6b7280;
+}
+
+.view-button:hover {
+  background-color: #e0f2fe;
+  color: #0284c7;
 }
 
 .edit-button:hover {

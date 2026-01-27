@@ -58,6 +58,7 @@ import { AddConferenceModal } from '../components/AddConferenceModal';
 import { ViewConferenceModal } from '../components/ViewConferenceModal';
 import { AddExhibitionModal } from '../components/AddExhibitionModal';
 import { ViewExhibitionModal } from '../components/ViewExhibitionModal';
+import { ViewDirectorateModal } from '../components/ViewDirectorateModal';
 import { AddOngoingProjectModal } from '../components/AddOngoingProjectModal';
 import { AddAreaOfPartnershipModal } from '../components/AddAreaOfPartnershipModal';
 import { AddFellowshipGrantModal } from '../components/AddFellowshipGrantModal';
@@ -76,6 +77,7 @@ import { AddSocialMediaPlatformModal } from '../components/AddSocialMediaPlatfor
 import { AddJournalModal } from '../components/AddJournalModal';
 import { ViewJournalModal } from '../components/ViewJournalModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
+import { Loader } from '../components/Loader';
 import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, newsletterAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI, herinInstitutionAPI, directorateAPI, faqCategoryAPI, faqAPI, footerQuickLinkAPI, footerContactUsAPI, footerEresourceAPI, socialMediaPlatformAPI, journalAPI } from '../services/api';
 
 export function AdminPanel({ onLogout }) {
@@ -187,6 +189,7 @@ export function AdminPanel({ onLogout }) {
   const [viewingConference, setViewingConference] = useState(null);
   const [editingExhibition, setEditingExhibition] = useState(null);
   const [viewingExhibition, setViewingExhibition] = useState(null);
+  const [viewingDirectorate, setViewingDirectorate] = useState(null);
   const [editingOngoingProject, setEditingOngoingProject] = useState(null);
   const [editingAreaOfPartnership, setEditingAreaOfPartnership] = useState(null);
   const [editingFellowshipGrant, setEditingFellowshipGrant] = useState(null);
@@ -235,6 +238,22 @@ export function AdminPanel({ onLogout }) {
   const [footerEresourcesPagination, setFooterEresourcesPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [socialMediaPlatformsPagination, setSocialMediaPlatformsPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [journalsPagination, setJournalsPagination] = useState({ page: 1, limit: 10, total: 0 });
+  
+  // Global loading state
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Loading...');
+  
+  // Helper function to wrap async operations with loading state
+  const withLoading = async (asyncFn, message = 'Loading...') => {
+    setLoading(true);
+    setLoadingMessage(message);
+    try {
+      const result = await asyncFn();
+      return result;
+    } finally {
+      setLoading(false);
+    }
+  };
   
   // Loading states to prevent multiple submissions
   const [savingNews, setSavingNews] = useState(false);
@@ -317,6 +336,7 @@ export function AdminPanel({ onLogout }) {
   }, [activeNav]);
 
   const fetchSections = async () => {
+    await withLoading(async () => {
     try {
       const response = await sectionsAPI.getAll();
       if (response.status === 'OK' && response.returnData?.list_of_item) {
@@ -335,6 +355,7 @@ export function AdminPanel({ onLogout }) {
     } catch (err) {
       console.error('Error fetching sections:', err);
     }
+    }, 'Loading sections...');
   };
 
   const showDeleteConfirmation = (id, name, type, onConfirm) => {
@@ -345,6 +366,7 @@ export function AdminPanel({ onLogout }) {
     const section = sections.find(s => s.id === id);
     const sectionName = section?.title || section?.name || 'this section';
     showDeleteConfirmation(id, sectionName, 'section', async () => {
+      await withLoading(async () => {
     try {
       const response = await sectionsAPI.delete(id);
       if (response.status === 'OK') {
@@ -358,12 +380,14 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete section. Please try again.';
       alert(errorMessage);
     }
+      }, 'Deleting section...');
     });
   };
 
   const fetchNews = async (page = newsPagination.page, limit = newsPagination.limit) => {
-    try {
-      const response = await newsAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await newsAPI.getAll(page, limit);
       
       // Handle different response structures
       let newsList = [];
@@ -401,57 +425,61 @@ export function AdminPanel({ onLogout }) {
       }
     } catch (err) {
       console.error('Error fetching news:', err);
-      setNews([]);
-      setNewsPagination(prev => ({ ...prev, total: 0 }));
-    }
+        setNews([]);
+        setNewsPagination(prev => ({ ...prev, total: 0 }));
+      }
+    }, 'Loading news...');
   };
 
   const fetchPartners = async (page = partnersPagination.page, limit = partnersPagination.limit) => {
-    try {
-      const response = await partnersAPI.getAll(page, limit);
-      
-      // Handle different response structures
-      let partnersList = [];
-      let total = 0;
-      
+    await withLoading(async () => {
+      try {
+        const response = await partnersAPI.getAll(page, limit);
+        
+        // Handle different response structures
+        let partnersList = [];
+        let total = 0;
+        
       if (response.status === 'OK' && response.returnData?.list_of_item) {
-        partnersList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || partnersList.length;
-      } else if (response.returnData?.list_of_item) {
-        partnersList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || partnersList.length;
-      } else if (Array.isArray(response.returnData)) {
-        partnersList = response.returnData;
-        total = partnersList.length;
-      } else if (Array.isArray(response)) {
-        partnersList = response;
-        total = partnersList.length;
-      }
-      
-      if (partnersList && partnersList.length > 0) {
+          partnersList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || partnersList.length;
+        } else if (response.returnData?.list_of_item) {
+          partnersList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || partnersList.length;
+        } else if (Array.isArray(response.returnData)) {
+          partnersList = response.returnData;
+          total = partnersList.length;
+        } else if (Array.isArray(response)) {
+          partnersList = response;
+          total = partnersList.length;
+        }
+        
+        if (partnersList && partnersList.length > 0) {
         // Map API response to partners format
-        const mappedPartners = partnersList.map(partner => ({
+          const mappedPartners = partnersList.map(partner => ({
           id: partner.id?.toString() || Date.now().toString(),
           name: partner.name || '',
           logo: partner.logo || partner.image || null,
           createdAt: partner.created_at || partner.createdAt || new Date().toISOString(),
         }));
         setPartners(mappedPartners.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        setPartnersPagination(prev => ({ ...prev, page, limit, total }));
-      } else {
-        setPartners([]);
-        setPartnersPagination(prev => ({ ...prev, page, limit, total: 0 }));
+          setPartnersPagination(prev => ({ ...prev, page, limit, total }));
+        } else {
+          setPartners([]);
+          setPartnersPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching partners:', err);
-      setPartners([]);
-      setPartnersPagination(prev => ({ ...prev, total: 0 }));
-    }
+        setPartners([]);
+        setPartnersPagination(prev => ({ ...prev, total: 0 }));
+      }
+    }, 'Loading partners...');
   };
 
   const fetchHeroes = async (page = heroesPagination.page, limit = heroesPagination.limit) => {
-    try {
-      const response = await heroesAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await heroesAPI.getAll(page, limit);
       
       // Handle different response structures
       let heroesList = [];
@@ -501,9 +529,10 @@ export function AdminPanel({ onLogout }) {
       }
     } catch (err) {
       console.error('Error fetching heroes:', err);
-      setHeroes([]);
-      setHeroesPagination(prev => ({ ...prev, total: 0 }));
-    }
+        setHeroes([]);
+        setHeroesPagination(prev => ({ ...prev, total: 0 }));
+      }
+    }, 'Loading heroes...');
   };
 
   // Pagination handlers
@@ -789,6 +818,7 @@ export function AdminPanel({ onLogout }) {
   };
 
   const fetchPositions = async () => {
+    await withLoading(async () => {
     try {
       const response = await positionAPI.getAll();
       if (response.status === 'OK' && response.returnData?.list_of_item) {
@@ -804,325 +834,341 @@ export function AdminPanel({ onLogout }) {
     } catch (err) {
       console.error('Error fetching positions:', err);
     }
+    }, 'Loading positions...');
   };
 
   const fetchFaqCategories = async (page = faqCategoriesPagination.page, limit = faqCategoriesPagination.limit) => {
-    try {
-      const response = await faqCategoryAPI.getAll(page, limit);
-      
-      // Handle different response structures
-      let categoriesList = [];
-      let total = 0;
-      
-      if (response.status === 'OK' && response.returnData?.list_of_item) {
-        categoriesList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || categoriesList.length;
-      } else if (response.returnData?.list_of_item) {
-        // If status is not OK but list_of_item exists
-        categoriesList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || categoriesList.length;
-      } else if (Array.isArray(response.returnData)) {
-        // If returnData is directly an array
-        categoriesList = response.returnData;
-        total = categoriesList.length;
-      } else if (Array.isArray(response)) {
-        // If response is directly an array
-        categoriesList = response;
-        total = categoriesList.length;
-      }
-      
-      if (categoriesList && categoriesList.length > 0) {
-        // Map API response to FAQ categories format
-        const mappedCategories = categoriesList.map((category, index) => ({
-          id: category.id?.toString() || `category-${Date.now()}-${index}`,
-          name: category.name || '',
-          description: category.description || '',
-          createdAt: category.created_at || category.createdAt || new Date().toISOString(),
-        }));
-        setFaqCategories(mappedCategories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        setFaqCategoriesPagination(prev => ({ ...prev, page, limit, total }));
-      } else {
+    await withLoading(async () => {
+      try {
+        const response = await faqCategoryAPI.getAll(page, limit);
+        
+        // Handle different response structures
+        let categoriesList = [];
+        let total = 0;
+        
+        if (response.status === 'OK' && response.returnData?.list_of_item) {
+          categoriesList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || categoriesList.length;
+        } else if (response.returnData?.list_of_item) {
+          // If status is not OK but list_of_item exists
+          categoriesList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || categoriesList.length;
+        } else if (Array.isArray(response.returnData)) {
+          // If returnData is directly an array
+          categoriesList = response.returnData;
+          total = categoriesList.length;
+        } else if (Array.isArray(response)) {
+          // If response is directly an array
+          categoriesList = response;
+          total = categoriesList.length;
+        }
+        
+        if (categoriesList && categoriesList.length > 0) {
+          // Map API response to FAQ categories format
+          const mappedCategories = categoriesList.map((category, index) => ({
+            id: category.id?.toString() || `category-${Date.now()}-${index}`,
+            name: category.name || '',
+            description: category.description || '',
+            createdAt: category.created_at || category.createdAt || new Date().toISOString(),
+          }));
+          setFaqCategories(mappedCategories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+          setFaqCategoriesPagination(prev => ({ ...prev, page, limit, total }));
+        } else {
+          setFaqCategories([]);
+          setFaqCategoriesPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        }
+      } catch (err) {
+        console.error('Error fetching FAQ categories:', err);
         setFaqCategories([]);
-        setFaqCategoriesPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        setFaqCategoriesPagination(prev => ({ ...prev, total: 0 }));
       }
-    } catch (err) {
-      console.error('Error fetching FAQ categories:', err);
-      setFaqCategories([]);
-      setFaqCategoriesPagination(prev => ({ ...prev, total: 0 }));
-    }
+    }, 'Loading FAQ categories...');
   };
 
   const fetchFaqs = async (page = faqsPagination.page, limit = faqsPagination.limit) => {
-    try {
-      const response = await faqAPI.getAll(page, limit);
-      
-      // Handle different response structures
-      let faqsList = [];
-      let total = 0;
-      
-      if (response.status === 'OK' && response.returnData?.list_of_item) {
-        faqsList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || faqsList.length;
-      } else if (response.status === 'ERROR' && response.returnData?.list_of_item) {
-        // Even if status is ERROR, try to get the list if it exists
-        faqsList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || faqsList.length;
-      } else if (response.returnData?.list_of_item) {
-        // If status is not OK but list_of_item exists
-        faqsList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || faqsList.length;
-      } else if (Array.isArray(response.returnData)) {
-        // If returnData is directly an array
-        faqsList = response.returnData;
-        total = faqsList.length;
-      } else if (Array.isArray(response)) {
-        // If response is directly an array
-        faqsList = response;
-        total = faqsList.length;
-      }
-      
-      if (faqsList && faqsList.length > 0) {
-        // Map API response to FAQs format
-        const mappedFaqs = faqsList.map((faq, index) => ({
-          id: faq.id?.toString() || `faq-${Date.now()}-${index}`,
-          faq_category_id: faq.faq_category_id || null,
-          question: faq.question || '',
-          answer: faq.answer || '',
-          createdAt: faq.created_at || faq.createdAt || new Date().toISOString(),
-        }));
-        setFaqs(mappedFaqs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        setFaqsPagination(prev => ({ ...prev, page, limit, total }));
-      } else {
+    await withLoading(async () => {
+      try {
+        const response = await faqAPI.getAll(page, limit);
+        
+        // Handle different response structures
+        let faqsList = [];
+        let total = 0;
+        
+        if (response.status === 'OK' && response.returnData?.list_of_item) {
+          faqsList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || faqsList.length;
+        } else if (response.status === 'ERROR' && response.returnData?.list_of_item) {
+          // Even if status is ERROR, try to get the list if it exists
+          faqsList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || faqsList.length;
+        } else if (response.returnData?.list_of_item) {
+          // If status is not OK but list_of_item exists
+          faqsList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || faqsList.length;
+        } else if (Array.isArray(response.returnData)) {
+          // If returnData is directly an array
+          faqsList = response.returnData;
+          total = faqsList.length;
+        } else if (Array.isArray(response)) {
+          // If response is directly an array
+          faqsList = response;
+          total = faqsList.length;
+        }
+        
+        if (faqsList && faqsList.length > 0) {
+          // Map API response to FAQs format
+          const mappedFaqs = faqsList.map((faq, index) => ({
+            id: faq.id?.toString() || `faq-${Date.now()}-${index}`,
+            faq_category_id: faq.faq_category_id || null,
+            question: faq.question || '',
+            answer: faq.answer || '',
+            createdAt: faq.created_at || faq.createdAt || new Date().toISOString(),
+          }));
+          setFaqs(mappedFaqs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+          setFaqsPagination(prev => ({ ...prev, page, limit, total }));
+        } else {
+          setFaqs([]);
+          setFaqsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        }
+      } catch (err) {
+        console.error('Error fetching FAQs:', err);
         setFaqs([]);
-        setFaqsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        setFaqsPagination(prev => ({ ...prev, total: 0 }));
       }
-    } catch (err) {
-      console.error('Error fetching FAQs:', err);
-      setFaqs([]);
-      setFaqsPagination(prev => ({ ...prev, total: 0 }));
-    }
+    }, 'Loading FAQs...');
   };
 
   const fetchFooterQuickLinks = async (page = footerQuickLinksPagination.page, limit = footerQuickLinksPagination.limit) => {
-    try {
-      const response = await footerQuickLinkAPI.getAll(page, limit);
-      
-      // Handle different response structures
-      let linksList = [];
-      let total = 0;
-      
-      if (response.status === 'OK' && response.returnData?.list_of_item) {
-        linksList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || linksList.length;
-      } else if (response.returnData?.list_of_item) {
-        linksList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || linksList.length;
-      } else if (Array.isArray(response.returnData)) {
-        linksList = response.returnData;
-        total = linksList.length;
-      } else if (Array.isArray(response)) {
-        linksList = response;
-        total = linksList.length;
-      }
-      
-      if (linksList && linksList.length > 0) {
-        const mappedLinks = linksList.map((link, index) => ({
-          id: link.id?.toString() || `link-${Date.now()}-${index}`,
-          name: link.name || '',
-          link: link.link || '',
-          createdAt: link.created_at || link.createdAt || new Date().toISOString(),
-        }));
-        setFooterQuickLinks(mappedLinks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        setFooterQuickLinksPagination(prev => ({ ...prev, page, limit, total }));
-      } else {
+    await withLoading(async () => {
+      try {
+        const response = await footerQuickLinkAPI.getAll(page, limit);
+        
+        // Handle different response structures
+        let linksList = [];
+        let total = 0;
+        
+        if (response.status === 'OK' && response.returnData?.list_of_item) {
+          linksList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || linksList.length;
+        } else if (response.returnData?.list_of_item) {
+          linksList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || linksList.length;
+        } else if (Array.isArray(response.returnData)) {
+          linksList = response.returnData;
+          total = linksList.length;
+        } else if (Array.isArray(response)) {
+          linksList = response;
+          total = linksList.length;
+        }
+        
+        if (linksList && linksList.length > 0) {
+          const mappedLinks = linksList.map((link, index) => ({
+            id: link.id?.toString() || `link-${Date.now()}-${index}`,
+            name: link.name || '',
+            link: link.link || '',
+            createdAt: link.created_at || link.createdAt || new Date().toISOString(),
+          }));
+          setFooterQuickLinks(mappedLinks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+          setFooterQuickLinksPagination(prev => ({ ...prev, page, limit, total }));
+        } else {
+          setFooterQuickLinks([]);
+          setFooterQuickLinksPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        }
+      } catch (err) {
+        console.error('Error fetching footer quick links:', err);
         setFooterQuickLinks([]);
-        setFooterQuickLinksPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        setFooterQuickLinksPagination(prev => ({ ...prev, total: 0 }));
       }
-    } catch (err) {
-      console.error('Error fetching footer quick links:', err);
-      setFooterQuickLinks([]);
-      setFooterQuickLinksPagination(prev => ({ ...prev, total: 0 }));
-    }
+    }, 'Loading footer quick links...');
   };
 
   const fetchFooterContactUs = async (page = footerContactUsPagination.page, limit = footerContactUsPagination.limit) => {
-    try {
-      const response = await footerContactUsAPI.getAll(page, limit);
-      
-      // Handle different response structures
-      let contactsList = [];
-      let total = 0;
-      
-      if (response.status === 'OK' && response.returnData?.list_of_item) {
-        contactsList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || contactsList.length;
-      } else if (response.returnData?.list_of_item) {
-        contactsList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || contactsList.length;
-      } else if (Array.isArray(response.returnData)) {
-        contactsList = response.returnData;
-        total = contactsList.length;
-      } else if (Array.isArray(response)) {
-        contactsList = response;
-        total = contactsList.length;
-      }
-      
-      if (contactsList && contactsList.length > 0) {
-        const mappedContacts = contactsList.map((contact, index) => ({
-          id: contact.id?.toString() || `contact-${Date.now()}-${index}`,
-          phone_number: contact.phone_number || '',
-          email: contact.email || '',
-          location: contact.location || '',
-          createdAt: contact.created_at || contact.createdAt || new Date().toISOString(),
-        }));
-        setFooterContactUs(mappedContacts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        setFooterContactUsPagination(prev => ({ ...prev, page, limit, total }));
-      } else {
+    await withLoading(async () => {
+      try {
+        const response = await footerContactUsAPI.getAll(page, limit);
+        
+        // Handle different response structures
+        let contactsList = [];
+        let total = 0;
+        
+        if (response.status === 'OK' && response.returnData?.list_of_item) {
+          contactsList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || contactsList.length;
+        } else if (response.returnData?.list_of_item) {
+          contactsList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || contactsList.length;
+        } else if (Array.isArray(response.returnData)) {
+          contactsList = response.returnData;
+          total = contactsList.length;
+        } else if (Array.isArray(response)) {
+          contactsList = response;
+          total = contactsList.length;
+        }
+        
+        if (contactsList && contactsList.length > 0) {
+          const mappedContacts = contactsList.map((contact, index) => ({
+            id: contact.id?.toString() || `contact-${Date.now()}-${index}`,
+            phone_number: contact.phone_number || '',
+            email: contact.email || '',
+            location: contact.location || '',
+            createdAt: contact.created_at || contact.createdAt || new Date().toISOString(),
+          }));
+          setFooterContactUs(mappedContacts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+          setFooterContactUsPagination(prev => ({ ...prev, page, limit, total }));
+        } else {
+          setFooterContactUs([]);
+          setFooterContactUsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        }
+      } catch (err) {
+        console.error('Error fetching footer contact us:', err);
         setFooterContactUs([]);
-        setFooterContactUsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        setFooterContactUsPagination(prev => ({ ...prev, total: 0 }));
       }
-    } catch (err) {
-      console.error('Error fetching footer contact us:', err);
-      setFooterContactUs([]);
-      setFooterContactUsPagination(prev => ({ ...prev, total: 0 }));
-    }
+    }, 'Loading footer contact us...');
   };
 
   const fetchFooterEresources = async (page = footerEresourcesPagination.page, limit = footerEresourcesPagination.limit) => {
-    try {
-      const response = await footerEresourceAPI.getAll(page, limit);
-      
-      // Handle different response structures
-      let resourcesList = [];
-      let total = 0;
-      
-      if (response.status === 'OK' && response.returnData?.list_of_item) {
-        resourcesList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || resourcesList.length;
-      } else if (response.returnData?.list_of_item) {
-        resourcesList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || resourcesList.length;
-      } else if (Array.isArray(response.returnData)) {
-        resourcesList = response.returnData;
-        total = resourcesList.length;
-      } else if (Array.isArray(response)) {
-        resourcesList = response;
-        total = resourcesList.length;
-      }
-      
-      if (resourcesList && resourcesList.length > 0) {
-        const mappedResources = resourcesList.map((resource, index) => ({
-          id: resource.id?.toString() || `resource-${Date.now()}-${index}`,
-          name: resource.name || '',
-          link: resource.link || '',
-          createdAt: resource.created_at || resource.createdAt || new Date().toISOString(),
-        }));
-        setFooterEresources(mappedResources.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        setFooterEresourcesPagination(prev => ({ ...prev, page, limit, total }));
-      } else {
+    await withLoading(async () => {
+      try {
+        const response = await footerEresourceAPI.getAll(page, limit);
+        
+        // Handle different response structures
+        let resourcesList = [];
+        let total = 0;
+        
+        if (response.status === 'OK' && response.returnData?.list_of_item) {
+          resourcesList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || resourcesList.length;
+        } else if (response.returnData?.list_of_item) {
+          resourcesList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || resourcesList.length;
+        } else if (Array.isArray(response.returnData)) {
+          resourcesList = response.returnData;
+          total = resourcesList.length;
+        } else if (Array.isArray(response)) {
+          resourcesList = response;
+          total = resourcesList.length;
+        }
+        
+        if (resourcesList && resourcesList.length > 0) {
+          const mappedResources = resourcesList.map((resource, index) => ({
+            id: resource.id?.toString() || `resource-${Date.now()}-${index}`,
+            name: resource.name || '',
+            link: resource.link || '',
+            createdAt: resource.created_at || resource.createdAt || new Date().toISOString(),
+          }));
+          setFooterEresources(mappedResources.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+          setFooterEresourcesPagination(prev => ({ ...prev, page, limit, total }));
+        } else {
+          setFooterEresources([]);
+          setFooterEresourcesPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        }
+      } catch (err) {
+        console.error('Error fetching footer e-resources:', err);
         setFooterEresources([]);
-        setFooterEresourcesPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        setFooterEresourcesPagination(prev => ({ ...prev, total: 0 }));
       }
-    } catch (err) {
-      console.error('Error fetching footer e-resources:', err);
-      setFooterEresources([]);
-      setFooterEresourcesPagination(prev => ({ ...prev, total: 0 }));
-    }
+    }, 'Loading footer e-resources...');
   };
 
   const fetchSocialMediaPlatforms = async (page = socialMediaPlatformsPagination.page, limit = socialMediaPlatformsPagination.limit) => {
-    try {
-      const response = await socialMediaPlatformAPI.getAll(page, limit);
-      
-      // Handle different response structures
-      let platformsList = [];
-      let total = 0;
-      
-      if (response.status === 'OK' && response.returnData?.list_of_item) {
-        platformsList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || platformsList.length;
-      } else if (response.returnData?.list_of_item) {
-        platformsList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || platformsList.length;
-      } else if (Array.isArray(response.returnData)) {
-        platformsList = response.returnData;
-        total = platformsList.length;
-      } else if (Array.isArray(response)) {
-        platformsList = response;
-        total = platformsList.length;
-      }
-      
-      if (platformsList && platformsList.length > 0) {
-        const mappedPlatforms = platformsList.map((platform, index) => ({
-          id: platform.id?.toString() || `platform-${Date.now()}-${index}`,
-          icon: platform.icon || '',
-          link: platform.link || '',
-          createdAt: platform.created_at || platform.createdAt || new Date().toISOString(),
-        }));
-        setSocialMediaPlatforms(mappedPlatforms.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        setSocialMediaPlatformsPagination(prev => ({ ...prev, page, limit, total }));
-      } else {
+    await withLoading(async () => {
+      try {
+        const response = await socialMediaPlatformAPI.getAll(page, limit);
+        
+        // Handle different response structures
+        let platformsList = [];
+        let total = 0;
+        
+        if (response.status === 'OK' && response.returnData?.list_of_item) {
+          platformsList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || platformsList.length;
+        } else if (response.returnData?.list_of_item) {
+          platformsList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || platformsList.length;
+        } else if (Array.isArray(response.returnData)) {
+          platformsList = response.returnData;
+          total = platformsList.length;
+        } else if (Array.isArray(response)) {
+          platformsList = response;
+          total = platformsList.length;
+        }
+        
+        if (platformsList && platformsList.length > 0) {
+          const mappedPlatforms = platformsList.map((platform, index) => ({
+            id: platform.id?.toString() || `platform-${Date.now()}-${index}`,
+            icon: platform.icon || '',
+            link: platform.link || '',
+            createdAt: platform.created_at || platform.createdAt || new Date().toISOString(),
+          }));
+          setSocialMediaPlatforms(mappedPlatforms.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+          setSocialMediaPlatformsPagination(prev => ({ ...prev, page, limit, total }));
+        } else {
+          setSocialMediaPlatforms([]);
+          setSocialMediaPlatformsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        }
+      } catch (err) {
+        console.error('Error fetching social media platforms:', err);
         setSocialMediaPlatforms([]);
-        setSocialMediaPlatformsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        setSocialMediaPlatformsPagination(prev => ({ ...prev, total: 0 }));
       }
-    } catch (err) {
-      console.error('Error fetching social media platforms:', err);
-      setSocialMediaPlatforms([]);
-      setSocialMediaPlatformsPagination(prev => ({ ...prev, total: 0 }));
-    }
+    }, 'Loading social media platforms...');
   };
 
   const fetchJournals = async (page = journalsPagination.page, limit = journalsPagination.limit) => {
-    try {
-      const response = await journalAPI.getAll(page, limit);
-      
-      // Handle different response structures
-      let journalsList = [];
-      let total = 0;
-      
-      if (response.status === 'OK' && response.returnData?.list_of_item) {
-        journalsList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || journalsList.length;
-      } else if (response.returnData?.list_of_item) {
-        journalsList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || journalsList.length;
-      } else if (Array.isArray(response.returnData)) {
-        journalsList = response.returnData;
-        total = journalsList.length;
-      } else if (Array.isArray(response)) {
-        journalsList = response;
-        total = journalsList.length;
-      }
-      
-      if (journalsList && journalsList.length > 0) {
-        const mappedJournals = journalsList.map((journal, index) => ({
-          id: journal.id?.toString() || `journal-${Date.now()}-${index}`,
-          issn: journal.issn || '',
-          title: journal.title || '',
-          publisher: journal.publisher || '',
-          mode: journal.mode || '',
-          frequency: journal.frequency || '',
-          subject: journal.subject || '',
-          url: journal.url || '',
-          language: journal.language || '',
-          indexed: journal.indexed || '',
-          university: journal.university || '',
-          createdAt: journal.created_at || journal.createdAt || new Date().toISOString(),
-        }));
-        setJournals(mappedJournals.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        setJournalsPagination(prev => ({ ...prev, page, limit, total }));
-      } else {
+    await withLoading(async () => {
+      try {
+        const response = await journalAPI.getAll(page, limit);
+        
+        // Handle different response structures
+        let journalsList = [];
+        let total = 0;
+        
+        if (response.status === 'OK' && response.returnData?.list_of_item) {
+          journalsList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || journalsList.length;
+        } else if (response.returnData?.list_of_item) {
+          journalsList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || journalsList.length;
+        } else if (Array.isArray(response.returnData)) {
+          journalsList = response.returnData;
+          total = journalsList.length;
+        } else if (Array.isArray(response)) {
+          journalsList = response;
+          total = journalsList.length;
+        }
+        
+        if (journalsList && journalsList.length > 0) {
+          const mappedJournals = journalsList.map((journal, index) => ({
+            id: journal.id?.toString() || `journal-${Date.now()}-${index}`,
+            issn: journal.issn || '',
+            title: journal.title || '',
+            publisher: journal.publisher || '',
+            mode: journal.mode || '',
+            frequency: journal.frequency || '',
+            subject: journal.subject || '',
+            url: journal.url || '',
+            language: journal.language || '',
+            indexed: journal.indexed || '',
+            university: journal.university || '',
+            createdAt: journal.created_at || journal.createdAt || new Date().toISOString(),
+          }));
+          setJournals(mappedJournals.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+          setJournalsPagination(prev => ({ ...prev, page, limit, total }));
+        } else {
+          setJournals([]);
+          setJournalsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        }
+      } catch (err) {
+        console.error('Error fetching journals:', err);
         setJournals([]);
-        setJournalsPagination(prev => ({ ...prev, page, limit, total: 0 }));
+        setJournalsPagination(prev => ({ ...prev, total: 0 }));
       }
-    } catch (err) {
-      console.error('Error fetching journals:', err);
-      setJournals([]);
-      setJournalsPagination(prev => ({ ...prev, total: 0 }));
-    }
+    }, 'Loading journals...');
   };
 
   const fetchTeamMembers = async () => {
+    await withLoading(async () => {
     try {
       const response = await managementTeamAPI.getAll();
       if (response.status === 'OK' && response.returnData?.list_of_item) {
@@ -1140,9 +1186,11 @@ export function AdminPanel({ onLogout }) {
     } catch (err) {
       console.error('Error fetching team members:', err);
     }
+    }, 'Loading team members...');
   };
 
   const fetchCommissionMembers = async () => {
+    await withLoading(async () => {
     try {
       const response = await commissionMembersAPI.getAll();
       if (response.status === 'OK' && response.returnData?.list_of_item) {
@@ -1160,33 +1208,35 @@ export function AdminPanel({ onLogout }) {
     } catch (err) {
       console.error('Error fetching commission members:', err);
     }
+    }, 'Loading commission members...');
   };
 
   const fetchInnovationSpaces = async (page = innovationSpacesPagination.page, limit = innovationSpacesPagination.limit) => {
-    try {
-      const response = await innovationSpaceAPI.getAll(page, limit);
-      
-      // Handle different response structures
-      let spacesList = [];
-      let total = 0;
-      
+    await withLoading(async () => {
+      try {
+        const response = await innovationSpaceAPI.getAll(page, limit);
+        
+        // Handle different response structures
+        let spacesList = [];
+        let total = 0;
+        
       if (response.status === 'OK' && response.returnData?.list_of_item) {
-        spacesList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || spacesList.length;
-      } else if (response.returnData?.list_of_item) {
-        spacesList = response.returnData.list_of_item;
-        total = response.returnData?.total || response.returnData?.total_count || spacesList.length;
-      } else if (Array.isArray(response.returnData)) {
-        spacesList = response.returnData;
-        total = spacesList.length;
-      } else if (Array.isArray(response)) {
-        spacesList = response;
-        total = spacesList.length;
-      }
-      
-      if (spacesList && spacesList.length > 0) {
+          spacesList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || spacesList.length;
+        } else if (response.returnData?.list_of_item) {
+          spacesList = response.returnData.list_of_item;
+          total = response.returnData?.total || response.returnData?.total_count || spacesList.length;
+        } else if (Array.isArray(response.returnData)) {
+          spacesList = response.returnData;
+          total = spacesList.length;
+        } else if (Array.isArray(response)) {
+          spacesList = response;
+          total = spacesList.length;
+        }
+        
+        if (spacesList && spacesList.length > 0) {
         // Map API response to innovation spaces format
-        const mappedSpaces = spacesList.map(space => ({
+          const mappedSpaces = spacesList.map(space => ({
           id: space.id?.toString() || Date.now().toString(),
           name: space.name || '',
           category: space.category || '',
@@ -1214,16 +1264,17 @@ export function AdminPanel({ onLogout }) {
           createdAt: space.created_at || space.createdAt || new Date().toISOString(),
         }));
         setInnovationSpaces(mappedSpaces.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        setInnovationSpacesPagination(prev => ({ ...prev, page, limit, total }));
-      } else {
-        setInnovationSpaces([]);
-        setInnovationSpacesPagination(prev => ({ ...prev, page, limit, total: 0 }));
+          setInnovationSpacesPagination(prev => ({ ...prev, page, limit, total }));
+        } else {
+          setInnovationSpaces([]);
+          setInnovationSpacesPagination(prev => ({ ...prev, page, limit, total: 0 }));
       }
     } catch (err) {
       console.error('Error fetching innovation spaces:', err);
-      setInnovationSpaces([]);
-      setInnovationSpacesPagination(prev => ({ ...prev, total: 0 }));
+        setInnovationSpaces([]);
+        setInnovationSpacesPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading innovation spaces...');
   };
 
   const handleSectionClick = (e) => {
@@ -1500,10 +1551,11 @@ export function AdminPanel({ onLogout }) {
     const newsItem = news.find(n => n.id === id);
     const newsName = newsItem?.title || 'this news';
     showDeleteConfirmation(id, newsName, 'news', async () => {
+      await withLoading(async () => {
     try {
       const response = await newsAPI.delete(id);
       if (response.status === 'OK') {
-        await fetchNews(newsPagination.page, newsPagination.limit);
+            await fetchNews(newsPagination.page, newsPagination.limit);
         alert('News deleted successfully!');
       } else {
         alert(response.errorMessage || 'Failed to delete news');
@@ -1513,6 +1565,7 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete news. Please try again.';
       alert(errorMessage);
     }
+      }, 'Deleting news...');
     });
   };
 
@@ -1520,6 +1573,7 @@ export function AdminPanel({ onLogout }) {
     if (savingNews) return;
     
     setSavingNews(true);
+    await withLoading(async () => {
     try {
       let response;
       
@@ -1533,7 +1587,7 @@ export function AdminPanel({ onLogout }) {
       
       if (response.status === 'OK') {
         // Refresh news list from API
-        await fetchNews(newsPagination.page, newsPagination.limit);
+          await fetchNews(newsPagination.page, newsPagination.limit);
         setShowAddNewsForm(false);
         setEditingNews(null);
         alert(newsId ? 'News updated successfully!' : 'News saved successfully!');
@@ -1544,19 +1598,21 @@ export function AdminPanel({ onLogout }) {
       console.error('Error saving news:', err);
       const errorMessage = err.response?.data?.errorMessage || err.message || (newsId ? 'Failed to update news. Please try again.' : 'Failed to save news. Please try again.');
       alert(errorMessage);
-    } finally {
-      setSavingNews(false);
+      } finally {
+        setSavingNews(false);
     }
+    }, newsId ? 'Updating news...' : 'Saving news...');
   };
 
   const handleDeletePartner = async (id) => {
     const partner = partners.find(p => p.id === id);
     const partnerName = partner?.name || 'this partner';
     showDeleteConfirmation(id, partnerName, 'partner', async () => {
+      await withLoading(async () => {
     try {
       const response = await partnersAPI.delete(id);
       if (response.status === 'OK') {
-        await fetchPartners(partnersPagination.page, partnersPagination.limit);
+            await fetchPartners(partnersPagination.page, partnersPagination.limit);
         alert('Partner deleted successfully!');
       } else {
         alert(response.errorMessage || 'Failed to delete partner');
@@ -1566,6 +1622,7 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete partner. Please try again.';
       alert(errorMessage);
     }
+      }, 'Deleting partner...');
     });
   };
 
@@ -1573,6 +1630,7 @@ export function AdminPanel({ onLogout }) {
     if (savingPartner) return;
     
     setSavingPartner(true);
+    await withLoading(async () => {
     try {
       let response;
       
@@ -1586,7 +1644,7 @@ export function AdminPanel({ onLogout }) {
       
       if (response.status === 'OK') {
         // Refresh partners list from API
-        await fetchPartners(partnersPagination.page, partnersPagination.limit);
+          await fetchPartners(partnersPagination.page, partnersPagination.limit);
         setShowAddPartnerForm(false);
         setEditingPartner(null);
         alert(partnerId ? 'Partner updated successfully!' : 'Partner saved successfully!');
@@ -1600,16 +1658,18 @@ export function AdminPanel({ onLogout }) {
     } finally {
       setSavingPartner(false);
     }
+    }, partnerId ? 'Updating partner...' : 'Saving partner...');
   };
 
   const handleDeleteHero = async (id) => {
     const hero = heroes.find(h => h.id === id);
     const heroName = hero?.name || hero?.title || 'this hero';
     showDeleteConfirmation(id, heroName, 'hero', async () => {
-      try {
-        const response = await heroesAPI.delete(id);
+      await withLoading(async () => {
+        try {
+          const response = await heroesAPI.delete(id);
         if (response.status === 'OK') {
-          await fetchHeroes(heroesPagination.page, heroesPagination.limit);
+            await fetchHeroes(heroesPagination.page, heroesPagination.limit);
           alert('Hero deleted successfully!');
         } else {
           alert(response.errorMessage || 'Failed to delete hero');
@@ -1619,6 +1679,7 @@ export function AdminPanel({ onLogout }) {
         const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete hero. Please try again.';
         alert(errorMessage);
       }
+      }, 'Deleting hero...');
     });
   };
 
@@ -1626,12 +1687,13 @@ export function AdminPanel({ onLogout }) {
     if (savingHero) return;
     
     setSavingHero(true);
+    await withLoading(async () => {
     try {
       let response;
       
       if (heroId) {
         // Update existing hero
-        response = await heroesAPI.update(heroId, heroData);
+          response = await heroesAPI.update(heroId, heroData);
       } else {
         // Create new hero
         response = await heroesAPI.create(heroData);
@@ -1639,30 +1701,31 @@ export function AdminPanel({ onLogout }) {
       
       if (response.status === 'OK') {
         // Refresh heroes list from API
-        await fetchHeroes(heroesPagination.page, heroesPagination.limit);
+          await fetchHeroes(heroesPagination.page, heroesPagination.limit);
         setShowAddHeroForm(false);
         setEditingHero(null);
         alert(heroId ? 'Hero updated successfully!' : 'Hero saved successfully!');
       } else {
-        // Handle array error messages
-        const errorMsg = response.errorMessage || (heroId ? 'Failed to update hero' : 'Failed to save hero');
-        if (Array.isArray(errorMsg)) {
-          alert(errorMsg.join(', '));
-        } else {
-          alert(errorMsg);
-        }
+          // Handle array error messages
+          const errorMsg = response.errorMessage || (heroId ? 'Failed to update hero' : 'Failed to save hero');
+          if (Array.isArray(errorMsg)) {
+            alert(errorMsg.join(', '));
+          } else {
+            alert(errorMsg);
+          }
       }
     } catch (err) {
       console.error('Error saving hero:', err);
       const errorMessage = err.response?.data?.errorMessage || err.message || (heroId ? 'Failed to update hero. Please try again.' : 'Failed to save hero. Please try again.');
-      if (Array.isArray(errorMessage)) {
-        alert(errorMessage.join(', '));
-      } else {
+        if (Array.isArray(errorMessage)) {
+          alert(errorMessage.join(', '));
+        } else {
       alert(errorMessage);
-      }
-    } finally {
-      setSavingHero(false);
     }
+      } finally {
+        setSavingHero(false);
+      }
+    }, heroId ? 'Updating hero...' : 'Saving hero...');
   };
 
   const handleLogout = async () => {
@@ -1685,6 +1748,7 @@ export function AdminPanel({ onLogout }) {
   };
 
   const handleSaveSection = async (sectionData, sectionId = null) => {
+    await withLoading(async () => {
     try {
       let response;
       
@@ -1710,12 +1774,14 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || (sectionId ? 'Failed to update section. Please try again.' : 'Failed to save section. Please try again.');
       alert(errorMessage);
     }
+    }, sectionId ? 'Updating section...' : 'Saving section...');
   };
 
   const handleDeletePosition = async (id) => {
     const position = positions.find(p => p.id === id);
     const positionName = position?.name || 'this position';
     showDeleteConfirmation(id, positionName, 'position', async () => {
+      await withLoading(async () => {
     try {
       const response = await positionAPI.delete(id);
       if (response.status === 'OK') {
@@ -1729,10 +1795,12 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete position. Please try again.';
       alert(errorMessage);
     }
+      }, 'Deleting position...');
     });
   };
 
   const handleSavePosition = async (positionData, positionId = null) => {
+    await withLoading(async () => {
     try {
       let response;
       
@@ -1758,109 +1826,119 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || (positionId ? 'Failed to update position. Please try again.' : 'Failed to save position. Please try again.');
       alert(errorMessage);
     }
+    }, positionId ? 'Updating position...' : 'Saving position...');
   };
 
   const handleDeleteFaqCategory = async (id) => {
     const category = faqCategories.find(c => c.id === id);
     const categoryName = category?.name || 'this FAQ category';
     showDeleteConfirmation(id, categoryName, 'FAQ category', async () => {
-    try {
-      const response = await faqCategoryAPI.delete(id);
-      if (response.status === 'OK') {
-        await fetchFaqCategories();
-        alert('FAQ Category deleted successfully!');
-      } else {
-        alert(response.errorMessage || 'Failed to delete FAQ category');
-      }
-    } catch (err) {
-      console.error('Error deleting FAQ category:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete FAQ category. Please try again.';
-      alert(errorMessage);
-    }
+      await withLoading(async () => {
+        try {
+          const response = await faqCategoryAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchFaqCategories();
+            alert('FAQ Category deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete FAQ category');
+          }
+        } catch (err) {
+          console.error('Error deleting FAQ category:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete FAQ category. Please try again.';
+          alert(errorMessage);
+        }
+      }, 'Deleting FAQ category...');
     });
   };
 
   const handleSaveFaqCategory = async (categoryData, categoryId = null) => {
-    try {
-      let response;
-      
-      if (categoryId) {
-        // Update existing category
-        response = await faqCategoryAPI.update(categoryId, categoryData);
-      } else {
-        // Create new category
-        response = await faqCategoryAPI.create(categoryData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (categoryId) {
+          // Update existing category
+          response = await faqCategoryAPI.update(categoryId, categoryData);
+        } else {
+          // Create new category
+          response = await faqCategoryAPI.create(categoryData);
+        }
+        
+        if (response.status === 'OK') {
+          // Refresh categories list from API
+          await fetchFaqCategories();
+          setShowAddFaqCategoryForm(false);
+          setEditingFaqCategory(null);
+          setEditingFaq(null);
+          alert(categoryId ? 'FAQ Category updated successfully!' : 'FAQ Category saved successfully!');
+        } else {
+          alert(response.errorMessage || (categoryId ? 'Failed to update FAQ category' : 'Failed to save FAQ category'));
+        }
+      } catch (err) {
+        console.error('Error saving FAQ category:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (categoryId ? 'Failed to update FAQ category. Please try again.' : 'Failed to save FAQ category. Please try again.');
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        // Refresh categories list from API
-        await fetchFaqCategories();
-        setShowAddFaqCategoryForm(false);
-        setEditingFaqCategory(null);
-    setEditingFaq(null);
-        alert(categoryId ? 'FAQ Category updated successfully!' : 'FAQ Category saved successfully!');
-      } else {
-        alert(response.errorMessage || (categoryId ? 'Failed to update FAQ category' : 'Failed to save FAQ category'));
-      }
-    } catch (err) {
-      console.error('Error saving FAQ category:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (categoryId ? 'Failed to update FAQ category. Please try again.' : 'Failed to save FAQ category. Please try again.');
-      alert(errorMessage);
-    }
+    }, categoryId ? 'Updating FAQ category...' : 'Saving FAQ category...');
   };
 
   const handleDeleteFaq = async (id) => {
     const faq = faqs.find(f => f.id === id);
     const faqQuestion = faq?.question || 'this FAQ';
     showDeleteConfirmation(id, faqQuestion, 'FAQ', async () => {
-    try {
-      const response = await faqAPI.delete(id);
-      if (response.status === 'OK') {
-        await fetchFaqs();
-        alert('FAQ deleted successfully!');
-      } else {
-        alert(response.errorMessage || 'Failed to delete FAQ');
-      }
-    } catch (err) {
-      console.error('Error deleting FAQ:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete FAQ. Please try again.';
-      alert(errorMessage);
-    }
+      await withLoading(async () => {
+        try {
+          const response = await faqAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchFaqs();
+            alert('FAQ deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete FAQ');
+          }
+        } catch (err) {
+          console.error('Error deleting FAQ:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete FAQ. Please try again.';
+          alert(errorMessage);
+        }
+      }, 'Deleting FAQ...');
     });
   };
 
   const handleSaveFaq = async (faqData, faqId = null) => {
-    try {
-      let response;
-      
-      if (faqId) {
-        // Update existing FAQ
-        response = await faqAPI.update(faqId, faqData);
-      } else {
-        // Create new FAQ
-        response = await faqAPI.create(faqData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (faqId) {
+          // Update existing FAQ
+          response = await faqAPI.update(faqId, faqData);
+        } else {
+          // Create new FAQ
+          response = await faqAPI.create(faqData);
+        }
+        
+        if (response.status === 'OK') {
+          // Refresh FAQs list from API
+          await fetchFaqs();
+          setShowAddFaqForm(false);
+          setEditingFaq(null);
+          alert(faqId ? 'FAQ updated successfully!' : 'FAQ saved successfully!');
+        } else {
+          alert(response.errorMessage || (faqId ? 'Failed to update FAQ' : 'Failed to save FAQ'));
+        }
+      } catch (err) {
+        console.error('Error saving FAQ:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (faqId ? 'Failed to update FAQ. Please try again.' : 'Failed to save FAQ. Please try again.');
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        // Refresh FAQs list from API
-        await fetchFaqs();
-        setShowAddFaqForm(false);
-        setEditingFaq(null);
-        alert(faqId ? 'FAQ updated successfully!' : 'FAQ saved successfully!');
-      } else {
-        alert(response.errorMessage || (faqId ? 'Failed to update FAQ' : 'Failed to save FAQ'));
-      }
-    } catch (err) {
-      console.error('Error saving FAQ:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (faqId ? 'Failed to update FAQ. Please try again.' : 'Failed to save FAQ. Please try again.');
-      alert(errorMessage);
-    }
+    }, faqId ? 'Updating FAQ...' : 'Saving FAQ...');
   };
 
   const handleDeleteTeamMember = async (id) => {
     const member = teamMembers.find(m => m.id === id);
     const memberName = member?.name || 'this team member';
     showDeleteConfirmation(id, memberName, 'team member', async () => {
+      await withLoading(async () => {
     try {
       const response = await managementTeamAPI.delete(id);
       if (response.status === 'OK') {
@@ -1874,10 +1952,12 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete team member. Please try again.';
       alert(errorMessage);
     }
+      }, 'Deleting team member...');
     });
   };
 
   const handleSaveTeamMember = async (memberData, memberId = null) => {
+    await withLoading(async () => {
     try {
       let response;
       
@@ -1903,12 +1983,14 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || (memberId ? 'Failed to update team member. Please try again.' : 'Failed to save team member. Please try again.');
       alert(errorMessage);
     }
+    }, memberId ? 'Updating team member...' : 'Saving team member...');
   };
 
   const handleDeleteCommissionMember = async (id) => {
     const member = commissionMembers.find(m => m.id === id);
     const memberName = member?.name || 'this commission member';
     showDeleteConfirmation(id, memberName, 'commission member', async () => {
+      await withLoading(async () => {
     try {
       const response = await commissionMembersAPI.delete(id);
       if (response.status === 'OK') {
@@ -1922,10 +2004,12 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete commission member. Please try again.';
       alert(errorMessage);
     }
+      }, 'Deleting commission member...');
     });
   };
 
   const handleSaveCommissionMember = async (memberData, memberId = null) => {
+    await withLoading(async () => {
     try {
       let response;
       
@@ -1951,12 +2035,14 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || (memberId ? 'Failed to update commission member. Please try again.' : 'Failed to save commission member. Please try again.');
       alert(errorMessage);
     }
+    }, memberId ? 'Updating commission member...' : 'Saving commission member...');
   };
 
   const handleDeleteInnovationSpace = async (id) => {
     const space = innovationSpaces.find(s => s.id === id);
     const spaceName = space?.name || 'this innovation space';
     showDeleteConfirmation(id, spaceName, 'innovation space', async () => {
+      await withLoading(async () => {
     try {
       const response = await innovationSpaceAPI.delete(id);
       if (response.status === 'OK') {
@@ -1970,10 +2056,12 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete innovation space. Please try again.';
       alert(errorMessage);
     }
+      }, 'Deleting innovation space...');
     });
   };
 
   const handleSaveInnovationSpace = async (spaceData, spaceId = null) => {
+    await withLoading(async () => {
     try {
       let response;
       
@@ -1999,11 +2087,13 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || (spaceId ? 'Failed to update innovation space. Please try again.' : 'Failed to save innovation space. Please try again.');
       alert(errorMessage);
     }
+    }, spaceId ? 'Updating innovation space...' : 'Saving innovation space...');
   };
 
   const fetchOnlineServices = async (page = onlineServicesPagination.page, limit = onlineServicesPagination.limit) => {
-    try {
-      const response = await onlineServiceAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await onlineServiceAPI.getAll(page, limit);
       
       // Handle different response structures
       let servicesList = [];
@@ -2042,6 +2132,7 @@ export function AdminPanel({ onLogout }) {
       setOnlineServices([]);
       setOnlineServicesPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading online services...');
   };
 
   const handleAddOnlineServiceClick = () => {
@@ -2058,10 +2149,11 @@ export function AdminPanel({ onLogout }) {
     const service = onlineServices.find(s => s.id === id);
     const serviceName = service?.name || 'this online service';
     showDeleteConfirmation(id, serviceName, 'online service', async () => {
+      await withLoading(async () => {
       try {
         const response = await onlineServiceAPI.delete(id);
         if (response.status === 'OK') {
-          await fetchOnlineServices(onlineServicesPagination.page, onlineServicesPagination.limit);
+            await fetchOnlineServices(onlineServicesPagination.page, onlineServicesPagination.limit);
           alert('Online service deleted successfully!');
         } else {
           alert(response.errorMessage || 'Failed to delete online service');
@@ -2071,10 +2163,12 @@ export function AdminPanel({ onLogout }) {
         const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete online service. Please try again.';
         alert(errorMessage);
       }
+      }, 'Deleting online service...');
     });
   };
 
   const handleSaveOnlineService = async (serviceData, serviceId) => {
+    await withLoading(async () => {
     try {
       const response = serviceId 
         ? await onlineServiceAPI.update(serviceId, serviceData)
@@ -2082,7 +2176,7 @@ export function AdminPanel({ onLogout }) {
 
       if (response.status === 'OK') {
         // Refresh online services list from API
-        await fetchOnlineServices(onlineServicesPagination.page, onlineServicesPagination.limit);
+          await fetchOnlineServices(onlineServicesPagination.page, onlineServicesPagination.limit);
         setShowAddOnlineServiceForm(false);
         setEditingOnlineService(null);
         alert(serviceId ? 'Online service updated successfully!' : 'Online service saved successfully!');
@@ -2094,11 +2188,13 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || (serviceId ? 'Failed to update online service. Please try again.' : 'Failed to save online service. Please try again.');
       alert(errorMessage);
     }
+    }, serviceId ? 'Updating online service...' : 'Saving online service...');
   };
 
   const fetchFinancialReports = async (page = financialReportsPagination.page, limit = financialReportsPagination.limit) => {
-    try {
-      const response = await financialReportAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await financialReportAPI.getAll(page, limit);
       
       // Handle different response structures
       let reportsList = [];
@@ -2138,6 +2234,7 @@ export function AdminPanel({ onLogout }) {
       setFinancialReports([]);
       setFinancialReportsPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading financial reports...');
   };
 
   const handleAddFinancialReportClick = () => {
@@ -2154,6 +2251,7 @@ export function AdminPanel({ onLogout }) {
     const report = financialReports.find(r => r.id === id);
     const reportName = report?.title || 'this financial report';
     showDeleteConfirmation(id, reportName, 'financial report', async () => {
+      await withLoading(async () => {
       try {
         const response = await financialReportAPI.delete(id);
         if (response.status === 'OK') {
@@ -2167,10 +2265,12 @@ export function AdminPanel({ onLogout }) {
         const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete financial report. Please try again.';
         alert(errorMessage);
       }
+      }, 'Deleting financial report...');
     });
   };
 
   const handleSaveFinancialReport = async (reportData, reportId) => {
+    await withLoading(async () => {
     try {
       const response = reportId 
         ? await financialReportAPI.update(reportId, reportData)
@@ -2189,11 +2289,13 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || (reportId ? 'Failed to update financial report. Please try again.' : 'Failed to save financial report. Please try again.');
       alert(errorMessage);
     }
+    }, reportId ? 'Updating financial report...' : 'Saving financial report...');
   };
 
   const fetchMagazines = async (page = magazinesPagination.page, limit = magazinesPagination.limit) => {
-    try {
-      const response = await magazineAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await magazineAPI.getAll(page, limit);
       
       // Handle different response structures
       let magazinesList = [];
@@ -2233,6 +2335,7 @@ export function AdminPanel({ onLogout }) {
       setMagazines([]);
       setMagazinesPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading magazines...');
   };
 
   const handleMagazineClick = (e) => {
@@ -2254,6 +2357,7 @@ export function AdminPanel({ onLogout }) {
     const magazine = magazines.find(m => m.id === id);
     const magazineName = magazine?.title || 'this magazine';
     showDeleteConfirmation(id, magazineName, 'magazine', async () => {
+      await withLoading(async () => {
       try {
         const response = await magazineAPI.delete(id);
         if (response.status === 'OK') {
@@ -2267,10 +2371,12 @@ export function AdminPanel({ onLogout }) {
         const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete magazine. Please try again.';
         alert(errorMessage);
       }
+      }, 'Deleting magazine...');
     });
   };
 
   const handleSaveMagazine = async (magazineData, magazineId) => {
+    await withLoading(async () => {
     try {
       const response = magazineId 
         ? await magazineAPI.update(magazineId, magazineData)
@@ -2289,11 +2395,13 @@ export function AdminPanel({ onLogout }) {
       const errorMessage = err.response?.data?.errorMessage || err.message || (magazineId ? 'Failed to update magazine. Please try again.' : 'Failed to save magazine. Please try again.');
       alert(errorMessage);
     }
+    }, magazineId ? 'Updating magazine...' : 'Saving magazine...');
   };
 
   const fetchNewsletters = async (page = newslettersPagination.page, limit = newslettersPagination.limit) => {
-    try {
-      const response = await newsletterAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await newsletterAPI.getAll(page, limit);
       
       // Handle different response structures
       let newslettersList = [];
@@ -2333,6 +2441,7 @@ export function AdminPanel({ onLogout }) {
       setNewsletters([]);
       setNewslettersPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading newsletters...');
   };
 
   const handleNewsletterClick = (e) => {
@@ -2354,54 +2463,59 @@ export function AdminPanel({ onLogout }) {
     const newsletter = newsletters.find(n => n.id === id);
     const newsletterName = newsletter?.title || 'this newsletter';
     showDeleteConfirmation(id, newsletterName, 'newsletter', async () => {
-      try {
-        const response = await newsletterAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchNewsletters();
-          alert('Newsletter deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete newsletter');
+      await withLoading(async () => {
+        try {
+          const response = await newsletterAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchNewsletters();
+            alert('Newsletter deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete newsletter');
+          }
+        } catch (err) {
+          console.error('Error deleting newsletter:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete newsletter. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting newsletter:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete newsletter. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting newsletter...');
     });
   };
 
   const handleSaveNewsletter = async (newsletterData, newsletterId) => {
-    try {
-      const response = newsletterId 
-        ? await newsletterAPI.update(newsletterId, newsletterData)
-        : await newsletterAPI.create(newsletterData);
+    await withLoading(async () => {
+      try {
+        const response = newsletterId 
+          ? await newsletterAPI.update(newsletterId, newsletterData)
+          : await newsletterAPI.create(newsletterData);
 
-      if (response.status === 'OK') {
-        await fetchNewsletters();
-        setShowAddNewsletterForm(false);
-        setEditingNewsletter(null);
-        alert(newsletterId ? 'Newsletter updated successfully!' : 'Newsletter saved successfully!');
-      } else {
-        // Handle array or string error messages
-        const errorMsg = Array.isArray(response.errorMessage) 
-          ? response.errorMessage.join(', ') 
-          : response.errorMessage || (newsletterId ? 'Failed to update newsletter' : 'Failed to save newsletter');
-        alert(errorMsg);
+        if (response.status === 'OK') {
+          await fetchNewsletters();
+          setShowAddNewsletterForm(false);
+          setEditingNewsletter(null);
+          alert(newsletterId ? 'Newsletter updated successfully!' : 'Newsletter saved successfully!');
+        } else {
+          // Handle array or string error messages
+          const errorMsg = Array.isArray(response.errorMessage) 
+            ? response.errorMessage.join(', ') 
+            : response.errorMessage || (newsletterId ? 'Failed to update newsletter' : 'Failed to save newsletter');
+          alert(errorMsg);
+        }
+      } catch (err) {
+        console.error('Error saving newsletter:', err);
+        // Handle array or string error messages from backend
+        const backendError = err.response?.data?.errorMessage;
+        const errorMessage = Array.isArray(backendError)
+          ? backendError.join(', ')
+          : backendError || err.message || (newsletterId ? 'Failed to update newsletter. Please try again.' : 'Failed to save newsletter. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving newsletter:', err);
-      // Handle array or string error messages from backend
-      const backendError = err.response?.data?.errorMessage;
-      const errorMessage = Array.isArray(backendError)
-        ? backendError.join(', ')
-        : backendError || err.message || (newsletterId ? 'Failed to update newsletter. Please try again.' : 'Failed to save newsletter. Please try again.');
-      alert(errorMessage);
-    }
+    }, newsletterId ? 'Updating newsletter...' : 'Saving newsletter...');
   };
 
   const fetchBooks = async (page = booksPagination.page, limit = booksPagination.limit) => {
-    try {
-      const response = await booksAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await booksAPI.getAll(page, limit);
       
       // Handle different response structures
       let booksList = [];
@@ -2441,6 +2555,7 @@ export function AdminPanel({ onLogout }) {
       setBooks([]);
       setBooksPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading books...');
   };
 
   const handleBookClick = (e) => {
@@ -2462,46 +2577,51 @@ export function AdminPanel({ onLogout }) {
     const book = books.find(b => b.id === id);
     const bookName = book?.title || 'this book';
     showDeleteConfirmation(id, bookName, 'book', async () => {
-      try {
-        const response = await booksAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchBooks();
-          alert('Book deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete book');
+      await withLoading(async () => {
+        try {
+          const response = await booksAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchBooks();
+            alert('Book deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete book');
+          }
+        } catch (err) {
+          console.error('Error deleting book:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete book. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting book:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete book. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting book...');
     });
   };
 
   const handleSaveBook = async (bookData, bookId) => {
-    try {
-      const response = bookId 
-        ? await booksAPI.update(bookId, bookData)
-        : await booksAPI.create(bookData);
+    await withLoading(async () => {
+      try {
+        const response = bookId 
+          ? await booksAPI.update(bookId, bookData)
+          : await booksAPI.create(bookData);
 
-      if (response.status === 'OK') {
-        await fetchBooks();
-        setShowAddBookForm(false);
-        setEditingBook(null);
-        alert(bookId ? 'Book updated successfully!' : 'Book saved successfully!');
-      } else {
-        alert(response.errorMessage || (bookId ? 'Failed to update book' : 'Failed to save book'));
+        if (response.status === 'OK') {
+          await fetchBooks();
+          setShowAddBookForm(false);
+          setEditingBook(null);
+          alert(bookId ? 'Book updated successfully!' : 'Book saved successfully!');
+        } else {
+          alert(response.errorMessage || (bookId ? 'Failed to update book' : 'Failed to save book'));
+        }
+      } catch (err) {
+        console.error('Error saving book:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (bookId ? 'Failed to update book. Please try again.' : 'Failed to save book. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving book:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (bookId ? 'Failed to update book. Please try again.' : 'Failed to save book. Please try again.');
-      alert(errorMessage);
-    }
+    }, bookId ? 'Updating book...' : 'Saving book...');
   };
 
   const fetchReports = async (page = reportsPagination.page, limit = reportsPagination.limit) => {
-    try {
-      const response = await reportsAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await reportsAPI.getAll(page, limit);
       
       // Handle different response structures
       let reportsList = [];
@@ -2541,6 +2661,7 @@ export function AdminPanel({ onLogout }) {
       setReports([]);
       setReportsPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading reports...');
   };
 
   const handleReportClick = (e) => {
@@ -2562,46 +2683,51 @@ export function AdminPanel({ onLogout }) {
     const report = reports.find(r => r.id === id);
     const reportName = report?.title || 'this report';
     showDeleteConfirmation(id, reportName, 'report', async () => {
-      try {
-        const response = await reportsAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchReports();
-          alert('Report deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete report');
+      await withLoading(async () => {
+        try {
+          const response = await reportsAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchReports();
+            alert('Report deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete report');
+          }
+        } catch (err) {
+          console.error('Error deleting report:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete report. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting report:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete report. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting report...');
     });
   };
 
   const handleSaveReport = async (reportData, reportId) => {
-    try {
-      const response = reportId 
-        ? await reportsAPI.update(reportId, reportData)
-        : await reportsAPI.create(reportData);
+    await withLoading(async () => {
+      try {
+        const response = reportId 
+          ? await reportsAPI.update(reportId, reportData)
+          : await reportsAPI.create(reportData);
 
-      if (response.status === 'OK') {
-        await fetchReports();
-        setShowAddReportForm(false);
-        setEditingReport(null);
-        alert(reportId ? 'Report updated successfully!' : 'Report saved successfully!');
-      } else {
-        alert(response.errorMessage || (reportId ? 'Failed to update report' : 'Failed to save report'));
+        if (response.status === 'OK') {
+          await fetchReports();
+          setShowAddReportForm(false);
+          setEditingReport(null);
+          alert(reportId ? 'Report updated successfully!' : 'Report saved successfully!');
+        } else {
+          alert(response.errorMessage || (reportId ? 'Failed to update report' : 'Failed to save report'));
+        }
+      } catch (err) {
+        console.error('Error saving report:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (reportId ? 'Failed to update report. Please try again.' : 'Failed to save report. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving report:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (reportId ? 'Failed to update report. Please try again.' : 'Failed to save report. Please try again.');
-      alert(errorMessage);
-    }
+    }, reportId ? 'Updating report...' : 'Saving report...');
   };
 
   const fetchActsAndLegal = async (page = actsAndLegalPagination.page, limit = actsAndLegalPagination.limit) => {
-    try {
-      const response = await actsAndLegalAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await actsAndLegalAPI.getAll(page, limit);
       
       // Handle different response structures
       let actsList = [];
@@ -2641,6 +2767,7 @@ export function AdminPanel({ onLogout }) {
       setActsAndLegal([]);
       setActsAndLegalPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading acts and legal...');
   };
 
   const handleActsAndLegalClick = (e) => {
@@ -2662,46 +2789,51 @@ export function AdminPanel({ onLogout }) {
     const act = actsAndLegal.find(a => a.id === id);
     const actName = act?.title || 'this act and legal';
     showDeleteConfirmation(id, actName, 'act and legal', async () => {
-      try {
-        const response = await actsAndLegalAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchActsAndLegal();
-          alert('Act and Legal deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete act and legal');
+      await withLoading(async () => {
+        try {
+          const response = await actsAndLegalAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchActsAndLegal();
+            alert('Act and Legal deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete act and legal');
+          }
+        } catch (err) {
+          console.error('Error deleting act and legal:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete act and legal. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting act and legal:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete act and legal. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting act and legal...');
     });
   };
 
   const handleSaveActsAndLegal = async (actData, actId) => {
-    try {
-      const response = actId 
-        ? await actsAndLegalAPI.update(actId, actData)
-        : await actsAndLegalAPI.create(actData);
+    await withLoading(async () => {
+      try {
+        const response = actId 
+          ? await actsAndLegalAPI.update(actId, actData)
+          : await actsAndLegalAPI.create(actData);
 
-      if (response.status === 'OK') {
-        await fetchActsAndLegal();
-        setShowAddActsAndLegalForm(false);
-        setEditingActsAndLegal(null);
-        alert(actId ? 'Act and Legal updated successfully!' : 'Act and Legal saved successfully!');
-      } else {
-        alert(response.errorMessage || (actId ? 'Failed to update act and legal' : 'Failed to save act and legal'));
+        if (response.status === 'OK') {
+          await fetchActsAndLegal();
+          setShowAddActsAndLegalForm(false);
+          setEditingActsAndLegal(null);
+          alert(actId ? 'Act and Legal updated successfully!' : 'Act and Legal saved successfully!');
+        } else {
+          alert(response.errorMessage || (actId ? 'Failed to update act and legal' : 'Failed to save act and legal'));
+        }
+      } catch (err) {
+        console.error('Error saving act and legal:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (actId ? 'Failed to update act and legal. Please try again.' : 'Failed to save act and legal. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving act and legal:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (actId ? 'Failed to update act and legal. Please try again.' : 'Failed to save act and legal. Please try again.');
-      alert(errorMessage);
-    }
+    }, actId ? 'Updating act and legal...' : 'Saving act and legal...');
   };
 
   const fetchPolicies = async (page = policiesPagination.page, limit = policiesPagination.limit) => {
-    try {
-      const response = await policiesAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await policiesAPI.getAll(page, limit);
       
       // Handle different response structures
       let policiesList = [];
@@ -2741,6 +2873,7 @@ export function AdminPanel({ onLogout }) {
       setPolicies([]);
       setPoliciesPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading policies...');
   };
 
   const handlePolicyClick = (e) => {
@@ -2762,46 +2895,51 @@ export function AdminPanel({ onLogout }) {
     const policy = policies.find(p => p.id === id);
     const policyName = policy?.title || 'this policy';
     showDeleteConfirmation(id, policyName, 'policy', async () => {
-      try {
-        const response = await policiesAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchPolicies();
-          alert('Policy deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete policy');
+      await withLoading(async () => {
+        try {
+          const response = await policiesAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchPolicies();
+            alert('Policy deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete policy');
+          }
+        } catch (err) {
+          console.error('Error deleting policy:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete policy. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting policy:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete policy. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting policy...');
     });
   };
 
   const handleSavePolicy = async (policyData, policyId) => {
-    try {
-      const response = policyId 
-        ? await policiesAPI.update(policyId, policyData)
-        : await policiesAPI.create(policyData);
+    await withLoading(async () => {
+      try {
+        const response = policyId 
+          ? await policiesAPI.update(policyId, policyData)
+          : await policiesAPI.create(policyData);
 
-      if (response.status === 'OK') {
-        await fetchPolicies();
-        setShowAddPolicyForm(false);
-        setEditingPolicy(null);
-        alert(policyId ? 'Policy updated successfully!' : 'Policy saved successfully!');
-      } else {
-        alert(response.errorMessage || (policyId ? 'Failed to update policy' : 'Failed to save policy'));
+        if (response.status === 'OK') {
+          await fetchPolicies();
+          setShowAddPolicyForm(false);
+          setEditingPolicy(null);
+          alert(policyId ? 'Policy updated successfully!' : 'Policy saved successfully!');
+        } else {
+          alert(response.errorMessage || (policyId ? 'Failed to update policy' : 'Failed to save policy'));
+        }
+      } catch (err) {
+        console.error('Error saving policy:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (policyId ? 'Failed to update policy. Please try again.' : 'Failed to save policy. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving policy:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (policyId ? 'Failed to update policy. Please try again.' : 'Failed to save policy. Please try again.');
-      alert(errorMessage);
-    }
+    }, policyId ? 'Updating policy...' : 'Saving policy...');
   };
 
   const fetchStrategicPlans = async (page = strategicPlansPagination.page, limit = strategicPlansPagination.limit) => {
-    try {
-      const response = await strategicPlanAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await strategicPlanAPI.getAll(page, limit);
       
       // Handle different response structures
       let plansList = [];
@@ -2841,6 +2979,7 @@ export function AdminPanel({ onLogout }) {
       setStrategicPlans([]);
       setStrategicPlansPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading strategic plans...');
   };
 
   const handleStrategicPlanClick = (e) => {
@@ -2862,46 +3001,51 @@ export function AdminPanel({ onLogout }) {
     const plan = strategicPlans.find(p => p.id === id);
     const planName = plan?.title || 'this strategic plan';
     showDeleteConfirmation(id, planName, 'strategic plan', async () => {
-      try {
-        const response = await strategicPlanAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchStrategicPlans();
-          alert('Strategic Plan deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete strategic plan');
+      await withLoading(async () => {
+        try {
+          const response = await strategicPlanAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchStrategicPlans();
+            alert('Strategic Plan deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete strategic plan');
+          }
+        } catch (err) {
+          console.error('Error deleting strategic plan:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete strategic plan. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting strategic plan:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete strategic plan. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting strategic plan...');
     });
   };
 
   const handleSaveStrategicPlan = async (planData, planId) => {
-    try {
-      const response = planId 
-        ? await strategicPlanAPI.update(planId, planData)
-        : await strategicPlanAPI.create(planData);
+    await withLoading(async () => {
+      try {
+        const response = planId 
+          ? await strategicPlanAPI.update(planId, planData)
+          : await strategicPlanAPI.create(planData);
 
-      if (response.status === 'OK') {
-        await fetchStrategicPlans();
-        setShowAddStrategicPlanForm(false);
-        setEditingStrategicPlan(null);
-        alert(planId ? 'Strategic Plan updated successfully!' : 'Strategic Plan saved successfully!');
-      } else {
-        alert(response.errorMessage || (planId ? 'Failed to update strategic plan' : 'Failed to save strategic plan'));
+        if (response.status === 'OK') {
+          await fetchStrategicPlans();
+          setShowAddStrategicPlanForm(false);
+          setEditingStrategicPlan(null);
+          alert(planId ? 'Strategic Plan updated successfully!' : 'Strategic Plan saved successfully!');
+        } else {
+          alert(response.errorMessage || (planId ? 'Failed to update strategic plan' : 'Failed to save strategic plan'));
+        }
+      } catch (err) {
+        console.error('Error saving strategic plan:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (planId ? 'Failed to update strategic plan. Please try again.' : 'Failed to save strategic plan. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving strategic plan:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (planId ? 'Failed to update strategic plan. Please try again.' : 'Failed to save strategic plan. Please try again.');
-      alert(errorMessage);
-    }
+    }, planId ? 'Updating strategic plan...' : 'Saving strategic plan...');
   };
 
   const fetchGuidelineDocuments = async (page = guidelineDocumentsPagination.page, limit = guidelineDocumentsPagination.limit) => {
-    try {
-      const response = await guidelineDocumentsAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await guidelineDocumentsAPI.getAll(page, limit);
       
       // Handle different response structures
       let documentsList = [];
@@ -2941,6 +3085,7 @@ export function AdminPanel({ onLogout }) {
       setGuidelineDocuments([]);
       setGuidelineDocumentsPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading guideline documents...');
   };
 
   const handleGuidelineDocumentClick = (e) => {
@@ -2962,46 +3107,51 @@ export function AdminPanel({ onLogout }) {
     const document = guidelineDocuments.find(d => d.id === id);
     const documentName = document?.title || 'this guideline document';
     showDeleteConfirmation(id, documentName, 'guideline document', async () => {
-      try {
-        const response = await guidelineDocumentsAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchGuidelineDocuments();
-          alert('Guideline Document deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete guideline document');
+      await withLoading(async () => {
+        try {
+          const response = await guidelineDocumentsAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchGuidelineDocuments();
+            alert('Guideline Document deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete guideline document');
+          }
+        } catch (err) {
+          console.error('Error deleting guideline document:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete guideline document. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting guideline document:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete guideline document. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting guideline document...');
     });
   };
 
   const handleSaveGuidelineDocument = async (documentData, documentId) => {
-    try {
-      const response = documentId 
-        ? await guidelineDocumentsAPI.update(documentId, documentData)
-        : await guidelineDocumentsAPI.create(documentData);
+    await withLoading(async () => {
+      try {
+        const response = documentId 
+          ? await guidelineDocumentsAPI.update(documentId, documentData)
+          : await guidelineDocumentsAPI.create(documentData);
 
-      if (response.status === 'OK') {
-        await fetchGuidelineDocuments();
-        setShowAddGuidelineDocumentForm(false);
-        setEditingGuidelineDocument(null);
-        alert(documentId ? 'Guideline Document updated successfully!' : 'Guideline Document saved successfully!');
-      } else {
-        alert(response.errorMessage || (documentId ? 'Failed to update guideline document' : 'Failed to save guideline document'));
+        if (response.status === 'OK') {
+          await fetchGuidelineDocuments();
+          setShowAddGuidelineDocumentForm(false);
+          setEditingGuidelineDocument(null);
+          alert(documentId ? 'Guideline Document updated successfully!' : 'Guideline Document saved successfully!');
+        } else {
+          alert(response.errorMessage || (documentId ? 'Failed to update guideline document' : 'Failed to save guideline document'));
+        }
+      } catch (err) {
+        console.error('Error saving guideline document:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (documentId ? 'Failed to update guideline document. Please try again.' : 'Failed to save guideline document. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving guideline document:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (documentId ? 'Failed to update guideline document. Please try again.' : 'Failed to save guideline document. Please try again.');
-      alert(errorMessage);
-    }
+    }, documentId ? 'Updating guideline document...' : 'Saving guideline document...');
   };
 
   const fetchConferences = async (page = conferencesPagination.page, limit = conferencesPagination.limit) => {
-    try {
-      const response = await conferenceAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await conferenceAPI.getAll(page, limit);
       
       // Handle different response structures
       let conferencesList = [];
@@ -3045,6 +3195,7 @@ export function AdminPanel({ onLogout }) {
       setConferences([]);
       setConferencesPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading conferences...');
   };
 
   const handleConferenceClick = (e) => {
@@ -3080,46 +3231,51 @@ export function AdminPanel({ onLogout }) {
     const conference = conferences.find(c => c.id === id);
     const conferenceName = conference?.name || 'this conference';
     showDeleteConfirmation(id, conferenceName, 'conference', async () => {
-      try {
-        const response = await conferenceAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchConferences(conferencesPagination.page, conferencesPagination.limit);
-          alert('Conference deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete conference');
+      await withLoading(async () => {
+        try {
+          const response = await conferenceAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchConferences(conferencesPagination.page, conferencesPagination.limit);
+            alert('Conference deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete conference');
+          }
+        } catch (err) {
+          console.error('Error deleting conference:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete conference. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting conference:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete conference. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting conference...');
     });
   };
 
   const handleSaveConference = async (conferenceData, conferenceId) => {
-    try {
-      const response = conferenceId 
-        ? await conferenceAPI.update(conferenceId, conferenceData)
-        : await conferenceAPI.create(conferenceData);
+    await withLoading(async () => {
+      try {
+        const response = conferenceId 
+          ? await conferenceAPI.update(conferenceId, conferenceData)
+          : await conferenceAPI.create(conferenceData);
 
-      if (response.status === 'OK') {
-        await fetchConferences(conferencesPagination.page, conferencesPagination.limit);
-        setShowAddConferenceForm(false);
-        setEditingConference(null);
-        alert(conferenceId ? 'Conference updated successfully!' : 'Conference saved successfully!');
-      } else {
-        alert(response.errorMessage || (conferenceId ? 'Failed to update conference' : 'Failed to save conference'));
+        if (response.status === 'OK') {
+          await fetchConferences(conferencesPagination.page, conferencesPagination.limit);
+          setShowAddConferenceForm(false);
+          setEditingConference(null);
+          alert(conferenceId ? 'Conference updated successfully!' : 'Conference saved successfully!');
+        } else {
+          alert(response.errorMessage || (conferenceId ? 'Failed to update conference' : 'Failed to save conference'));
+        }
+      } catch (err) {
+        console.error('Error saving conference:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (conferenceId ? 'Failed to update conference. Please try again.' : 'Failed to save conference. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving conference:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (conferenceId ? 'Failed to update conference. Please try again.' : 'Failed to save conference. Please try again.');
-      alert(errorMessage);
-    }
+    }, conferenceId ? 'Updating conference...' : 'Saving conference...');
   };
 
   const fetchExhibitions = async (page = exhibitionsPagination.page, limit = exhibitionsPagination.limit) => {
-    try {
-      const response = await exhibitionAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await exhibitionAPI.getAll(page, limit);
       
       // Handle different response structures
       let exhibitionsList = [];
@@ -3163,6 +3319,7 @@ export function AdminPanel({ onLogout }) {
       setExhibitions([]);
       setExhibitionsPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading exhibitions...');
   };
 
   const handleExhibitionClick = (e) => {
@@ -3198,46 +3355,51 @@ export function AdminPanel({ onLogout }) {
     const exhibition = exhibitions.find(e => e.id === id);
     const exhibitionName = exhibition?.name || 'this exhibition';
     showDeleteConfirmation(id, exhibitionName, 'exhibition', async () => {
-      try {
-        const response = await exhibitionAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchExhibitions(exhibitionsPagination.page, exhibitionsPagination.limit);
-          alert('Exhibition deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete exhibition');
+      await withLoading(async () => {
+        try {
+          const response = await exhibitionAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchExhibitions(exhibitionsPagination.page, exhibitionsPagination.limit);
+            alert('Exhibition deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete exhibition');
+          }
+        } catch (err) {
+          console.error('Error deleting exhibition:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete exhibition. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting exhibition:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete exhibition. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting exhibition...');
     });
   };
 
   const handleSaveExhibition = async (exhibitionData, exhibitionId) => {
-    try {
-      const response = exhibitionId 
-        ? await exhibitionAPI.update(exhibitionId, exhibitionData)
-        : await exhibitionAPI.create(exhibitionData);
+    await withLoading(async () => {
+      try {
+        const response = exhibitionId 
+          ? await exhibitionAPI.update(exhibitionId, exhibitionData)
+          : await exhibitionAPI.create(exhibitionData);
 
-      if (response.status === 'OK') {
-        await fetchExhibitions(exhibitionsPagination.page, exhibitionsPagination.limit);
-        setShowAddExhibitionForm(false);
-        setEditingExhibition(null);
-        alert(exhibitionId ? 'Exhibition updated successfully!' : 'Exhibition saved successfully!');
-      } else {
-        alert(response.errorMessage || (exhibitionId ? 'Failed to update exhibition' : 'Failed to save exhibition'));
+        if (response.status === 'OK') {
+          await fetchExhibitions(exhibitionsPagination.page, exhibitionsPagination.limit);
+          setShowAddExhibitionForm(false);
+          setEditingExhibition(null);
+          alert(exhibitionId ? 'Exhibition updated successfully!' : 'Exhibition saved successfully!');
+        } else {
+          alert(response.errorMessage || (exhibitionId ? 'Failed to update exhibition' : 'Failed to save exhibition'));
+        }
+      } catch (err) {
+        console.error('Error saving exhibition:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (exhibitionId ? 'Failed to update exhibition. Please try again.' : 'Failed to save exhibition. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving exhibition:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (exhibitionId ? 'Failed to update exhibition. Please try again.' : 'Failed to save exhibition. Please try again.');
-      alert(errorMessage);
-    }
+    }, exhibitionId ? 'Updating exhibition...' : 'Saving exhibition...');
   };
 
   const fetchOngoingProjects = async (page = ongoingProjectsPagination.page, limit = ongoingProjectsPagination.limit) => {
-    try {
-      const response = await ongoingProjectAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await ongoingProjectAPI.getAll(page, limit);
       
       // Handle different response structures
       let projectsList = [];
@@ -3277,6 +3439,7 @@ export function AdminPanel({ onLogout }) {
       setOngoingProjects([]);
       setOngoingProjectsPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading ongoing projects...');
   };
 
   const handleOngoingProjectClick = (e) => {
@@ -3298,46 +3461,51 @@ export function AdminPanel({ onLogout }) {
     const project = ongoingProjects.find(p => p.id === id);
     const projectName = project?.title || 'this ongoing project';
     showDeleteConfirmation(id, projectName, 'ongoing project', async () => {
-      try {
-        const response = await ongoingProjectAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchOngoingProjects();
-          alert('Ongoing Project deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete ongoing project');
+      await withLoading(async () => {
+        try {
+          const response = await ongoingProjectAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchOngoingProjects();
+            alert('Ongoing Project deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete ongoing project');
+          }
+        } catch (err) {
+          console.error('Error deleting ongoing project:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete ongoing project. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting ongoing project:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete ongoing project. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting ongoing project...');
     });
   };
 
   const handleSaveOngoingProject = async (projectData, projectId) => {
-    try {
-      const response = projectId 
-        ? await ongoingProjectAPI.update(projectId, projectData)
-        : await ongoingProjectAPI.create(projectData);
+    await withLoading(async () => {
+      try {
+        const response = projectId 
+          ? await ongoingProjectAPI.update(projectId, projectData)
+          : await ongoingProjectAPI.create(projectData);
 
-      if (response.status === 'OK') {
-        await fetchOngoingProjects();
-        setShowAddOngoingProjectForm(false);
-        setEditingOngoingProject(null);
-        alert(projectId ? 'Ongoing Project updated successfully!' : 'Ongoing Project saved successfully!');
-      } else {
-        alert(response.errorMessage || (projectId ? 'Failed to update ongoing project' : 'Failed to save ongoing project'));
+        if (response.status === 'OK') {
+          await fetchOngoingProjects();
+          setShowAddOngoingProjectForm(false);
+          setEditingOngoingProject(null);
+          alert(projectId ? 'Ongoing Project updated successfully!' : 'Ongoing Project saved successfully!');
+        } else {
+          alert(response.errorMessage || (projectId ? 'Failed to update ongoing project' : 'Failed to save ongoing project'));
+        }
+      } catch (err) {
+        console.error('Error saving ongoing project:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (projectId ? 'Failed to update ongoing project. Please try again.' : 'Failed to save ongoing project. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving ongoing project:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (projectId ? 'Failed to update ongoing project. Please try again.' : 'Failed to save ongoing project. Please try again.');
-      alert(errorMessage);
-    }
+    }, projectId ? 'Updating ongoing project...' : 'Saving ongoing project...');
   };
 
   const fetchAreasOfPartnership = async (page = areasOfPartnershipPagination.page, limit = areasOfPartnershipPagination.limit) => {
-    try {
-      const response = await areaOfPartnershipAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await areaOfPartnershipAPI.getAll(page, limit);
       
       // Handle different response structures
       let areasList = [];
@@ -3376,6 +3544,7 @@ export function AdminPanel({ onLogout }) {
       setAreasOfPartnership([]);
       setAreasOfPartnershipPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading areas of partnership...');
   };
 
   const handleAreaOfPartnershipClick = (e) => {
@@ -3397,46 +3566,51 @@ export function AdminPanel({ onLogout }) {
     const area = areasOfPartnership.find(a => a.id === id);
     const areaName = area?.title || 'this area of partnership';
     showDeleteConfirmation(id, areaName, 'area of partnership', async () => {
-      try {
-        const response = await areaOfPartnershipAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchAreasOfPartnership();
-          alert('Area of Partnership deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete area of partnership');
+      await withLoading(async () => {
+        try {
+          const response = await areaOfPartnershipAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchAreasOfPartnership();
+            alert('Area of Partnership deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete area of partnership');
+          }
+        } catch (err) {
+          console.error('Error deleting area of partnership:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete area of partnership. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting area of partnership:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete area of partnership. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting area of partnership...');
     });
   };
 
   const handleSaveAreaOfPartnership = async (areaData, areaId) => {
-    try {
-      const response = areaId 
-        ? await areaOfPartnershipAPI.update(areaId, areaData)
-        : await areaOfPartnershipAPI.create(areaData);
+    await withLoading(async () => {
+      try {
+        const response = areaId 
+          ? await areaOfPartnershipAPI.update(areaId, areaData)
+          : await areaOfPartnershipAPI.create(areaData);
 
-      if (response.status === 'OK') {
-        await fetchAreasOfPartnership();
-        setShowAddAreaOfPartnershipForm(false);
-        setEditingAreaOfPartnership(null);
-        alert(areaId ? 'Area of Partnership updated successfully!' : 'Area of Partnership saved successfully!');
-      } else {
-        alert(response.errorMessage || (areaId ? 'Failed to update area of partnership' : 'Failed to save area of partnership'));
+        if (response.status === 'OK') {
+          await fetchAreasOfPartnership();
+          setShowAddAreaOfPartnershipForm(false);
+          setEditingAreaOfPartnership(null);
+          alert(areaId ? 'Area of Partnership updated successfully!' : 'Area of Partnership saved successfully!');
+        } else {
+          alert(response.errorMessage || (areaId ? 'Failed to update area of partnership' : 'Failed to save area of partnership'));
+        }
+      } catch (err) {
+        console.error('Error saving area of partnership:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (areaId ? 'Failed to update area of partnership. Please try again.' : 'Failed to save area of partnership. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving area of partnership:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (areaId ? 'Failed to update area of partnership. Please try again.' : 'Failed to save area of partnership. Please try again.');
-      alert(errorMessage);
-    }
+    }, areaId ? 'Updating area of partnership...' : 'Saving area of partnership...');
   };
 
   const fetchFellowshipGrants = async (page = fellowshipGrantsPagination.page, limit = fellowshipGrantsPagination.limit) => {
-    try {
-      const response = await fellowshipGrantsAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await fellowshipGrantsAPI.getAll(page, limit);
       
       // Handle different response structures
       let grantsList = [];
@@ -3476,6 +3650,7 @@ export function AdminPanel({ onLogout }) {
       setFellowshipGrants([]);
       setFellowshipGrantsPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading fellowship grants...');
   };
 
   const handleFellowshipGrantClick = (e) => {
@@ -3497,54 +3672,59 @@ export function AdminPanel({ onLogout }) {
     const grant = fellowshipGrants.find(g => g.id === id);
     const grantName = grant?.title || 'this fellowship grant';
     showDeleteConfirmation(id, grantName, 'fellowship grant', async () => {
-      try {
-        const response = await fellowshipGrantsAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchFellowshipGrants();
-          alert('Fellowship Grant deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete fellowship grant');
+      await withLoading(async () => {
+        try {
+          const response = await fellowshipGrantsAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchFellowshipGrants();
+            alert('Fellowship Grant deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete fellowship grant');
+          }
+        } catch (err) {
+          console.error('Error deleting fellowship grant:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete fellowship grant. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting fellowship grant:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete fellowship grant. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting fellowship grant...');
     });
   };
 
   const handleSaveFellowshipGrant = async (grantData, grantId) => {
-    try {
-      const response = grantId 
-        ? await fellowshipGrantsAPI.update(grantId, grantData)
-        : await fellowshipGrantsAPI.create(grantData);
+    await withLoading(async () => {
+      try {
+        const response = grantId 
+          ? await fellowshipGrantsAPI.update(grantId, grantData)
+          : await fellowshipGrantsAPI.create(grantData);
 
-      if (response.status === 'OK') {
-        await fetchFellowshipGrants();
-        setShowAddFellowshipGrantForm(false);
-        setEditingFellowshipGrant(null);
-        alert(grantId ? 'Fellowship Grant updated successfully!' : 'Fellowship Grant saved successfully!');
-      } else {
-        // Handle array or string error messages
-        const errorMsg = Array.isArray(response.errorMessage) 
-          ? response.errorMessage.join(', ') 
-          : response.errorMessage || (grantId ? 'Failed to update fellowship grant' : 'Failed to save fellowship grant');
-        alert(errorMsg);
+        if (response.status === 'OK') {
+          await fetchFellowshipGrants();
+          setShowAddFellowshipGrantForm(false);
+          setEditingFellowshipGrant(null);
+          alert(grantId ? 'Fellowship Grant updated successfully!' : 'Fellowship Grant saved successfully!');
+        } else {
+          // Handle array or string error messages
+          const errorMsg = Array.isArray(response.errorMessage) 
+            ? response.errorMessage.join(', ') 
+            : response.errorMessage || (grantId ? 'Failed to update fellowship grant' : 'Failed to save fellowship grant');
+          alert(errorMsg);
+        }
+      } catch (err) {
+        console.error('Error saving fellowship grant:', err);
+        // Handle array or string error messages from backend
+        const backendError = err.response?.data?.errorMessage;
+        const errorMessage = Array.isArray(backendError)
+          ? backendError.join(', ')
+          : backendError || err.message || (grantId ? 'Failed to update fellowship grant. Please try again.' : 'Failed to save fellowship grant. Please try again.');
+        alert(errorMessage);
       }
-    } catch (err) {
-      console.error('Error saving fellowship grant:', err);
-      // Handle array or string error messages from backend
-      const backendError = err.response?.data?.errorMessage;
-      const errorMessage = Array.isArray(backendError)
-        ? backendError.join(', ')
-        : backendError || err.message || (grantId ? 'Failed to update fellowship grant. Please try again.' : 'Failed to save fellowship grant. Please try again.');
-      alert(errorMessage);
-    }
+    }, grantId ? 'Updating fellowship grant...' : 'Saving fellowship grant...');
   };
 
   const fetchPressReleases = async (page = pressReleasesPagination.page, limit = pressReleasesPagination.limit) => {
-    try {
-      const response = await pressReleaseAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await pressReleaseAPI.getAll(page, limit);
       
       // Handle different response structures
       let pressReleasesList = [];
@@ -3582,6 +3762,7 @@ export function AdminPanel({ onLogout }) {
       setPressReleases([]);
       setPressReleasesPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading press releases...');
   };
 
   const handlePressReleaseClick = (e) => {
@@ -3603,53 +3784,58 @@ export function AdminPanel({ onLogout }) {
     const pressRelease = pressReleases.find(pr => pr.id === id);
     const pressReleaseName = pressRelease?.title || 'this press release';
     showDeleteConfirmation(id, pressReleaseName, 'press release', async () => {
-      try {
-        const response = await pressReleaseAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchPressReleases();
-          alert('Press Release deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete press release');
+      await withLoading(async () => {
+        try {
+          const response = await pressReleaseAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchPressReleases();
+            alert('Press Release deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete press release');
+          }
+        } catch (err) {
+          console.error('Error deleting press release:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete press release. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting press release:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete press release. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting press release...');
     });
   };
 
   const handleSavePressRelease = async (pressReleaseData, pressReleaseId = null) => {
-    try {
-      let response;
-      
-      if (pressReleaseId) {
-        // Update existing press release
-        response = await pressReleaseAPI.update(pressReleaseId, pressReleaseData);
-      } else {
-        // Create new press release
-        response = await pressReleaseAPI.create(pressReleaseData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (pressReleaseId) {
+          // Update existing press release
+          response = await pressReleaseAPI.update(pressReleaseId, pressReleaseData);
+        } else {
+          // Create new press release
+          response = await pressReleaseAPI.create(pressReleaseData);
+        }
+        
+        if (response.status === 'OK') {
+          // Refresh press releases list from API
+          await fetchPressReleases();
+          setShowAddPressReleaseForm(false);
+          setEditingPressRelease(null);
+          alert(pressReleaseId ? 'Press Release updated successfully!' : 'Press Release saved successfully!');
+        } else {
+          alert(response.errorMessage || (pressReleaseId ? 'Failed to update press release' : 'Failed to save press release'));
+        }
+      } catch (err) {
+        console.error('Error saving press release:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (pressReleaseId ? 'Failed to update press release. Please try again.' : 'Failed to save press release. Please try again.');
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        // Refresh press releases list from API
-        await fetchPressReleases();
-        setShowAddPressReleaseForm(false);
-        setEditingPressRelease(null);
-        alert(pressReleaseId ? 'Press Release updated successfully!' : 'Press Release saved successfully!');
-      } else {
-        alert(response.errorMessage || (pressReleaseId ? 'Failed to update press release' : 'Failed to save press release'));
-      }
-    } catch (err) {
-      console.error('Error saving press release:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (pressReleaseId ? 'Failed to update press release. Please try again.' : 'Failed to save press release. Please try again.');
-      alert(errorMessage);
-    }
+    }, pressReleaseId ? 'Updating press release...' : 'Saving press release...');
   };
 
   const fetchStatements = async (page = statementsPagination.page, limit = statementsPagination.limit) => {
-    try {
-      const response = await statementAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await statementAPI.getAll(page, limit);
       
       // Handle different response structures
       let statementsList = [];
@@ -3687,6 +3873,7 @@ export function AdminPanel({ onLogout }) {
       setStatements([]);
       setStatementsPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading statements...');
   };
 
   const handleStatementClick = (e) => {
@@ -3708,53 +3895,58 @@ export function AdminPanel({ onLogout }) {
     const statement = statements.find(s => s.id === id);
     const statementName = statement?.title || 'this statement';
     showDeleteConfirmation(id, statementName, 'statement', async () => {
-      try {
-        const response = await statementAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchStatements();
-          alert('Statement deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete statement');
+      await withLoading(async () => {
+        try {
+          const response = await statementAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchStatements();
+            alert('Statement deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete statement');
+          }
+        } catch (err) {
+          console.error('Error deleting statement:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete statement. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting statement:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete statement. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting statement...');
     });
   };
 
   const handleSaveStatement = async (statementData, statementId = null) => {
-    try {
-      let response;
-      
-      if (statementId) {
-        // Update existing statement
-        response = await statementAPI.update(statementId, statementData);
-      } else {
-        // Create new statement
-        response = await statementAPI.create(statementData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (statementId) {
+          // Update existing statement
+          response = await statementAPI.update(statementId, statementData);
+        } else {
+          // Create new statement
+          response = await statementAPI.create(statementData);
+        }
+        
+        if (response.status === 'OK') {
+          // Refresh statements list from API
+          await fetchStatements();
+          setShowAddStatementForm(false);
+          setEditingStatement(null);
+          alert(statementId ? 'Statement updated successfully!' : 'Statement saved successfully!');
+        } else {
+          alert(response.errorMessage || (statementId ? 'Failed to update statement' : 'Failed to save statement'));
+        }
+      } catch (err) {
+        console.error('Error saving statement:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (statementId ? 'Failed to update statement. Please try again.' : 'Failed to save statement. Please try again.');
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        // Refresh statements list from API
-        await fetchStatements();
-        setShowAddStatementForm(false);
-        setEditingStatement(null);
-        alert(statementId ? 'Statement updated successfully!' : 'Statement saved successfully!');
-      } else {
-        alert(response.errorMessage || (statementId ? 'Failed to update statement' : 'Failed to save statement'));
-      }
-    } catch (err) {
-      console.error('Error saving statement:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (statementId ? 'Failed to update statement. Please try again.' : 'Failed to save statement. Please try again.');
-      alert(errorMessage);
-    }
+    }, statementId ? 'Updating statement...' : 'Saving statement...');
   };
 
   const fetchVideos = async (page = videosPagination.page, limit = videosPagination.limit) => {
-    try {
-      const response = await costechVideoAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await costechVideoAPI.getAll(page, limit);
       
       // Handle different response structures
       let videosList = [];
@@ -3792,6 +3984,7 @@ export function AdminPanel({ onLogout }) {
       setVideos([]);
       setVideosPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading videos...');
   };
 
   const handleVideoClick = (e) => {
@@ -3813,51 +4006,56 @@ export function AdminPanel({ onLogout }) {
     const video = videos.find(v => v.id === id);
     const videoName = video?.title || 'this video';
     showDeleteConfirmation(id, videoName, 'video', async () => {
-      try {
-        const response = await costechVideoAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchVideos();
-          alert('Video deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete video');
+      await withLoading(async () => {
+        try {
+          const response = await costechVideoAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchVideos();
+            alert('Video deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete video');
+          }
+        } catch (err) {
+          console.error('Error deleting video:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete video. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting video:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete video. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting video...');
     });
   };
 
   const handleSaveVideo = async (videoData, videoId = null) => {
-    try {
-      let response;
-      
-      if (videoId) {
-        // Update existing video
-        response = await costechVideoAPI.update(videoId, videoData);
-      } else {
-        // Create new video
-        response = await costechVideoAPI.create(videoData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (videoId) {
+          // Update existing video
+          response = await costechVideoAPI.update(videoId, videoData);
+        } else {
+          // Create new video
+          response = await costechVideoAPI.create(videoData);
+        }
+        
+        if (response.status === 'OK') {
+          // Refresh videos list from API
+          await fetchVideos();
+          setShowAddVideoForm(false);
+          setEditingVideo(null);
+          alert(videoId ? 'Video updated successfully!' : 'Video saved successfully!');
+        } else {
+          alert(response.errorMessage || (videoId ? 'Failed to update video' : 'Failed to save video'));
+        }
+      } catch (err) {
+        console.error('Error saving video:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (videoId ? 'Failed to update video. Please try again.' : 'Failed to save video. Please try again.');
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        // Refresh videos list from API
-        await fetchVideos();
-        setShowAddVideoForm(false);
-        setEditingVideo(null);
-        alert(videoId ? 'Video updated successfully!' : 'Video saved successfully!');
-      } else {
-        alert(response.errorMessage || (videoId ? 'Failed to update video' : 'Failed to save video'));
-      }
-    } catch (err) {
-      console.error('Error saving video:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (videoId ? 'Failed to update video. Please try again.' : 'Failed to save video. Please try again.');
-      alert(errorMessage);
-    }
+    }, videoId ? 'Updating video...' : 'Saving video...');
   };
 
   const fetchCommunityEngagements = async () => {
+    await withLoading(async () => {
     try {
       const response = await communityEngagementAPI.getAll();
       if (response.status === 'OK' && response.returnData?.list_of_item) {
@@ -3873,6 +4071,7 @@ export function AdminPanel({ onLogout }) {
     } catch (err) {
       console.error('Error fetching community engagements:', err);
     }
+    }, 'Loading community engagements...');
   };
 
   const handleCommunityEngagementClick = (e) => {
@@ -3894,53 +4093,58 @@ export function AdminPanel({ onLogout }) {
     const engagement = communityEngagements.find(e => e.id === id);
     const engagementName = engagement?.title || 'this community engagement';
     showDeleteConfirmation(id, engagementName, 'community engagement', async () => {
-      try {
-        const response = await communityEngagementAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchCommunityEngagements();
-          alert('Community Engagement deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete community engagement');
+      await withLoading(async () => {
+        try {
+          const response = await communityEngagementAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchCommunityEngagements();
+            alert('Community Engagement deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete community engagement');
+          }
+        } catch (err) {
+          console.error('Error deleting community engagement:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete community engagement. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting community engagement:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete community engagement. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting community engagement...');
     });
   };
 
   const handleSaveCommunityEngagement = async (engagementData, engagementId = null) => {
-    try {
-      let response;
-      
-      if (engagementId) {
-        // Update existing engagement
-        response = await communityEngagementAPI.update(engagementId, engagementData);
-      } else {
-        // Create new engagement
-        response = await communityEngagementAPI.create(engagementData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (engagementId) {
+          // Update existing engagement
+          response = await communityEngagementAPI.update(engagementId, engagementData);
+        } else {
+          // Create new engagement
+          response = await communityEngagementAPI.create(engagementData);
+        }
+        
+        if (response.status === 'OK') {
+          // Refresh engagements list from API
+          await fetchCommunityEngagements();
+          setShowAddCommunityEngagementForm(false);
+          setEditingCommunityEngagement(null);
+          alert(engagementId ? 'Community Engagement updated successfully!' : 'Community Engagement saved successfully!');
+        } else {
+          alert(response.errorMessage || (engagementId ? 'Failed to update community engagement' : 'Failed to save community engagement'));
+        }
+      } catch (err) {
+        console.error('Error saving community engagement:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || (engagementId ? 'Failed to update community engagement. Please try again.' : 'Failed to save community engagement. Please try again.');
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        // Refresh engagements list from API
-        await fetchCommunityEngagements();
-        setShowAddCommunityEngagementForm(false);
-        setEditingCommunityEngagement(null);
-        alert(engagementId ? 'Community Engagement updated successfully!' : 'Community Engagement saved successfully!');
-      } else {
-        alert(response.errorMessage || (engagementId ? 'Failed to update community engagement' : 'Failed to save community engagement'));
-      }
-    } catch (err) {
-      console.error('Error saving community engagement:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || (engagementId ? 'Failed to update community engagement. Please try again.' : 'Failed to save community engagement. Please try again.');
-      alert(errorMessage);
-    }
+    }, engagementId ? 'Updating community engagement...' : 'Saving community engagement...');
   };
 
   const fetchHerinInstitutions = async () => {
-    try {
-      const response = await herinInstitutionAPI.getAll();
+    await withLoading(async () => {
+      try {
+        const response = await herinInstitutionAPI.getAll();
       if (response.status === 'OK' && response.returnData?.list_of_item) {
         const mappedInstitutions = response.returnData.list_of_item.map(i => ({
           id: i.id?.toString() || Date.now().toString(),
@@ -3957,6 +4161,7 @@ export function AdminPanel({ onLogout }) {
     } catch (err) {
       console.error('Error fetching HERIN institutions:', err);
     }
+    }, 'Loading HERIN institutions...');
   };
 
   const handleHerinInstitutionClick = (e) => {
@@ -3978,57 +4183,62 @@ export function AdminPanel({ onLogout }) {
     const institution = herinInstitutions.find(i => i.id === id);
     const institutionName = institution?.name || 'this institution';
     showDeleteConfirmation(id, institutionName, 'HERIN institution', async () => {
-      try {
-        const response = await herinInstitutionAPI.delete(id);
-        if (response.status === 'OK') {
-          await fetchHerinInstitutions();
-          alert('HERIN Institution deleted successfully!');
-        } else {
-          alert(response.errorMessage || 'Failed to delete HERIN institution');
+      await withLoading(async () => {
+        try {
+          const response = await herinInstitutionAPI.delete(id);
+          if (response.status === 'OK') {
+            await fetchHerinInstitutions();
+            alert('HERIN Institution deleted successfully!');
+          } else {
+            alert(response.errorMessage || 'Failed to delete HERIN institution');
+          }
+        } catch (err) {
+          console.error('Error deleting HERIN institution:', err);
+          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete HERIN institution. Please try again.';
+          alert(errorMessage);
         }
-      } catch (err) {
-        console.error('Error deleting HERIN institution:', err);
-        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete HERIN institution. Please try again.';
-        alert(errorMessage);
-      }
+      }, 'Deleting HERIN institution...');
     });
   };
 
   const handleSaveHerinInstitution = async (institutionData, institutionId = null) => {
-    try {
-      let response;
-      
-      if (institutionId) {
-        response = await herinInstitutionAPI.update(institutionId, institutionData);
-      } else {
-        response = await herinInstitutionAPI.create(institutionData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (institutionId) {
+          response = await herinInstitutionAPI.update(institutionId, institutionData);
+        } else {
+          response = await herinInstitutionAPI.create(institutionData);
+        }
+        
+        if (response.status === 'OK') {
+          await fetchHerinInstitutions();
+          setShowAddHerinInstitutionForm(false);
+          setEditingHerinInstitution(null);
+          alert(institutionId ? 'HERIN Institution updated successfully!' : 'HERIN Institution saved successfully!');
+        } else {
+          const errorMsg = Array.isArray(response.errorMessage) 
+            ? response.errorMessage.join(', ') 
+            : response.errorMessage || (institutionId ? 'Failed to update HERIN institution' : 'Failed to save HERIN institution');
+          alert(errorMsg);
+        }
+      } catch (err) {
+        console.error('Error saving HERIN institution:', err);
+        const backendError = err.response?.data?.errorMessage;
+        const errorMessage = Array.isArray(backendError)
+          ? backendError.join(', ')
+          : backendError || err.message || (institutionId ? 'Failed to update HERIN institution. Please try again.' : 'Failed to save HERIN institution. Please try again.');
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        await fetchHerinInstitutions();
-        setShowAddHerinInstitutionForm(false);
-        setEditingHerinInstitution(null);
-        alert(institutionId ? 'HERIN Institution updated successfully!' : 'HERIN Institution saved successfully!');
-      } else {
-        const errorMsg = Array.isArray(response.errorMessage) 
-          ? response.errorMessage.join(', ') 
-          : response.errorMessage || (institutionId ? 'Failed to update HERIN institution' : 'Failed to save HERIN institution');
-        alert(errorMsg);
-      }
-    } catch (err) {
-      console.error('Error saving HERIN institution:', err);
-      const backendError = err.response?.data?.errorMessage;
-      const errorMessage = Array.isArray(backendError)
-        ? backendError.join(', ')
-        : backendError || err.message || (institutionId ? 'Failed to update HERIN institution. Please try again.' : 'Failed to save HERIN institution. Please try again.');
-      alert(errorMessage);
-    }
+    }, institutionId ? 'Updating HERIN institution...' : 'Saving HERIN institution...');
   };
 
   // Directorate handlers
   const fetchDirectorates = async (page = directoratesPagination.page, limit = directoratesPagination.limit) => {
-    try {
-      const response = await directorateAPI.getAll(page, limit);
+    await withLoading(async () => {
+      try {
+        const response = await directorateAPI.getAll(page, limit);
       
       // Handle different response structures
       let directoratesList = [];
@@ -4115,6 +4325,7 @@ export function AdminPanel({ onLogout }) {
       setDirectorates([]);
       setDirectoratesPagination(prev => ({ ...prev, total: 0 }));
     }
+    }, 'Loading directorates...');
   };
 
   const handleDirectorateClick = (e) => {
@@ -4132,55 +4343,63 @@ export function AdminPanel({ onLogout }) {
     setShowAddDirectorateForm(true);
   };
 
+  const handleViewDirectorate = (directorate) => {
+    setViewingDirectorate(directorate);
+  };
+
   const handleDeleteDirectorate = (id) => {
     if (window.confirm('Are you sure you want to delete this directorate?')) {
       (async () => {
-        try {
-          const response = await directorateAPI.delete(id);
-          if (response.status === 'OK') {
-            await fetchDirectorates(directoratesPagination.page, directoratesPagination.limit);
-            alert('Directorate deleted successfully!');
-          } else {
-            alert(response.errorMessage || 'Failed to delete directorate');
+        await withLoading(async () => {
+          try {
+            const response = await directorateAPI.delete(id);
+            if (response.status === 'OK') {
+              await fetchDirectorates(directoratesPagination.page, directoratesPagination.limit);
+              alert('Directorate deleted successfully!');
+            } else {
+              alert(response.errorMessage || 'Failed to delete directorate');
+            }
+          } catch (err) {
+            console.error('Error deleting directorate:', err);
+            const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete directorate. Please try again.';
+            alert(errorMessage);
           }
-        } catch (err) {
-          console.error('Error deleting directorate:', err);
-          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete directorate. Please try again.';
-          alert(errorMessage);
-        }
+        }, 'Deleting directorate...');
       })();
     }
   };
 
   const handleSaveDirectorate = async (directorateData, directorateId = null) => {
-    try {
-      let response;
-      
-      if (directorateId) {
-        response = await directorateAPI.update(directorateId, directorateData);
-      } else {
-        response = await directorateAPI.create(directorateData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (directorateId) {
+          response = await directorateAPI.update(directorateId, directorateData);
+        } else {
+          response = await directorateAPI.create(directorateData);
+        }
+        
+        if (response.status === 'OK') {
+          await fetchDirectorates(directoratesPagination.page, directoratesPagination.limit);
+          setShowAddDirectorateForm(false);
+          setEditingDirectorate(null);
+          alert(directorateId ? 'Directorate updated successfully!' : 'Directorate saved successfully!');
+        } else {
+          const errorMsg = Array.isArray(response.errorMessage) 
+            ? response.errorMessage.join(', ') 
+            : response.errorMessage || (directorateId ? 'Failed to update directorate' : 'Failed to save directorate');
+          alert(errorMsg);
+        }
+      } catch (err) {
+        console.error('Error saving directorate:', err);
+        const backendError = err.response?.data?.errorMessage;
+        const errorMessage = Array.isArray(backendError)
+          ? backendError.join(', ')
+          : backendError || err.message || (directorateId ? 'Failed to update directorate. Please try again.' : 'Failed to save directorate. Please try again.');
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        await fetchDirectorates(directoratesPagination.page, directoratesPagination.limit);
-        setShowAddDirectorateForm(false);
-        setEditingDirectorate(null);
-        alert(directorateId ? 'Directorate updated successfully!' : 'Directorate saved successfully!');
-      } else {
-        const errorMsg = Array.isArray(response.errorMessage) 
-          ? response.errorMessage.join(', ') 
-          : response.errorMessage || (directorateId ? 'Failed to update directorate' : 'Failed to save directorate');
-        alert(errorMsg);
-      }
-    } catch (err) {
-      console.error('Error saving directorate:', err);
-      const backendError = err.response?.data?.errorMessage;
-      const errorMessage = Array.isArray(backendError)
-        ? backendError.join(', ')
-        : backendError || err.message || (directorateId ? 'Failed to update directorate. Please try again.' : 'Failed to save directorate. Please try again.');
-      alert(errorMessage);
-    }
+    }, directorateId ? 'Updating directorate...' : 'Saving directorate...');
   };
 
   const handleFooterQuickLinkClick = (e) => {
@@ -4201,46 +4420,50 @@ export function AdminPanel({ onLogout }) {
   const handleDeleteFooterQuickLink = (id) => {
     if (window.confirm('Are you sure you want to delete this footer quick link?')) {
       (async () => {
-        try {
-          const response = await footerQuickLinkAPI.delete(id);
-          if (response.status === 'OK') {
-            await fetchFooterQuickLinks(footerQuickLinksPagination.page, footerQuickLinksPagination.limit);
-            alert('Footer quick link deleted successfully!');
-          } else {
-            alert(response.errorMessage || 'Failed to delete footer quick link');
+        await withLoading(async () => {
+          try {
+            const response = await footerQuickLinkAPI.delete(id);
+            if (response.status === 'OK') {
+              await fetchFooterQuickLinks(footerQuickLinksPagination.page, footerQuickLinksPagination.limit);
+              alert('Footer quick link deleted successfully!');
+            } else {
+              alert(response.errorMessage || 'Failed to delete footer quick link');
+            }
+          } catch (err) {
+            console.error('Error deleting footer quick link:', err);
+            const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete footer quick link. Please try again.';
+            alert(errorMessage);
           }
-        } catch (err) {
-          console.error('Error deleting footer quick link:', err);
-          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete footer quick link. Please try again.';
-          alert(errorMessage);
-        }
+        }, 'Deleting footer quick link...');
       })();
     }
   };
 
   const handleSaveFooterQuickLink = async (linkData, linkId = null) => {
-    try {
-      let response;
-      
-      if (linkId) {
-        response = await footerQuickLinkAPI.update(linkId, linkData);
-      } else {
-        response = await footerQuickLinkAPI.create(linkData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (linkId) {
+          response = await footerQuickLinkAPI.update(linkId, linkData);
+        } else {
+          response = await footerQuickLinkAPI.create(linkData);
+        }
+        
+        if (response.status === 'OK') {
+          await fetchFooterQuickLinks(footerQuickLinksPagination.page, footerQuickLinksPagination.limit);
+          setShowAddFooterQuickLinkForm(false);
+          setEditingFooterQuickLink(null);
+          alert(linkId ? 'Footer quick link updated successfully!' : 'Footer quick link saved successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to save footer quick link');
+        }
+      } catch (err) {
+        console.error('Error saving footer quick link:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save footer quick link. Please try again.';
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        await fetchFooterQuickLinks(footerQuickLinksPagination.page, footerQuickLinksPagination.limit);
-        setShowAddFooterQuickLinkForm(false);
-        setEditingFooterQuickLink(null);
-        alert(linkId ? 'Footer quick link updated successfully!' : 'Footer quick link saved successfully!');
-      } else {
-        alert(response.errorMessage || 'Failed to save footer quick link');
-      }
-    } catch (err) {
-      console.error('Error saving footer quick link:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save footer quick link. Please try again.';
-      alert(errorMessage);
-    }
+    }, linkId ? 'Updating footer quick link...' : 'Saving footer quick link...');
   };
 
   const handleFooterContactUsClick = (e) => {
@@ -4261,46 +4484,50 @@ export function AdminPanel({ onLogout }) {
   const handleDeleteFooterContactUs = (id) => {
     if (window.confirm('Are you sure you want to delete this footer contact us entry?')) {
       (async () => {
-        try {
-          const response = await footerContactUsAPI.delete(id);
-          if (response.status === 'OK') {
-            await fetchFooterContactUs(footerContactUsPagination.page, footerContactUsPagination.limit);
-            alert('Footer contact us entry deleted successfully!');
-          } else {
-            alert(response.errorMessage || 'Failed to delete footer contact us entry');
+        await withLoading(async () => {
+          try {
+            const response = await footerContactUsAPI.delete(id);
+            if (response.status === 'OK') {
+              await fetchFooterContactUs(footerContactUsPagination.page, footerContactUsPagination.limit);
+              alert('Footer contact us entry deleted successfully!');
+            } else {
+              alert(response.errorMessage || 'Failed to delete footer contact us entry');
+            }
+          } catch (err) {
+            console.error('Error deleting footer contact us:', err);
+            const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete footer contact us entry. Please try again.';
+            alert(errorMessage);
           }
-        } catch (err) {
-          console.error('Error deleting footer contact us:', err);
-          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete footer contact us entry. Please try again.';
-          alert(errorMessage);
-        }
+        }, 'Deleting footer contact us entry...');
       })();
     }
   };
 
   const handleSaveFooterContactUs = async (contactData, contactId = null) => {
-    try {
-      let response;
-      
-      if (contactId) {
-        response = await footerContactUsAPI.update(contactId, contactData);
-      } else {
-        response = await footerContactUsAPI.create(contactData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (contactId) {
+          response = await footerContactUsAPI.update(contactId, contactData);
+        } else {
+          response = await footerContactUsAPI.create(contactData);
+        }
+        
+        if (response.status === 'OK') {
+          await fetchFooterContactUs(footerContactUsPagination.page, footerContactUsPagination.limit);
+          setShowAddFooterContactUsForm(false);
+          setEditingFooterContactUs(null);
+          alert(contactId ? 'Footer contact us entry updated successfully!' : 'Footer contact us entry saved successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to save footer contact us entry');
+        }
+      } catch (err) {
+        console.error('Error saving footer contact us:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save footer contact us entry. Please try again.';
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        await fetchFooterContactUs(footerContactUsPagination.page, footerContactUsPagination.limit);
-        setShowAddFooterContactUsForm(false);
-        setEditingFooterContactUs(null);
-        alert(contactId ? 'Footer contact us entry updated successfully!' : 'Footer contact us entry saved successfully!');
-      } else {
-        alert(response.errorMessage || 'Failed to save footer contact us entry');
-      }
-    } catch (err) {
-      console.error('Error saving footer contact us:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save footer contact us entry. Please try again.';
-      alert(errorMessage);
-    }
+    }, contactId ? 'Updating footer contact us entry...' : 'Saving footer contact us entry...');
   };
 
   const handleFooterEresourceClick = (e) => {
@@ -4321,46 +4548,50 @@ export function AdminPanel({ onLogout }) {
   const handleDeleteFooterEresource = (id) => {
     if (window.confirm('Are you sure you want to delete this footer e-resource?')) {
       (async () => {
-        try {
-          const response = await footerEresourceAPI.delete(id);
-          if (response.status === 'OK') {
-            await fetchFooterEresources(footerEresourcesPagination.page, footerEresourcesPagination.limit);
-            alert('Footer e-resource deleted successfully!');
-          } else {
-            alert(response.errorMessage || 'Failed to delete footer e-resource');
+        await withLoading(async () => {
+          try {
+            const response = await footerEresourceAPI.delete(id);
+            if (response.status === 'OK') {
+              await fetchFooterEresources(footerEresourcesPagination.page, footerEresourcesPagination.limit);
+              alert('Footer e-resource deleted successfully!');
+            } else {
+              alert(response.errorMessage || 'Failed to delete footer e-resource');
+            }
+          } catch (err) {
+            console.error('Error deleting footer e-resource:', err);
+            const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete footer e-resource. Please try again.';
+            alert(errorMessage);
           }
-        } catch (err) {
-          console.error('Error deleting footer e-resource:', err);
-          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete footer e-resource. Please try again.';
-          alert(errorMessage);
-        }
+        }, 'Deleting footer e-resource...');
       })();
     }
   };
 
   const handleSaveFooterEresource = async (resourceData, resourceId = null) => {
-    try {
-      let response;
-      
-      if (resourceId) {
-        response = await footerEresourceAPI.update(resourceId, resourceData);
-      } else {
-        response = await footerEresourceAPI.create(resourceData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (resourceId) {
+          response = await footerEresourceAPI.update(resourceId, resourceData);
+        } else {
+          response = await footerEresourceAPI.create(resourceData);
+        }
+        
+        if (response.status === 'OK') {
+          await fetchFooterEresources(footerEresourcesPagination.page, footerEresourcesPagination.limit);
+          setShowAddFooterEresourceForm(false);
+          setEditingFooterEresource(null);
+          alert(resourceId ? 'Footer e-resource updated successfully!' : 'Footer e-resource saved successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to save footer e-resource');
+        }
+      } catch (err) {
+        console.error('Error saving footer e-resource:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save footer e-resource. Please try again.';
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        await fetchFooterEresources(footerEresourcesPagination.page, footerEresourcesPagination.limit);
-        setShowAddFooterEresourceForm(false);
-        setEditingFooterEresource(null);
-        alert(resourceId ? 'Footer e-resource updated successfully!' : 'Footer e-resource saved successfully!');
-      } else {
-        alert(response.errorMessage || 'Failed to save footer e-resource');
-      }
-    } catch (err) {
-      console.error('Error saving footer e-resource:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save footer e-resource. Please try again.';
-      alert(errorMessage);
-    }
+    }, resourceId ? 'Updating footer e-resource...' : 'Saving footer e-resource...');
   };
 
   const handleSocialMediaPlatformClick = (e) => {
@@ -4381,46 +4612,50 @@ export function AdminPanel({ onLogout }) {
   const handleDeleteSocialMediaPlatform = (id) => {
     if (window.confirm('Are you sure you want to delete this social media platform?')) {
       (async () => {
-        try {
-          const response = await socialMediaPlatformAPI.delete(id);
-          if (response.status === 'OK') {
-            await fetchSocialMediaPlatforms(socialMediaPlatformsPagination.page, socialMediaPlatformsPagination.limit);
-            alert('Social media platform deleted successfully!');
-          } else {
-            alert(response.errorMessage || 'Failed to delete social media platform');
+        await withLoading(async () => {
+          try {
+            const response = await socialMediaPlatformAPI.delete(id);
+            if (response.status === 'OK') {
+              await fetchSocialMediaPlatforms(socialMediaPlatformsPagination.page, socialMediaPlatformsPagination.limit);
+              alert('Social media platform deleted successfully!');
+            } else {
+              alert(response.errorMessage || 'Failed to delete social media platform');
+            }
+          } catch (err) {
+            console.error('Error deleting social media platform:', err);
+            const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete social media platform. Please try again.';
+            alert(errorMessage);
           }
-        } catch (err) {
-          console.error('Error deleting social media platform:', err);
-          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete social media platform. Please try again.';
-          alert(errorMessage);
-        }
+        }, 'Deleting social media platform...');
       })();
     }
   };
 
   const handleSaveSocialMediaPlatform = async (platformData, platformId = null) => {
-    try {
-      let response;
-      
-      if (platformId) {
-        response = await socialMediaPlatformAPI.update(platformId, platformData);
-      } else {
-        response = await socialMediaPlatformAPI.create(platformData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (platformId) {
+          response = await socialMediaPlatformAPI.update(platformId, platformData);
+        } else {
+          response = await socialMediaPlatformAPI.create(platformData);
+        }
+        
+        if (response.status === 'OK') {
+          await fetchSocialMediaPlatforms(socialMediaPlatformsPagination.page, socialMediaPlatformsPagination.limit);
+          setShowAddSocialMediaPlatformForm(false);
+          setEditingSocialMediaPlatform(null);
+          alert(platformId ? 'Social media platform updated successfully!' : 'Social media platform saved successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to save social media platform');
+        }
+      } catch (err) {
+        console.error('Error saving social media platform:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save social media platform. Please try again.';
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        await fetchSocialMediaPlatforms(socialMediaPlatformsPagination.page, socialMediaPlatformsPagination.limit);
-        setShowAddSocialMediaPlatformForm(false);
-        setEditingSocialMediaPlatform(null);
-        alert(platformId ? 'Social media platform updated successfully!' : 'Social media platform saved successfully!');
-      } else {
-        alert(response.errorMessage || 'Failed to save social media platform');
-      }
-    } catch (err) {
-      console.error('Error saving social media platform:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save social media platform. Please try again.';
-      alert(errorMessage);
-    }
+    }, platformId ? 'Updating social media platform...' : 'Saving social media platform...');
   };
 
   const handleJournalClick = (e) => {
@@ -4445,46 +4680,50 @@ export function AdminPanel({ onLogout }) {
   const handleDeleteJournal = (id) => {
     if (window.confirm('Are you sure you want to delete this journal?')) {
       (async () => {
-        try {
-          const response = await journalAPI.delete(id);
-          if (response.status === 'OK') {
-            await fetchJournals(journalsPagination.page, journalsPagination.limit);
-            alert('Journal deleted successfully!');
-          } else {
-            alert(response.errorMessage || 'Failed to delete journal');
+        await withLoading(async () => {
+          try {
+            const response = await journalAPI.delete(id);
+            if (response.status === 'OK') {
+              await fetchJournals(journalsPagination.page, journalsPagination.limit);
+              alert('Journal deleted successfully!');
+            } else {
+              alert(response.errorMessage || 'Failed to delete journal');
+            }
+          } catch (err) {
+            console.error('Error deleting journal:', err);
+            const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete journal. Please try again.';
+            alert(errorMessage);
           }
-        } catch (err) {
-          console.error('Error deleting journal:', err);
-          const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to delete journal. Please try again.';
-          alert(errorMessage);
-        }
+        }, 'Deleting journal...');
       })();
     }
   };
 
   const handleSaveJournal = async (journalData, journalId = null) => {
-    try {
-      let response;
-      
-      if (journalId) {
-        response = await journalAPI.update(journalId, journalData);
-      } else {
-        response = await journalAPI.create(journalData);
+    await withLoading(async () => {
+      try {
+        let response;
+        
+        if (journalId) {
+          response = await journalAPI.update(journalId, journalData);
+        } else {
+          response = await journalAPI.create(journalData);
+        }
+        
+        if (response.status === 'OK') {
+          await fetchJournals(journalsPagination.page, journalsPagination.limit);
+          setShowAddJournalForm(false);
+          setEditingJournal(null);
+          alert(journalId ? 'Journal updated successfully!' : 'Journal saved successfully!');
+        } else {
+          alert(response.errorMessage || 'Failed to save journal');
+        }
+      } catch (err) {
+        console.error('Error saving journal:', err);
+        const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save journal. Please try again.';
+        alert(errorMessage);
       }
-      
-      if (response.status === 'OK') {
-        await fetchJournals(journalsPagination.page, journalsPagination.limit);
-        setShowAddJournalForm(false);
-        setEditingJournal(null);
-        alert(journalId ? 'Journal updated successfully!' : 'Journal saved successfully!');
-      } else {
-        alert(response.errorMessage || 'Failed to save journal');
-      }
-    } catch (err) {
-      console.error('Error saving journal:', err);
-      const errorMessage = err.response?.data?.errorMessage || err.message || 'Failed to save journal. Please try again.';
-      alert(errorMessage);
-    }
+    }, journalId ? 'Updating journal...' : 'Saving journal...');
   };
 
   return (
@@ -5047,7 +5286,7 @@ export function AdminPanel({ onLogout }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 <span>Social Media Platform</span>
-              </a>
+          </a>
             </div>
           </div>
         </nav>
@@ -5529,6 +5768,7 @@ export function AdminPanel({ onLogout }) {
             onAddDirectorateClick={handleAddDirectorateClick}
             onDelete={handleDeleteDirectorate}
             onEdit={handleEditDirectorate}
+            onView={handleViewDirectorate}
             pagination={{
               currentPage: directoratesPagination.page,
               totalPages: Math.ceil(directoratesPagination.total / directoratesPagination.limit),
@@ -6105,6 +6345,14 @@ export function AdminPanel({ onLogout }) {
           journal={viewingJournal}
         />
       )}
+      {viewingDirectorate && (
+        <ViewDirectorateModal
+          onClose={() => {
+            setViewingDirectorate(null);
+          }}
+          directorate={viewingDirectorate}
+        />
+      )}
       {showAddPressReleaseForm && (
         <AddPressReleaseModal
           onClose={() => {
@@ -6153,6 +6401,7 @@ export function AdminPanel({ onLogout }) {
           itemType={deleteConfirmation.type}
         />
       )}
+      {loading && <Loader message={loadingMessage} />}
     </div>
   );
 }

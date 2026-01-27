@@ -279,6 +279,7 @@
   align-items: center;
 }
 
+.view-button,
 .edit-button,
 .delete-button {
   padding: 6px 10px;
@@ -289,6 +290,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.view-button {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.view-button:hover {
+  background-color: #bfdbfe;
 }
 
 .edit-button {

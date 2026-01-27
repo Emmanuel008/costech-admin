@@ -1,7 +1,7 @@
 import '../css/InnovationSpacePage.css';
 import { Pagination } from '../components/Pagination';
 
-export function DirectoratePage({ onBack, onSave, directorates = [], onAddDirectorateClick, onDelete, onEdit, pagination }) {
+export function DirectoratePage({ onBack, onSave, directorates = [], onAddDirectorateClick, onDelete, onEdit, onView, pagination }) {
 
   return (
     <div className="innovation-space-page">
@@ -41,10 +41,7 @@ export function DirectoratePage({ onBack, onSave, directorates = [], onAddDirect
                   <tr>
                     <th>Name</th>
                     <th>Director Name</th>
-                    <th>Message From Director</th>
                     <th>Date</th>
-                    <th>Services Offered</th>
-                    <th>Downloads</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -57,36 +54,29 @@ export function DirectoratePage({ onBack, onSave, directorates = [], onAddDirect
                       <td className="table-category-cell">
                         {directorate.director_name || 'N/A'}
                       </td>
-                      <td className="table-sector-cell">
-                        {directorate.message_from_director || 'N/A'}
-                      </td>
                       <td className="table-location-cell">
-                        {directorate.createdAt 
-                          ? new Date(directorate.createdAt).toLocaleDateString('en-US', { 
+                        {directorate.date || directorate.createdAt 
+                          ? new Date(directorate.date || directorate.createdAt).toLocaleDateString('en-US', { 
                               year: 'numeric', 
                               month: 'short', 
                               day: 'numeric' 
                             })
                           : 'N/A'}
                       </td>
-                      <td className="table-location-cell">
-                        {directorate.service_offered && Array.isArray(directorate.service_offered) 
-                          ? directorate.service_offered.length > 0 
-                            ? directorate.service_offered.join(', ') 
-                            : 'None'
-                          : 'N/A'}
-                      </td>
-                      <td className="table-location-cell">
-                        {directorate.downloads && Array.isArray(directorate.downloads) && directorate.downloads.length > 0
-                          ? directorate.downloads.map((download, idx) => (
-                              <div key={idx} style={{ marginBottom: '4px' }}>
-                                {download.name || 'Unnamed'} {download.document && '(PDF)'}
-                              </div>
-                            ))
-                          : 'No downloads'}
-                      </td>
                       <td className="table-actions-cell">
                         <div className="action-buttons">
+                          {onView && (
+                            <button
+                              className="view-button"
+                              onClick={() => onView(directorate)}
+                              title="View directorate"
+                            >
+                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            </button>
+                          )}
                           {onEdit && (
                             <button
                               className="edit-button"

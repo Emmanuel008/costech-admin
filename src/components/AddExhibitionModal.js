@@ -231,7 +231,7 @@ export function AddExhibitionModal({ onClose, onSave, editExhibition = null, loa
               placeholder="Enter exhibition location"
               disabled={loading}
             />
-          </div>
+              </div>
 
           <div className="form-group">
             <label htmlFor="add-exhibition-link" className="form-label">

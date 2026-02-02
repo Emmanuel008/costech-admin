@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../css/AddHeroModal.css';
 import { compressImage } from '../utils/imageCompression';
-import { htmlToText, textToHtml } from '../utils/htmlUtils';
+import { htmlToText, textToHtml, stripHtmlTags } from '../utils/htmlUtils';
 
 export function AddHeroModal({ onClose, onSave, editHero = null, loading = false }) {
   const [formData, setFormData] = useState({
@@ -86,10 +86,11 @@ export function AddHeroModal({ onClose, onSave, editHero = null, loading = false
       return;
     }
 
-    // Convert reference to number if provided and convert plain text to HTML
+    // Convert reference to number if provided.
+    // IMPORTANT: We store Hero "description" as plain text (no <p></p> wrapping).
     const heroDataToSave = {
       ...formData,
-      description: textToHtml(formData.description),
+      description: stripHtmlTags(formData.description),
       content: textToHtml(formData.content),
       reference: formData.reference ? parseInt(formData.reference, 10) : null
     };

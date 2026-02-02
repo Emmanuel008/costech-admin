@@ -78,6 +78,7 @@ import { AddJournalModal } from '../components/AddJournalModal';
 import { ViewJournalModal } from '../components/ViewJournalModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal';
 import { Loader } from '../components/Loader';
+import { stripHtmlTags } from '../utils/htmlUtils';
 import { authAPI, sectionsAPI, newsAPI, partnersAPI, heroesAPI, positionAPI, managementTeamAPI, commissionMembersAPI, innovationSpaceAPI, onlineServiceAPI, financialReportAPI, magazineAPI, newsletterAPI, booksAPI, reportsAPI, actsAndLegalAPI, policiesAPI, strategicPlanAPI, guidelineDocumentsAPI, conferenceAPI, exhibitionAPI, ongoingProjectAPI, areaOfPartnershipAPI, fellowshipGrantsAPI, pressReleaseAPI, statementAPI, costechVideoAPI, communityEngagementAPI, herinInstitutionAPI, directorateAPI, faqCategoryAPI, faqAPI, footerQuickLinkAPI, footerContactUsAPI, footerEresourceAPI, socialMediaPlatformAPI, journalAPI } from '../services/api';
 
 export function AdminPanel({ onLogout }) {
@@ -1690,13 +1691,19 @@ export function AdminPanel({ onLogout }) {
     await withLoading(async () => {
     try {
       let response;
+
+      // Ensure we never send/stash HTML tags for the Hero description (e.g. <p></p>)
+      const sanitizedHeroData = {
+        ...heroData,
+        description: stripHtmlTags(heroData?.description || ''),
+      };
       
       if (heroId) {
         // Update existing hero
-          response = await heroesAPI.update(heroId, heroData);
+          response = await heroesAPI.update(heroId, sanitizedHeroData);
       } else {
         // Create new hero
-        response = await heroesAPI.create(heroData);
+        response = await heroesAPI.create(sanitizedHeroData);
       }
       
       if (response.status === 'OK') {
